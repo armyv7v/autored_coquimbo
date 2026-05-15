@@ -1,0 +1,48 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isAdmin() { return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'ADMIN'; }
+    function isSecurity() { return isSignedIn() && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['ADMIN', 'SECURITY']; }
+
+    // --- User Profiles ---
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(request.resource.data);
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin()) && isValidUser(request.resource.data);
+      
+      function isValidUser(data) {
+        return data.keys().hasAll(['uid', 'email', 'role', 'createdAt'])
+          && data.uid == userId
+          && data.role in ['ADMIN', 'OWNER', 'SECURITY']
+          && data.email is string;
+      }
+    }
+
+    // --- Dealerships ---
+    match /dealerships/{dealershipId} {
+      allow get, list: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // --- Incidents ---
+    match /incidents/{incidentId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && (isSecurity() || resource.data.reporterId == request.auth.uid);
+    }
+
+    // --- Alerts ---
+    match /alerts/{alertId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn();
+    }
+  }
+}

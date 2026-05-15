@@ -1,0 +1,92 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 0. Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Helpers ---
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    // Note: In a real app, I'd check a dedicated 'admins' collection. For this demo, we'll check User profile role.
+    function getUserData() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function isAdmin() { return isSignedIn() && getUserData().role == 'ADMIN'; }
+    function isSecurity() { return isSignedIn() && (getUserData().role == 'ADMIN' || getUserData().role == 'SECURITY'); }
+
+    // --- User Profiles ---
+    match /users/{userId} {
+      allow get: if isSignedIn();
+      allow list: if isAdmin();
+      allow create: if isOwner(userId) && isValidUser(incoming()) 
+                     && incoming().createdAt == request.time;
+      allow update: if (isOwner(userId) && incoming().role == existing().role 
+                         && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'status'])
+                       || isAdmin())
+                     && isValidUser(incoming())
+                     && incoming().createdAt == existing().createdAt;
+      
+      function isValidUser(data) {
+        return data.keys().hasAll(['uid', 'email', 'role', 'createdAt'])
+          && data.uid == userId
+          && data.role in ['ADMIN', 'OWNER', 'SECURITY']
+          && data.email is string && data.email.size() <= 200;
+      }
+    }
+
+    // --- Dealerships ---
+    match /dealerships/{dealershipId} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin() && isValidDealership(incoming())
+                     && incoming().createdAt == request.time;
+      allow update: if (isAdmin() || (isSignedIn() && existing().ownerId == request.auth.uid)) 
+                     && isValidDealership(incoming())
+                     && incoming().createdAt == existing().createdAt;
+      
+      function isValidDealership(data) {
+        return data.keys().hasAll(['id', 'name', 'location', 'ownerId', 'createdAt'])
+          && data.name is string && data.name.size() <= 200
+          && data.location.lat is number && data.location.lng is number;
+      }
+    }
+
+    // --- Incidents ---
+    match /incidents/{incidentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidIncident(incoming())
+                     && incoming().createdAt == request.time
+                     && incoming().reporterId == request.auth.uid;
+      allow update: if isSignedIn() && (
+        // Action: Resolve/Update Status
+        (isSecurity() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
+        || (existing().reporterId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['description', 'updatedAt']))
+      ) && isValidIncident(incoming())
+        && incoming().createdAt == existing().createdAt
+        && incoming().reporterId == existing().reporterId;
+      
+      function isValidIncident(data) {
+        return data.keys().hasAll(['id', 'type', 'reporterId', 'location', 'createdAt', 'status'])
+          && data.type in ['ROBO', 'SOSPECHOSO', 'MARCAJE']
+          && data.location.lat is number && data.location.lng is number
+          && data.description is string && data.description.size() <= 5000
+          && data.status in ['OPEN', 'RESOLVED', 'FALSE_ALARM'];
+      }
+    }
+
+    // --- Alerts ---
+    match /alerts/{alertId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && isValidAlert(incoming())
+                     && incoming().createdAt == request.time;
+      
+      function isValidAlert(data) {
+        return data.keys().hasAll(['id', 'incidentId', 'createdAt'])
+          && data.incidentId is string
+          && exists(/databases/$(database)/documents/incidents/$(data.incidentId));
+      }
+    }
+  }
+}

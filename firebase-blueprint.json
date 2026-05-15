@@ -1,0 +1,99 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Represents a user in the platform (Admin, Owner, Security).",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "email": { "type": "string", "format": "email" },
+        "displayName": { "type": "string" },
+        "role": { "type": "string", "enum": ["ADMIN", "OWNER", "SECURITY"] },
+        "dealershipId": { "type": "string", "description": "ID of the dealership they belong to" },
+        "fcmTokens": { "type": "array", "items": { "type": "string" }, "description": "Tokens for push notifications" },
+        "status": { "type": "string", "enum": ["ACTIVE", "SUSPENDED"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["uid", "email", "role", "createdAt"]
+    },
+    "Dealership": {
+      "title": "Dealership",
+      "description": "Represents an automotora (dealership) in the network.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "latitude": { "type": "number", "description": "Optional precise latitude" },
+        "longitude": { "type": "number", "description": "Optional precise longitude" },
+        "status": { "type": "string", "enum": ["online", "offline"], "description": "Connection status of the dealership system" },
+        "lastSeen": { "type": "string", "format": "date-time", "description": "Last heartbeat or activity timestamp" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "geohash": { "type": "string" }
+          }
+        },
+        "ownerId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "name", "location"]
+    },
+    "Incident": {
+      "title": "Incident",
+      "description": "A safety incident report.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "type": "string", "enum": ["ROBO", "SOSPECHOSO", "MARCAJE"] },
+        "description": { "type": "string" },
+        "reporterId": { "type": "string" },
+        "dealershipId": { "type": "string" },
+        "location": {
+          "type": "object",
+          "properties": {
+            "lat": { "type": "number" },
+            "lng": { "type": "number" },
+            "geohash": { "type": "string" }
+          }
+        },
+        "imageUrl": { "type": "string" },
+        "status": { "type": "string", "enum": ["OPEN", "RESOLVED", "FALSE_ALARM"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "type", "reporterId", "location", "createdAt"]
+    },
+    "Alert": {
+      "title": "Alert",
+      "description": "Geofenced notification sent to nearby dealerships.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "incidentId": { "type": "string" },
+        "notifiedDealershipIds": { "type": "array", "items": { "type": "string" } },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "incidentId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "dealerships/{dealershipId}": {
+      "schema": "Dealership",
+      "description": "Automotoras registration"
+    },
+    "incidents/{incidentId}": {
+      "schema": "Incident",
+      "description": "Reported safety incidents"
+    },
+    "alerts/{alertId}": {
+      "schema": "Alert",
+      "description": "History of dispatched alerts"
+    }
+  }
+}

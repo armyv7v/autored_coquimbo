@@ -1,0 +1,12 @@
+{
+  "name": "Remix: AutoRed Seguridad Coquimbo",
+  "description": "Plataforma de seguridad colaborativa para la red de automotoras de Coquimbo. Reportes en tiempo real, geofencing y alertas inteligentes.",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera"
+  ],
+  "majorCapabilities": [
+    "firebase",
+    "ai"
+  ]
+}
