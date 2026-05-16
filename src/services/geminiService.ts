@@ -1,38 +1,54 @@
-import { GoogleGenAI } from "@google/genai";
-
-const apiKey = process.env.GEMINI_API_KEY || "";
-const ai = new GoogleGenAI({ apiKey });
-
 export interface Incident {
   type: string;
   description: string;
   createdAt: string;
 }
 
+const typeLabels: Record<string, string> = {
+  ROBBERY: 'robos',
+  SUSPICIOUS_ACTIVITY: 'actividad sospechosa',
+  VANDALISM: 'vandalismo',
+  TRESPASSING: 'intrusiones',
+  FRAUD: 'fraudes',
+  OTHER: 'incidentes varios',
+};
+
+function getMostCommonType(incidents: Incident[]): string | null {
+  const counts = incidents.reduce<Record<string, number>>((acc, incident) => {
+    const type = incident.type || 'OTHER';
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {});
+
+  const [topType] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] || [];
+  return topType || null;
+}
+
 export async function generateSecurityTip(incidents: Incident[]): Promise<string> {
-  if (!apiKey) return "Configurá tu GEMINI_API_KEY para recibir consejos de seguridad basados en IA.";
   if (incidents.length === 0) return "No hay suficientes datos para generar un tip de seguridad específico. Mantente alerta.";
 
-  const incidentSummary = incidents
-    .slice(0, 10)
-    .map(i => `- ${i.type}: ${i.description} (${new Date(i.createdAt).toLocaleString()})`)
-    .join("\n");
+  const topType = getMostCommonType(incidents);
+  const recentCount = incidents.filter((incident) => {
+    const createdAt = new Date(incident.createdAt).getTime();
+    return Number.isFinite(createdAt) && Date.now() - createdAt < 1000 * 60 * 60 * 24 * 7;
+  }).length;
 
-  const prompt = `Analiza los siguientes incidentes de seguridad reportados en una red de automotoras en Coquimbo, Chile, y genera un ÚNICO tip de seguridad corto (máximo 2 frases) y práctico para los otros dueños de locales.
-  
-  Incidentes recientes:
-  ${incidentSummary}
-  
-  Escribe el tip en español, con un tono profesional y preventivo. No uses encabezados.`;
-
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-    });
-    return response.text?.trim() || "Refuerza la vigilancia perimetral y mantén a tu equipo informado.";
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    return "Refuerza la vigilancia perimetral y mantén a tu equipo informado sobre movimientos sospechosos.";
+  if (topType === 'ROBBERY') {
+    return 'Se detecta recurrencia de robos: reforzá cierres, control de accesos y coordinación de apertura/cierre entre locales vecinos.';
   }
+
+  if (topType === 'SUSPICIOUS_ACTIVITY' || topType === 'TRESPASSING') {
+    return 'Predominan reportes de actividad sospechosa: pedí verificación temprana, registrá patentes y evitá confrontaciones sin apoyo.';
+  }
+
+  if (topType === 'FRAUD') {
+    return 'Hay señales de fraude: validá identidad, medios de pago y documentación antes de entregar vehículos o cerrar operaciones.';
+  }
+
+  if (recentCount >= 3) {
+    return 'Hubo varios incidentes recientes: reforzá la comunicación interna y revisá cámaras, iluminación y protocolos de respuesta del personal.';
+  }
+
+  const readableType = typeLabels[topType || 'OTHER'] || 'incidentes de seguridad';
+  return `Se repiten ${readableType}: mantené registro compartido, controles preventivos y aviso temprano entre locales para reducir exposición.`;
 }
