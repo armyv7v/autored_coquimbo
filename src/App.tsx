@@ -33,6 +33,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+function GuestRoute({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white">Cargando...</div>;
+  if (user) return <Navigate to="/" replace />;
+  return <>{children}</>;
+}
+
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const { profile, loading } = useAuth();
   if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white">Cargando...</div>;
@@ -58,7 +65,11 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
+          <Route path="/login" element={
+            <GuestRoute>
+              <Login />
+            </GuestRoute>
+          } />
           <Route path="/" element={
             <ProtectedRoute>
               <MainLayout>
