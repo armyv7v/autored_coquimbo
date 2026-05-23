@@ -157,31 +157,31 @@ export default function Login() {
       <motion.div 
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-8 rounded-3xl shadow-2xl relative z-10"
+        className="w-full max-w-md bg-slate-900/50 backdrop-blur-xl border border-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl relative z-10 max-h-[95vh] overflow-y-auto custom-scrollbar"
       >
-        <div className="flex flex-col items-center mb-8">
-          <div className="bg-brand-primary p-4 rounded-2xl mb-4 shadow-lg shadow-brand-primary/20">
-            <ShieldAlert className="w-10 h-10 text-white" />
+        <div className="flex flex-col items-center mb-6">
+          <div className="bg-brand-primary p-3 rounded-2xl mb-3 shadow-lg shadow-brand-primary/20">
+            <ShieldAlert className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">AutoRed <span className="text-brand-primary">Coquimbo</span></h1>
-          <p className="text-slate-400 text-sm mt-2 text-center px-4">Seguridad Colaborativa para Automotoras</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight">AutoRed <span className="text-brand-primary">Coquimbo</span></h1>
+          <p className="text-slate-400 text-xs mt-1 text-center px-4">Seguridad Colaborativa para Automotoras</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <AnimatePresence mode="wait">
             {!isLogin && (
               <motion.div
                 initial={{ opacity: 0, height: 0 }}
                 animate={{ opacity: 1, height: 'auto' }}
                 exit={{ opacity: 0, height: 0 }}
-                className="space-y-5 overflow-hidden"
+                className="space-y-4 overflow-hidden"
               >
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
                   <input
                     type="text"
                     placeholder="Nombre completo"
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary transition-all"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-2.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary transition-all text-sm"
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     required
@@ -191,14 +191,14 @@ export default function Login() {
                     <button 
                         type="button"
                         onClick={() => setRole('SECURITY')}
-                        className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${role === 'SECURITY' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
+                        className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${role === 'SECURITY' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
                     >
                         SEGURIDAD
                     </button>
                     <button 
                         type="button"
                         onClick={() => setRole('OWNER')}
-                        className={`flex-1 py-2 text-xs font-semibold rounded-lg transition-all ${role === 'OWNER' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
+                        className={`flex-1 py-1.5 text-xs font-semibold rounded-lg transition-all ${role === 'OWNER' ? 'bg-slate-700 text-white shadow-sm' : 'text-slate-400'}`}
                     >
                         PROPIETARIO
                     </button>
@@ -212,7 +212,7 @@ export default function Login() {
             <input
               type="email"
               placeholder="Correo corporativo"
-              className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary transition-all"
+              className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-2.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary transition-all text-sm"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
@@ -224,7 +224,7 @@ export default function Login() {
             <input
               type="password"
               placeholder="Contraseña"
-              className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-3 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary transition-all"
+              className="w-full bg-slate-800/50 border border-slate-700 rounded-xl py-2.5 pl-12 pr-4 text-white focus:outline-none focus:border-brand-primary transition-all text-sm"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
@@ -235,9 +235,9 @@ export default function Login() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }}
-              className="text-red-400 text-xs bg-red-400/10 p-4 rounded-lg border border-red-400/20 flex flex-col gap-2"
+              className="text-red-400 text-xs bg-red-400/10 p-3 rounded-lg border border-red-400/20 flex flex-col gap-2"
             >
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <Info className="w-4 h-4 shrink-0" />
                 <span>{error}</span>
               </div>
@@ -245,7 +245,7 @@ export default function Login() {
                 <button 
                   type="button"
                   onClick={() => setIsLogin(false)}
-                  className="text-brand-primary font-bold hover:underline self-start ml-7"
+                  className="text-brand-primary font-bold hover:underline self-start ml-6"
                 >
                   Ir a Registro →
                 </button>
@@ -257,7 +257,7 @@ export default function Login() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }} 
               animate={{ opacity: 1, scale: 1 }}
-              className="text-emerald-400 text-xs bg-emerald-400/10 p-4 rounded-lg border border-emerald-400/20 flex gap-3"
+              className="text-emerald-400 text-xs bg-emerald-400/10 p-3 rounded-lg border border-emerald-400/20 flex gap-2"
             >
               <Info className="w-4 h-4 shrink-0" />
               <span>{message}</span>
@@ -267,10 +267,10 @@ export default function Login() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-brand-primary hover:bg-orange-600 text-white font-bold py-4 rounded-xl shadow-lg shadow-brand-primary/20 transition-all transform active:scale-95 flex items-center justify-center"
+            className="w-full bg-brand-primary hover:bg-orange-600 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-brand-primary/20 transition-all transform active:scale-95 flex items-center justify-center text-sm"
           >
             {loading ? (
-              <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
             ) : (
               isLogin ? 'INICIAR SESIÓN' : 'REGISTRARME'
             )}
@@ -281,18 +281,18 @@ export default function Login() {
               <button
                 type="button"
                 onClick={handleResetPassword}
-                className="text-[10px] text-slate-500 hover:text-slate-300 transition-all uppercase tracking-widest font-bold"
+                className="text-[9px] text-slate-500 hover:text-slate-300 transition-all uppercase tracking-widest font-bold"
               >
                 ¿Olvidaste tu contraseña?
               </button>
             </div>
           )}
 
-          <div className="relative my-8">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <div className="w-full border-t border-slate-800"></div>
             </div>
-            <div className="relative flex justify-center text-xs uppercase">
+            <div className="relative flex justify-center text-[10px] uppercase">
               <span className="bg-slate-900 px-4 text-slate-500 font-bold tracking-widest">O CONTINUAR CON</span>
             </div>
           </div>
@@ -301,7 +301,7 @@ export default function Login() {
             type="button"
             onClick={handleGoogleLogin}
             disabled={loading}
-            className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-4 rounded-xl shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-3"
+            className="w-full bg-white hover:bg-slate-100 text-slate-900 font-bold py-3.5 rounded-xl shadow-md transition-all transform active:scale-95 flex items-center justify-center gap-2 text-sm"
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path

@@ -158,35 +158,35 @@ export default function FlashReport() {
               animate={{ scale: 1, y: 0, rotateX: 0 }}
               exit={{ scale: 0.8, y: 50, rotateX: 20 }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-[0_20px_100px_-20px_rgba(220,38,38,0.3)] relative"
+              className="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] flex flex-col max-h-[90vh] overflow-hidden shadow-[0_20px_100px_-20px_rgba(220,38,38,0.3)] relative"
               id="flash-report-panel"
             >
               {/* Premium Glow Effect */}
               <div className="absolute -top-24 -left-24 w-48 h-48 bg-red-600/20 blur-[80px] pointer-events-none" />
               <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-brand-primary/20 blur-[80px] pointer-events-none" />
 
-              <div className="bg-gradient-to-br from-red-600/20 to-transparent p-8 flex items-center justify-between border-b border-white/5">
+              <div className="bg-gradient-to-br from-red-600/20 to-transparent p-6 flex items-center justify-between border-b border-white/5 shrink-0">
                 <div className="flex items-center gap-4">
-                  <div className="bg-red-600 p-3 rounded-2xl shadow-lg shadow-red-600/40 rotate-3">
-                    <AlertTriangle className="w-7 h-7 text-white" />
+                  <div className="bg-red-600 p-2.5 rounded-2xl shadow-lg shadow-red-600/40 rotate-3">
+                    <AlertTriangle className="w-6 h-6 text-white" />
                   </div>
                   <div>
-                    <h2 className="text-2xl font-black text-white tracking-tight">ALERTA FLASH</h2>
-                    <p className="text-red-400/60 text-[10px] font-bold uppercase tracking-[0.2em]">Red de Seguridad Coquimbo</p>
+                    <h2 className="text-xl font-black text-white tracking-tight">ALERTA FLASH</h2>
+                    <p className="text-red-400/60 text-[9px] font-bold uppercase tracking-[0.2em]">Red de Seguridad Coquimbo</p>
                   </div>
                 </div>
                 <button 
                   onClick={() => setIsOpen(false)} 
-                  className="bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white p-3 rounded-2xl transition-all"
+                  className="bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white p-2.5 rounded-xl transition-all"
                 >
-                  <X className="w-6 h-6" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-8 space-y-8">
+              <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
                 <div>
-                  <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-4 block pl-1">Seleccionar Emergencia</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block pl-1">Seleccionar Emergencia</label>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
                       { id: 'ROBO', label: 'Robo / Asalto', color: 'bg-red-600', icon: ShieldAlert },
                       { id: 'SOSPECHOSO', label: 'Sospechoso', color: 'bg-orange-600', icon: AlertTriangle },
@@ -197,29 +197,29 @@ export default function FlashReport() {
                         key={item.id}
                         type="button"
                         onClick={() => setType(item.id as any)}
-                        className={`group p-5 rounded-[2rem] border-2 transition-all flex flex-col items-center gap-3 relative overflow-hidden ${type === item.id ? `border-white/50 ${item.color} text-white scale-105 shadow-xl` : 'border-white/5 bg-white/5 text-slate-500 hover:border-white/20 hover:bg-white/10'}`}
+                        className={`group p-4 rounded-[1.5rem] border transition-all flex flex-col items-center gap-2.5 relative overflow-hidden ${type === item.id ? `border-white/30 ${item.color} text-white scale-105 shadow-lg` : 'border-white/5 bg-white/5 text-slate-500 hover:border-white/20 hover:bg-white/10'}`}
                       >
-                        <item.icon className={`w-8 h-8 transition-transform group-hover:rotate-12 ${type === item.id ? 'text-white' : 'text-slate-600'}`} />
-                        <span className="text-[9px] font-black text-center leading-tight uppercase tracking-widest">{item.label}</span>
+                        <item.icon className={`w-7 h-7 transition-transform group-hover:rotate-12 ${type === item.id ? 'text-white' : 'text-slate-600'}`} />
+                        <span className="text-[9px] font-black text-center leading-tight uppercase tracking-wider">{item.label}</span>
                       </button>
                     ))}
                   </div>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-5">
                   <div className="relative group">
                      <textarea
                       placeholder="¿Qué está pasando? Sé breve y específico..."
-                      className="w-full bg-white/5 border border-white/5 rounded-3xl p-6 text-white text-sm focus:outline-none focus:border-red-500/50 focus:bg-white/[0.07] transition-all min-h-[100px] placeholder:text-slate-600"
+                      className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-sm focus:outline-none focus:border-red-500/50 focus:bg-white/[0.07] transition-all min-h-[80px] placeholder:text-slate-600"
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                     />
-                    <div className="absolute bottom-4 right-4 text-[10px] font-mono text-slate-600">
+                    <div className="absolute bottom-4 right-4 text-[9px] font-mono text-slate-600">
                       {description.length}/500
                     </div>
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="flex gap-3">
                     <div className="flex-1">
                       <input 
                         type="file" 
@@ -232,9 +232,9 @@ export default function FlashReport() {
                       <button 
                         type="button" 
                         onClick={() => fileInputRef.current?.click()}
-                        className={`w-full h-14 flex items-center justify-center gap-3 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest ${imagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 select-none'}`}
+                        className={`w-full h-12 flex items-center justify-center gap-3 rounded-2xl border transition-all text-xs font-black uppercase tracking-widest ${imagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 select-none'}`}
                       >
-                        {imagePreview ? <Check className="w-5 h-5" /> : <Camera className="w-5 h-5" />}
+                        {imagePreview ? <Check className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
                         {imagePreview ? 'Imagen lista' : 'Adjuntar Foto'}
                       </button>
                     </div>
@@ -242,9 +242,9 @@ export default function FlashReport() {
                     <button 
                       type="button" 
                       onClick={() => setPickingLocation(true)}
-                      className={`flex-1 h-14 flex items-center justify-center gap-3 rounded-2xl border-2 transition-all text-xs font-black uppercase tracking-widest ${usingGps ? 'bg-blue-600/20 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 underline decoration-dotted decoration-slate-700'}`}
+                      className={`flex-1 h-12 flex items-center justify-center gap-3 rounded-2xl border transition-all text-xs font-black uppercase tracking-widest ${usingGps ? 'bg-blue-600/20 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 underline decoration-dotted decoration-slate-700'}`}
                     >
-                      <MapPin className="w-5 h-5" />
+                      <MapPin className="w-4 h-4" />
                       {usingGps ? 'Ubicación OK' : 'Fijar Ubicación'}
                     </button>
                   </div>
@@ -253,16 +253,16 @@ export default function FlashReport() {
                     <motion.div 
                       initial={{ opacity: 0, scale: 0.9, y: 10 }}
                       animate={{ opacity: 1, scale: 1, y: 0 }}
-                      className="relative w-full h-40 rounded-[2rem] overflow-hidden border-2 border-white/10 group"
+                      className="relative w-full h-32 rounded-[1.5rem] overflow-hidden border border-white/10 group"
                     >
                       <img src={imagePreview} alt="Preview" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                       <button 
                         type="button"
                         onClick={() => { setImage(null); setImagePreview(null); }}
-                        className="absolute top-4 right-4 bg-red-600 p-2.5 rounded-2xl text-white shadow-xl hover:bg-red-700 active:scale-95 transition-all"
+                        className="absolute top-3 right-3 bg-red-600 p-2 rounded-xl text-white shadow-xl hover:bg-red-700 active:scale-95 transition-all"
                       >
-                        <X className="w-5 h-5" />
+                        <X className="w-4 h-4" />
                       </button>
                     </motion.div>
                   )}
@@ -271,15 +271,15 @@ export default function FlashReport() {
                 <button
                   type="submit"
                   disabled={loading || !type}
-                  className="w-full group relative h-20 bg-red-600 hover:bg-red-700 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-[2rem] shadow-2xl shadow-red-600/30 transition-all flex items-center justify-center gap-4 transform active:scale-95 overflow-hidden"
+                  className="w-full group relative h-16 bg-red-600 hover:bg-red-700 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl shadow-xl shadow-red-600/20 transition-all flex items-center justify-center gap-3 transform active:scale-95 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
                   {loading ? (
-                    <Loader2 className="w-8 h-8 animate-spin text-white/50" />
+                    <Loader2 className="w-6 h-6 animate-spin text-white/50" />
                   ) : (
                     <>
-                      <Send className="w-6 h-6 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                      <span className="text-xl font-black tracking-tighter italic">ENVIAR ALERTA RED</span>
+                      <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                      <span className="text-lg font-black tracking-tighter italic">ENVIAR ALERTA RED</span>
                     </>
                   )}
                 </button>
