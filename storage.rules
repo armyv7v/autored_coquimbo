@@ -1,0 +1,15 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /incidents/{imageId} {
+      // Permitir la lectura a cualquier usuario autenticado de la red
+      allow read: if request.auth != null;
+      
+      // Permitir la subida de fotos únicamente a usuarios autenticados,
+      // validando que el archivo sea efectivamente una imagen y pese menos de 10MB.
+      allow write: if request.auth != null
+                    && request.resource.size < 10 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+    }
+  }
+}
