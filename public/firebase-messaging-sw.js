@@ -2,12 +2,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.1/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.1/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey: "AIzaSyCrVwObN-UpYABIUXlRR0dBEmcH4dt4prI",
-  authDomain: "agua-lacolinals.firebaseapp.com",
-  projectId: "agua-lacolinals",
-  storageBucket: "agua-lacolinals.firebasestorage.app",
-  messagingSenderId: "818703279484",
-  appId: "1:818703279484:web:8a84365d2fc0748ba4b0f9"
+  apiKey: "AIzaSyDFokr2GDEIfFThyY3yQk0MoyVGRTE1m70",
+  authDomain: "autored-coquimbo.firebaseapp.com",
+  projectId: "autored-coquimbo",
+  storageBucket: "autored-coquimbo.firebasestorage.app",
+  messagingSenderId: "631990140636",
+  appId: "1:631990140636:web:3d3ecca300ea21acff7e19"
 });
 
 const messaging = firebase.messaging();
