@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, where, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '../lib/firebase';
-import { ShieldAlert, Users, TrendingUp, AlertCircle, Clock, Info, Sparkles, Filter, Calendar, ChevronDown, Search, X, Activity, ListFilter, History, Bell, BellOff, CheckCircle, Ban, AlertTriangle, MapPin, Plus } from 'lucide-react';
+import { db, auth, storage } from '../lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { safeUUID } from '../lib/uuid';
+import { ShieldAlert, Users, TrendingUp, AlertCircle, Clock, Info, Sparkles, Filter, Calendar, ChevronDown, Search, X, Activity, ListFilter, History, Bell, BellOff, CheckCircle, Ban, AlertTriangle, MapPin, Plus, Camera, Loader2, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { generateSecurityTip } from '../services/geminiService';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -17,6 +19,8 @@ interface Incident {
   reporterId?: string;
   dealershipId?: string;
   imageUrl?: string;
+  isEdited?: boolean;
+  editedAt?: any;
 }
 
 interface UserProfile {
@@ -51,6 +55,15 @@ export default function Dashboard() {
   const [isReporting, setIsReporting] = useState(false);
   const { permission } = usePushNotifications();
   const { profile } = useAuth();
+
+  // Edit States
+  const [isEditing, setIsEditing] = useState(false);
+  const [editDescription, setEditDescription] = useState('');
+  const [editImage, setEditImage] = useState<File | null>(null);
+  const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   // Timeline specific filters
   const [timelineType, setTimelineType] = useState<string>('ALL');
@@ -264,6 +277,66 @@ export default function Dashboard() {
     setStatusFilter(allStatuses);
     setDealershipFilter(emptyDocs);
     setDateRange(emptyDates);
+  };
+
+  const startEditing = () => {
+    if (!selectedIncident) return;
+    setEditDescription(selectedIncident.description);
+    setEditImage(null);
+    setEditImagePreview(selectedIncident.imageUrl || null);
+    setEditError(null);
+    setIsEditing(true);
+  };
+
+  const handleEditFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEditImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setEditImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleSaveEdit = async () => {
+    if (!selectedIncident) return;
+    setIsSavingEdit(true);
+    setEditError(null);
+    try {
+      let imageUrl = selectedIncident.imageUrl || '';
+      if (editImage) {
+        const storageRef = ref(storage, `incidents/${safeUUID()}-${editImage.name}`);
+        const uploadResult = await uploadBytes(storageRef, editImage);
+        imageUrl = await getDownloadURL(uploadResult.ref);
+      } else if (editImagePreview === null) {
+        imageUrl = '';
+      }
+
+      const incidentRef = doc(db, 'incidents', selectedIncident.id);
+      await updateDoc(incidentRef, {
+        description: editDescription,
+        imageUrl,
+        isEdited: true,
+        editedAt: serverTimestamp()
+      });
+
+      const updatedIncident = {
+        ...selectedIncident,
+        description: editDescription,
+        imageUrl,
+        isEdited: true,
+        editedAt: new Date().toISOString()
+      };
+      setSelectedIncident(updatedIncident);
+      setIsEditing(false);
+    } catch (err) {
+      console.error("Error updating incident:", err);
+      setEditError(err instanceof Error ? err.message : String(err));
+    } finally {
+      setIsSavingEdit(false);
+    }
   };
 
   return (
@@ -561,7 +634,14 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
+                        {incident.isEdited && (
+                          <span className="text-[8px] font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
+                            ✏️ Editado
+                          </span>
+                        )}
+                      </div>
                       <span className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
                         <Clock className="w-3 h-3" />
                         {new Date(incident.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -737,6 +817,11 @@ export default function Dashboard() {
                     }`}>
                       {incident.status || 'OPEN'}
                     </div>
+                    {incident.isEdited && (
+                      <div className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                        ✏️ Editado
+                      </div>
+                    )}
                   </div>
 
                   <div className={`p-6 rounded-2xl transition-all group-hover:shadow-xl group-hover:shadow-black/20 ${
@@ -800,7 +885,7 @@ export default function Dashboard() {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
-            onClick={() => setSelectedIncident(null)}
+            onClick={() => { setSelectedIncident(null); setIsEditing(false); }}
           >
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
@@ -809,114 +894,239 @@ export default function Dashboard() {
               className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-[2rem] overflow-hidden shadow-2xl relative"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="absolute top-4 right-4 z-10">
-                <button
-                  onClick={() => setSelectedIncident(null)}
-                  className="bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition-all"
-                >
-                  <AlertCircle className="w-6 h-6 rotate-45" />
-                </button>
-              </div>
-
-              {selectedIncident.imageUrl && (
-                <div className="w-full h-64 overflow-hidden border-b border-white/5">
-                  <img
-                    src={selectedIncident.imageUrl}
-                    alt="Evidencia"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              )}
-
-              <div className="p-8 space-y-6">
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className={`w-3 h-3 rounded-full ${selectedIncident.type === 'ROBO' ? 'bg-red-500' : selectedIncident.type === 'SOSPECHOSO' ? 'bg-orange-500' : selectedIncident.type === 'MARCAJE' ? 'bg-blue-500' : 'bg-slate-500'}`} />
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-mono">
-                      #{selectedIncident.id.slice(0, 12)}
-                    </span>
-                  </div>
-                  <h2 className="text-3xl font-black text-white tracking-tighter leading-none mb-1 flex items-center gap-3">
-                    {selectedIncident.type === 'ROBO' && <ShieldAlert className="w-8 h-8 text-red-500" />}
-                    {selectedIncident.type === 'SOSPECHOSO' && <AlertTriangle className="w-8 h-8 text-orange-500" />}
-                    {selectedIncident.type === 'MARCAJE' && <MapPin className="w-8 h-8 text-blue-500" />}
-                    {selectedIncident.type === 'OTRO' && <Info className="w-8 h-8 text-slate-500" />}
-                    {selectedIncident.type}
-                  </h2>
-                  <p className="text-brand-primary text-[10px] font-bold uppercase tracking-[0.2em]">Incidente Reportado</p>
-                </div>
-
-                <div className="bg-white/5 border border-white/5 p-6 rounded-3xl">
-                  <p className="text-slate-300 text-sm leading-relaxed italic">
-                    "{selectedIncident.description || 'Sin descripción adicional.'}"
-                  </p>
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 overflow-hidden">
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Reportero</p>
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
-                        {reporterInfo?.displayName?.[0] || 'S'}
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-white truncate">
-                          {reporterInfo?.displayName || 'Personal de Seguridad'}
-                        </p>
-                        <p className="text-[9px] text-slate-500 truncate">{reporterInfo?.email || selectedIncident.reporterId}</p>
-                      </div>
+              {isEditing ? (
+                <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                  <div className="flex items-center gap-4">
+                    <div className="bg-brand-primary p-2.5 rounded-2xl shadow-lg shadow-brand-primary/40 rotate-3 animate-pulse">
+                      <Camera className="w-6 h-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white tracking-tight uppercase">Editar Evento</h3>
+                      <p className="text-brand-primary/60 text-[9px] font-bold uppercase tracking-[0.2em]">Actualizar detalles e imágenes del evento</p>
                     </div>
                   </div>
-                  <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 shadow-inner">
-                    <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 font-mono">Sede / Dealership</p>
-                    <p className="text-xs font-mono text-white truncate">{selectedIncident.dealershipId || 'Central Coquimbo'}</p>
+
+                  <div className="space-y-5">
+                    <div>
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-2 block pl-1">Descripción del Suceso</label>
+                      <textarea
+                        value={editDescription}
+                        onChange={(e) => setEditDescription(e.target.value)}
+                        className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-sm focus:outline-none focus:border-brand-primary focus:bg-white/[0.07] transition-all min-h-[120px]"
+                        placeholder="Describe lo ocurrido..."
+                      />
+                    </div>
+
+                    <div>
+                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-2 block pl-1">Evidencia Fotográfica</label>
+                      <div className="flex gap-3">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          ref={editFileInputRef}
+                          className="hidden"
+                          onChange={handleEditFileChange}
+                          id="edit-photo-upload-input"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => editFileInputRef.current?.click()}
+                          className={`flex-1 h-12 flex items-center justify-center gap-3 rounded-2xl border transition-all text-xs font-black uppercase tracking-widest ${editImagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 select-none'}`}
+                        >
+                          <Camera className="w-4 h-4" />
+                          {editImagePreview ? 'Cambiar Foto' : 'Adjuntar Foto'}
+                        </button>
+                        {editImagePreview && (
+                          <button
+                            type="button"
+                            onClick={() => { setEditImage(null); setEditImagePreview(null); }}
+                            className="px-5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                          >
+                            Quitar Foto
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {editImagePreview && (
+                      <div className="relative w-full h-36 rounded-[1.5rem] overflow-hidden border border-white/10 group">
+                        <img src={editImagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      </div>
+                    )}
+
+                    {editError && (
+                      <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs animate-pulse">
+                        <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
+                        <div>
+                          <p className="font-bold uppercase tracking-wider mb-1">Error al guardar cambios</p>
+                          <p className="text-slate-400 font-medium leading-relaxed">{editError}</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setIsEditing(false)}
+                      disabled={isSavingEdit}
+                      className="flex-1 h-14 bg-slate-800 text-slate-300 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all active:scale-95"
+                    >
+                      Cancelar
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSaveEdit}
+                      disabled={isSavingEdit || !editDescription.trim()}
+                      className="flex-1 h-14 bg-brand-primary hover:bg-opacity-90 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                    >
+                      {isSavingEdit ? (
+                        <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>Guardar Cambios</span>
+                        </>
+                      )}
+                    </button>
                   </div>
                 </div>
+              ) : (
+                <>
+                  <div className="absolute top-4 right-4 z-10">
+                    <button
+                      onClick={() => { setSelectedIncident(null); setIsEditing(false); }}
+                      className="bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition-all"
+                    >
+                      <AlertTriangle className="w-6 h-6 rotate-45" />
+                    </button>
+                  </div>
 
-                {/* Admin/Security/Owner Actions */}
-                {['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '') && (
-                  <div className="flex flex-col gap-3 pt-2">
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
-                    <div className="flex gap-3">
-                      {selectedIncident.status === 'OPEN' || !selectedIncident.status ? (
-                        <>
-                          <button
-                            onClick={() => handleUpdateStatus('RESOLVED')}
-                            className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
-                          >
-                            <CheckCircle className="w-4 h-4" />
-                            Resolver
-                          </button>
-                          <button
-                            onClick={() => handleUpdateStatus('FALSE_ALARM')}
-                            className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 border border-white/5"
-                          >
-                            <Ban className="w-4 h-4" />
-                            Falsa Alarma
-                          </button>
-                        </>
-                      ) : (
+                  {selectedIncident.imageUrl && (
+                    <div className="w-full h-64 overflow-hidden border-b border-white/5">
+                      <img
+                        src={selectedIncident.imageUrl}
+                        alt="Evidencia"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                  )}
+
+                  <div className="p-8 space-y-6">
+                    <div>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-3 h-3 rounded-full ${selectedIncident.type === 'ROBO' ? 'bg-red-500' : selectedIncident.type === 'SOSPECHOSO' ? 'bg-orange-500' : selectedIncident.type === 'MARCAJE' ? 'bg-blue-500' : 'bg-slate-500'}`} />
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-mono">
+                          #{selectedIncident.id.slice(0, 12)}
+                        </span>
+                      </div>
+                      <h2 className="text-3xl font-black text-white tracking-tighter leading-none mb-1 flex items-center gap-3">
+                        {selectedIncident.type === 'ROBO' && <ShieldAlert className="w-8 h-8 text-red-500" />}
+                        {selectedIncident.type === 'SOSPECHOSO' && <AlertTriangle className="w-8 h-8 text-orange-500" />}
+                        {selectedIncident.type === 'MARCAJE' && <MapPin className="w-8 h-8 text-blue-500" />}
+                        {selectedIncident.type === 'OTRO' && <Info className="w-8 h-8 text-slate-500" />}
+                        {selectedIncident.type}
+                      </h2>
+                      <div className="flex items-center gap-3">
+                        <p className="text-brand-primary text-[10px] font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
+                        {selectedIncident.isEdited && (
+                          <span className="text-[9px] font-black uppercase bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2 py-0.5 rounded-md animate-pulse">
+                            ✏️ Editado / Actualizado
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="bg-white/5 border border-white/5 p-6 rounded-3xl">
+                      <p className="text-slate-300 text-sm leading-relaxed italic">
+                        "{selectedIncident.description || 'Sin descripción adicional.'}"
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 overflow-hidden">
+                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Reportero</p>
+                        <div className="flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                            {reporterInfo?.displayName?.[0] || 'S'}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-xs font-bold text-white truncate">
+                              {reporterInfo?.displayName || 'Personal de Seguridad'}
+                            </p>
+                            <p className="text-[9px] text-slate-500 truncate">{reporterInfo?.email || selectedIncident.reporterId}</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 shadow-inner">
+                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 font-mono">Sede / Dealership</p>
+                        <p className="text-xs font-mono text-white truncate">{selectedIncident.dealershipId || 'Central Coquimbo'}</p>
+                      </div>
+                    </div>
+
+                    {/* Admin/Security/Owner Actions */}
+                    {['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '') && (
+                      <div className="flex flex-col gap-3 pt-2">
+                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
+                        <div className="flex gap-3">
+                          {selectedIncident.status === 'OPEN' || !selectedIncident.status ? (
+                            <>
+                              <button
+                                onClick={() => handleUpdateStatus('RESOLVED')}
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+                              >
+                                <CheckCircle className="w-4 h-4" />
+                                Resolver
+                              </button>
+                              <button
+                                onClick={() => handleUpdateStatus('FALSE_ALARM')}
+                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 border border-white/5"
+                              >
+                                <Ban className="w-4 h-4" />
+                                Falsa Alarma
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              onClick={() => handleUpdateStatus('OPEN')}
+                              className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
+                            >
+                              <AlertCircle className="w-4 h-4" />
+                              Reabrir Incidente
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {selectedIncident.reporterId === auth.currentUser?.uid && (
+                      <div className="pt-2">
                         <button
-                          onClick={() => handleUpdateStatus('OPEN')}
-                          className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
+                          onClick={startEditing}
+                          className="w-full bg-slate-800/80 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 border border-white/5 active:scale-[0.98]"
                         >
-                          <AlertCircle className="w-4 h-4" />
-                          Reabrir Incidente
+                          <Camera className="w-4 h-4 text-slate-400" />
+                          Editar Reporte (Agregar Foto / Detalles)
                         </button>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between text-slate-500 pb-2">
+                      <div className="flex items-center gap-2">
+                        <Clock className="w-4 h-4" />
+                        <span className="text-[11px] font-bold font-mono">
+                          {new Date(selectedIncident.createdAt).toLocaleString('es-CL')}
+                        </span>
+                      </div>
+                      {selectedIncident.isEdited && selectedIncident.editedAt && (
+                        <span className="text-[9px] font-bold font-mono text-brand-primary">
+                          Actualizado: {new Date(selectedIncident.editedAt).toLocaleString('es-CL')}
+                        </span>
                       )}
                     </div>
                   </div>
-                )}
-
-                <div className="flex items-center gap-4 text-slate-500 pb-2">
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4" />
-                    <span className="text-[11px] font-bold font-mono">
-                      {new Date(selectedIncident.createdAt).toLocaleString('es-CL')}
-                    </span>
-                  </div>
-                </div>
-              </div>
+                </>
+              )}
             </motion.div>
           </motion.div>
         )}

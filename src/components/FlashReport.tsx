@@ -8,6 +8,7 @@ import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getGeohash, COQUIMBO_CENTER } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
+import { safeUUID } from '../lib/uuid';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -39,6 +40,7 @@ export default function FlashReport() {
   const [type, setType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [pickingLocation, setPickingLocation] = useState(false);
@@ -81,17 +83,18 @@ export default function FlashReport() {
     if (!type || !auth.currentUser) return;
     setShowConfirmation(false);
     setLoading(true);
+    setError(null);
     try {
       let imageUrl = '';
       if (image) {
-        const storageRef = ref(storage, `incidents/${crypto.randomUUID()}-${image.name}`);
+        const storageRef = ref(storage, `incidents/${safeUUID()}-${image.name}`);
         const uploadResult = await uploadBytes(storageRef, image);
         imageUrl = await getDownloadURL(uploadResult.ref);
       }
 
       const geohash = getGeohash(location[0], location[1]);
 
-      const incidentId = crypto.randomUUID();
+      const incidentId = safeUUID();
       const incidentData = {
         id: incidentId,
         type,
@@ -106,7 +109,7 @@ export default function FlashReport() {
 
       await setDoc(doc(db, 'incidents', incidentId), incidentData);
       
-      const alertId = crypto.randomUUID();
+      const alertId = safeUUID();
       await setDoc(doc(db, 'alerts', alertId), {
         id: alertId,
         incidentId: incidentId,
@@ -117,6 +120,17 @@ export default function FlashReport() {
       setIsOpen(false);
       resetForm();
     } catch (err) {
+      console.error("Error in confirmSubmit:", err);
+      if (err instanceof Error) {
+        try {
+          const parsed = JSON.parse(err.message);
+          setError(parsed.error || err.message);
+        } catch (_) {
+          setError(err.message);
+        }
+      } else {
+        setError(String(err));
+      }
       handleFirestoreError(err, OperationType.WRITE, 'incidents');
     } finally {
       setLoading(false);
@@ -130,6 +144,7 @@ export default function FlashReport() {
     setImagePreview(null);
     setLocation(COQUIMBO_CENTER);
     setUsingGps(false);
+    setError(null);
   };
 
   return (
@@ -267,6 +282,16 @@ export default function FlashReport() {
                     </motion.div>
                   )}
                 </div>
+
+                {error && (
+                  <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs">
+                    <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
+                    <div>
+                      <p className="font-bold uppercase tracking-wider mb-1">Error al guardar reporte</p>
+                      <p className="text-slate-400 font-medium leading-relaxed">{error}</p>
+                    </div>
+                  </div>
+                )}
 
                 <button
                   type="submit"

@@ -62,7 +62,7 @@ service cloud.firestore {
       allow update: if isSignedIn() && (
         // Action: Resolve/Update Status
         (isSecurity() && incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']))
-        || (existing().reporterId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['description', 'updatedAt']))
+        || (existing().reporterId == request.auth.uid && incoming().diff(existing()).affectedKeys().hasOnly(['description', 'imageUrl', 'isEdited', 'editedAt', 'updatedAt']))
       ) && isValidIncident(incoming())
         && incoming().createdAt == existing().createdAt
         && incoming().reporterId == existing().reporterId;

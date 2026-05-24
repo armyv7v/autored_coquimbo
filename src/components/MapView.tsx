@@ -14,6 +14,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../lib/firebase';
 import { useMapEvents } from 'react-leaflet';
+import { safeUUID } from '../lib/uuid';
 
 // Fix for default marker icons in Leaflet + React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -248,6 +249,7 @@ export default function MapView() {
     const [reportType, setReportType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
     const [reportDescription, setReportDescription] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState<string | null>(null);
     const [reportImage, setReportImage] = useState<File | null>(null);
     const [reportImagePreview, setReportImagePreview] = useState<string | null>(null);
 
@@ -295,7 +297,7 @@ export default function MapView() {
         const path = 'alerts';
         try {
             await addDoc(collection(db, path), {
-                id: crypto.randomUUID(),
+                id: safeUUID(),
                 incidentId: incident.id,
                 triggeredManually: true,
                 triggeredBy: profile?.uid || 'unknown',
@@ -353,16 +355,17 @@ export default function MapView() {
         if (!reportType || !reportLocation || !auth.currentUser) return;
 
         setIsSubmitting(true);
+        setError(null);
         try {
             let imageUrl = '';
             if (reportImage) {
-                const storageRef = ref(storage, `incidents/${crypto.randomUUID()}-${reportImage.name}`);
+                const storageRef = ref(storage, `incidents/${safeUUID()}-${reportImage.name}`);
                 const uploadResult = await uploadBytes(storageRef, reportImage);
                 imageUrl = await getDownloadURL(uploadResult.ref);
             }
 
             const geohash = getGeohash(reportLocation[0], reportLocation[1]);
-            const incidentId = crypto.randomUUID();
+            const incidentId = safeUUID();
             
             const incidentData = {
                 id: incidentId,
@@ -378,7 +381,7 @@ export default function MapView() {
 
             await setDoc(doc(db, 'incidents', incidentId), incidentData);
             
-            const alertId = crypto.randomUUID();
+            const alertId = safeUUID();
             await setDoc(doc(db, 'alerts', alertId), {
                 id: alertId,
                 incidentId: incidentId,
@@ -392,6 +395,17 @@ export default function MapView() {
             setReportImage(null);
             setReportImagePreview(null);
         } catch (err) {
+            console.error("Error in handleSubmitReport:", err);
+            if (err instanceof Error) {
+                try {
+                    const parsed = JSON.parse(err.message);
+                    setError(parsed.error || err.message);
+                } catch (_) {
+                    setError(err.message);
+                }
+            } else {
+                setError(String(err));
+            }
             handleFirestoreError(err, OperationType.WRITE, 'incidents');
         } finally {
             setIsSubmitting(false);
@@ -854,6 +868,16 @@ export default function MapView() {
                                     value={reportDescription}
                                     onChange={(e) => setReportDescription(e.target.value)}
                                 />
+
+                                {error && (
+                                    <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs">
+                                        <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
+                                        <div>
+                                            <p className="font-bold uppercase tracking-wider mb-1">Error al guardar reporte</p>
+                                            <p className="text-slate-400 font-medium leading-relaxed">{error}</p>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="flex gap-4">
                                     <div className="flex-1">
