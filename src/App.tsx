@@ -47,15 +47,29 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+import Footer from './components/Footer';
+import InteractiveNetworkWeb from './components/InteractiveNetworkWeb';
+
 function MainLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden">
-      <Navbar />
-      <main className="flex-1 overflow-hidden relative">
-        {children}
-        <FlashReport />
-        <NotificationManager />
-      </main>
+    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden relative">
+      {/* Background Interactive Cyber Network (Identical to Landing Page, placed in global background) */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-25">
+        <InteractiveNetworkWeb className="w-full h-full" interactive={false} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(2,6,23,0.85)_100%)]" />
+      </div>
+
+      <div className="relative z-10 flex flex-col h-full overflow-hidden">
+        <Navbar />
+        <main className="flex-1 overflow-hidden relative flex flex-col justify-between">
+          <div className="flex-1 overflow-y-auto">
+            {children}
+          </div>
+          <Footer />
+          <FlashReport />
+          <NotificationManager />
+        </main>
+      </div>
     </div>
   );
 }

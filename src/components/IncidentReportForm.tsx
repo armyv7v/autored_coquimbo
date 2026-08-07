@@ -166,8 +166,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   <ShieldAlert className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <h2 className="text-xl font-black text-white uppercase tracking-tight">Reportar Incidente</h2>
-                  <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Nueva Entrada de Seguridad</p>
+                  <h2 className="text-xl font-black text-white uppercase tracking-tight">REPORTE</h2>
+                  <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Robo / Sospechoso</p>
                 </div>
               </div>
               <button 
@@ -180,13 +180,11 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
               <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block">Tipo de Emergencia</label>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block">Pestañas de Selección Rápida</label>
+                <div className="grid grid-cols-2 gap-3">
                   {[
-                    { id: 'ROBO', label: 'Robo', color: 'bg-red-600', icon: ShieldAlert },
-                    { id: 'SOSPECHOSO', label: 'Sospechoso', color: 'bg-orange-600', icon: AlertTriangle },
-                    { id: 'MARCAJE', label: 'Marcaje', color: 'bg-blue-600', icon: MapPin },
-                    { id: 'OTRO', label: 'Otro', color: 'bg-slate-600', icon: Info }
+                    { id: 'ROBO', label: 'Robo / Asalto', color: 'bg-red-600', icon: ShieldAlert },
+                    { id: 'SOSPECHOSO', label: 'Sospechoso', color: 'bg-orange-600', icon: AlertTriangle }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -202,12 +200,43 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               </div>
 
               <div className="space-y-4">
-                <textarea
-                  placeholder="Describe lo ocurrido con detalles relevantes..."
-                  className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl p-4 text-white text-sm focus:outline-none focus:border-brand-primary transition-all min-h-[120px]"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
+                <div className="relative">
+                  <textarea
+                    placeholder="Escribe Aquí / Transcripción de Audio a Texto..."
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-2xl p-4 pr-12 text-white text-sm focus:outline-none focus:border-brand-primary transition-all min-h-[120px]"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    title="Nota de Voz / Transcribir Audio"
+                    onClick={() => {
+                      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+                      if (!SpeechRecognition) {
+                        alert("El navegador no soporta transcripción por voz directa. Puedes escribir el texto manualmente.");
+                        return;
+                      }
+                      const recognition = new SpeechRecognition();
+                      recognition.lang = 'es-CL';
+                      recognition.onstart = () => {
+                        setDescription((prev) => prev + " [Grabando...] ");
+                      };
+                      recognition.onresult = (event: any) => {
+                        const transcript = event.results[0][0].transcript;
+                        setDescription((prev) => prev.replace(" [Grabando...] ", "") + " " + transcript);
+                      };
+                      recognition.onerror = () => {
+                        setDescription((prev) => prev.replace(" [Grabando...] ", ""));
+                      };
+                      recognition.start();
+                    }}
+                    className="absolute right-3 bottom-4 p-2.5 rounded-xl bg-brand-primary/20 hover:bg-brand-primary border border-brand-primary/40 text-brand-primary hover:text-white transition-all active:scale-90"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+                    </svg>
+                  </button>
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                    <div className="relative">

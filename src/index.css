@@ -3,17 +3,139 @@
 @theme {
   --color-brand-primary: #FF5A1F;
   --color-brand-secondary: #0F172A;
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
   background-color: #020617;
   color: #f8fafc;
+  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+html, body, #root {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+}
+
+.font-display {
+  font-family: "Rajdhani", "Outfit", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dashboard-shell {
+  background:
+    radial-gradient(circle at 16% 8%, rgba(255, 90, 31, 0.13), transparent 28rem),
+    radial-gradient(circle at 86% 18%, rgba(14, 165, 233, 0.08), transparent 30rem),
+    linear-gradient(180deg, #070b14 0%, #040712 58%, #020617 100%);
+}
+
+.dashboard-shell::before {
+  content: "";
+  position: fixed;
+  inset: 72px 0 0;
+  pointer-events: none;
+  opacity: 0.075;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.48) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.48) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: linear-gradient(to bottom, black, transparent 78%);
+}
+
+.dashboard-shell::after,
+.auth-noise::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.065;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255,255,255,.12) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 80% 60%, rgba(255,255,255,.08) 0 1px, transparent 1.5px);
+  background-size: 22px 22px, 28px 28px;
+  mix-blend-mode: screen;
+}
+
+.panel-surface {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025)),
+    radial-gradient(circle at top, rgba(255, 90, 31, .08), transparent 38%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.06),
+    0 28px 60px rgba(0,0,0,.28);
+}
+
+.network-mark {
+  color: #f8fafc;
+  overflow: visible;
+  filter: drop-shadow(0 18px 34px rgba(255, 90, 31, 0.12));
+}
+
+.network-mark .network-web {
+  transform-origin: 110px 68px;
+  animation: web-breathe 7s ease-in-out infinite;
+}
+
+.network-mark .network-nodes circle {
+  filter: drop-shadow(0 0 10px rgba(255, 90, 31, 0.42));
+}
+
+.network-mark .network-core {
+  transform-origin: 110px 68px;
+  animation: core-pulse 2.8s ease-in-out infinite;
+}
+
+.cinematic-network-field,
+.cinematic-panel-mark {
+  display: none !important;
+}
+
+.brand-node-badge {
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.08),
+    0 18px 34px rgba(255, 90, 31, .08);
+}
+
+.map-command-shell {
+  background:
+    radial-gradient(circle at 8% 10%, rgba(255, 90, 31, 0.11), transparent 24rem),
+    radial-gradient(circle at 86% 90%, rgba(59, 130, 246, 0.12), transparent 24rem),
+    #020617;
+}
+
+.map-command-shell .leaflet-container {
+  filter: saturate(0.86) contrast(1.08);
+}
+
+.map-command-shell .leaflet-control-attribution {
+  background: rgba(2, 6, 23, 0.72) !important;
+  color: rgba(148, 163, 184, 0.78) !important;
+  border-radius: 0.75rem 0 0 0;
+  backdrop-filter: blur(12px);
+}
+
+.auth-input {
+  width: 100%;
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.72);
+  padding: 0.875rem 1rem 0.875rem 3rem;
+  color: white;
+  outline: none;
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.auth-input::placeholder {
+  color: rgba(148, 163, 184, 0.72);
+}
+
+.auth-input:focus {
+  border-color: rgba(255, 90, 31, 0.7);
+  background: rgba(15, 23, 42, 0.95);
+  box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.14);
 }
 
 /* Custom scrollbars for dark mode */
@@ -47,3 +169,111 @@ body {
 .alert-pulse {
   animation: alert-pulse 2s infinite;
 }
+
+.network-orb {
+  position: absolute;
+  width: 18rem;
+  height: 18rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 90, 31, 0.18);
+  background:
+    radial-gradient(circle, rgba(255, 90, 31, 0.16) 0 2px, transparent 3px),
+    radial-gradient(circle, rgba(255, 255, 255, 0.14) 0 1px, transparent 2px);
+  background-size: 74px 74px, 38px 38px;
+  box-shadow: inset 0 0 70px rgba(255, 90, 31, 0.08), 0 0 80px rgba(14, 165, 233, 0.06);
+  animation: network-drift 9s ease-in-out infinite;
+}
+
+.animation-delay-700 {
+  animation-delay: 700ms;
+}
+
+@keyframes network-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0.58; }
+  50% { transform: translate3d(12px, -18px, 0) rotate(8deg); opacity: 0.86; }
+}
+
+@keyframes web-breathe {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(1.018); opacity: 1; }
+}
+
+@keyframes core-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.92; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes cinematic-orbit {
+  from { transform: rotate(0deg) translate3d(0, 0, 0) scale(1.18); }
+  to { transform: rotate(360deg) translate3d(0, 0, 0) scale(1.18); }
+}
+
+@keyframes cinematic-float {
+  0%, 100% { opacity: 0.66; filter: drop-shadow(0 0 42px rgba(255,90,31,.18)); }
+  50% { opacity: 0.9; filter: drop-shadow(0 0 70px rgba(255,90,31,.28)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .network-orb,
+  .alert-pulse,
+  .network-mark .network-web,
+  .network-mark .network-core,
+  .cinematic-network-mark,
+  .cinematic-panel-mark {
+    animation: none;
+  }
+}
+
+/* Premium Taste-Skill Glassmorphism & Mobile UX Classes */
+.glass-modal-backdrop {
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  background-color: rgba(2, 6, 23, 0.82);
+}
+
+.glass-modal-container {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.94) 0%, rgba(7, 11, 20, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  border-radius: 1.5rem;
+}
+
+.glass-button-action {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 8px 24px rgba(0, 0, 0, 0.3);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  min-height: 52px;
+  touch-action: manipulation;
+}
+
+.glass-button-action:hover {
+  background: linear-gradient(180deg, rgba(255, 90, 31, 0.18) 0%, rgba(255, 90, 31, 0.08) 100%);
+  border-color: rgba(255, 90, 31, 0.5);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 12px 32px rgba(255, 90, 31, 0.25);
+  transform: translateY(-2px);
+}
+
+.glass-button-action:active {
+  transform: translateY(1px);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Alerta Máxima Button styling */
+.alerta-maxima-btn {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+  border: 2px solid rgba(254, 202, 202, 0.3);
+  box-shadow: 0 0 25px rgba(220, 38, 38, 0.6), inset 0 2px 4px rgba(255, 255, 255, 0.3);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.alerta-maxima-btn:hover {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 50%, #b91c1c 100%);
+  box-shadow: 0 0 40px rgba(239, 68, 68, 0.8), inset 0 2px 6px rgba(255, 255, 255, 0.4);
+  transform: scale(1.02);
+}
+
+.alerta-maxima-btn:active {
+  transform: scale(0.98);
+}
+

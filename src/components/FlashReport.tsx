@@ -9,6 +9,7 @@ import { getGeohash, COQUIMBO_CENTER } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
 import { safeUUID } from '../lib/uuid';
+import AlertConfirmationModal from './AlertConfirmationModal';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 
@@ -37,6 +38,7 @@ function MapPicker({ position, setPosition }: { position: [number, number], setP
 
 export default function FlashReport() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isCountdownOpen, setIsCountdownOpen] = useState(false);
   const [type, setType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -147,19 +149,14 @@ export default function FlashReport() {
     setError(null);
   };
 
+  useEffect(() => {
+    const handleOpen = () => setIsCountdownOpen(true);
+    window.addEventListener('open-flash-report', handleOpen);
+    return () => window.removeEventListener('open-flash-report', handleOpen);
+  }, []);
+
   return (
     <>
-      <motion.button
-        whileHover={{ scale: 1.1, rotate: 5 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={() => setIsOpen(true)}
-        className="fixed bottom-10 right-10 z-50 bg-red-600 hover:bg-red-700 text-white p-6 rounded-full shadow-[0_0_40px_rgba(220,38,38,0.5)] border-4 border-red-500/50 flex items-center justify-center alert-pulse overflow-hidden group"
-      >
-        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
-        <ShieldAlert className="w-8 h-8 relative z-10" />
-        <span className="ml-2 font-black tracking-tighter relative z-10 hidden md:inline">PANIC BUTTON</span>
-      </motion.button>
-
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -404,6 +401,15 @@ export default function FlashReport() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <AlertConfirmationModal 
+        isOpen={isCountdownOpen}
+        onClose={() => setIsCountdownOpen(false)}
+        onConfirm={() => {
+          setIsCountdownOpen(false);
+          setIsOpen(true);
+        }}
+      />
     </>
   );
 }

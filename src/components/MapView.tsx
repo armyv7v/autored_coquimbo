@@ -108,19 +108,19 @@ function ZoomControls() {
         <div className="flex flex-col gap-2">
             <button 
                 onClick={() => map.zoomIn()}
-                className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all shadow-lg hover:bg-slate-800"
+                className="p-3 bg-slate-950/85 border border-white/10 rounded-2xl text-slate-300 hover:text-white transition-all shadow-2xl hover:bg-slate-800/90 backdrop-blur-xl active:scale-95"
             >
                 <ZoomIn className="w-5 h-5" />
             </button>
             <button 
                 onClick={() => map.zoomOut()}
-                className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all shadow-lg hover:bg-slate-800"
+                className="p-3 bg-slate-950/85 border border-white/10 rounded-2xl text-slate-300 hover:text-white transition-all shadow-2xl hover:bg-slate-800/90 backdrop-blur-xl active:scale-95"
             >
                 <ZoomOut className="w-5 h-5" />
             </button>
             <button 
                 onClick={() => map.setView(COQUIMBO_CENTER, 14, { animate: true })}
-                className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-brand-primary transition-all shadow-lg hover:bg-slate-800"
+                className="p-3 bg-slate-950/85 border border-white/10 rounded-2xl text-slate-300 hover:text-brand-primary transition-all shadow-2xl hover:bg-slate-800/90 backdrop-blur-xl active:scale-95"
                 title="Recalibrar a Coquimbo"
             >
                 <Target className="w-5 h-5" />
@@ -158,8 +158,8 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
                 .filter(d => d.name.toLowerCase().includes(val.toLowerCase()))
                 .map(d => ({
                     display_name: d.name,
-                    lat: d.latitude ?? d.location?.lat,
-                    lon: d.longitude ?? d.location?.lng,
+                    lat: d.latitude ?? d.location?.lat ?? COQUIMBO_CENTER[0],
+                    lon: d.longitude ?? d.location?.lng ?? COQUIMBO_CENTER[1],
                     type: 'dealership',
                     id: d.id
                 }));
@@ -191,7 +191,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
 
     return (
         <div className="relative w-full">
-            <div className="flex items-center gap-2 bg-slate-900 border border-slate-800 rounded-2xl p-3 shadow-xl backdrop-blur-md">
+            <div className="flex items-center gap-3 bg-slate-950/88 border border-white/10 rounded-[1.35rem] p-3.5 shadow-2xl shadow-black/30 backdrop-blur-xl">
                 <Search className="w-4 h-4 text-slate-500" />
                 <input 
                     type="text" 
@@ -208,7 +208,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
                 )}
             </div>
             {results.length > 0 && (
-                <div className="absolute top-full mt-2 w-full bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden z-[2000] backdrop-blur-md">
+                <div className="absolute top-full mt-2 w-full bg-slate-950/95 border border-white/10 rounded-2xl shadow-2xl overflow-hidden z-[2000] backdrop-blur-xl">
                     {results.map((r, i) => (
                         <button
                             key={i}
@@ -218,7 +218,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
                             {r.type === 'dealership' ? <Building2 className="w-4 h-4 text-brand-primary" /> : <MapPin className="w-4 h-4 text-slate-500" />}
                             <div className="flex-1 min-w-0">
                                 <p className="text-[11px] font-bold text-white truncate group-hover:text-brand-primary transition-colors">{r.display_name}</p>
-                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">{r.type === 'dealership' ? 'Sede de Red' : 'Ubicación'}</p>
+                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">{r.type === 'dealership' ? 'Sede de red' : 'Ubicación'}</p>
                             </div>
                         </button>
                     ))}
@@ -432,7 +432,7 @@ export default function MapView() {
     };
 
     return (
-        <div className="h-full w-full relative">
+        <div className="map-command-shell h-full w-full relative overflow-hidden">
             <MapContainer 
                 center={COQUIMBO_CENTER} 
                 zoom={14} 
@@ -707,33 +707,33 @@ export default function MapView() {
             </MapContainer>
 
             {/* Top Controls: Layers & Filters */}
-            <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-3">
+            <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-3 max-w-[calc(100vw-2rem)]">
                 {/* Layer Toggles */}
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                     <button 
                         onClick={() => setShowHeatmap(!showHeatmap)}
-                        className={`p-3 rounded-xl shadow-lg border transition-all flex items-center gap-2 ${showHeatmap ? 'bg-brand-primary text-white border-brand-primary' : 'bg-slate-900 text-slate-400 border-slate-800'}`}
+                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${showHeatmap ? 'bg-brand-primary text-white border-brand-primary shadow-brand-primary/20' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
                     >
                         <Layers className="w-4 h-4" />
                         <span className="text-[10px] font-bold uppercase">Calor</span>
                     </button>
                     <button 
                         onClick={() => setShowMarkers(!showMarkers)}
-                        className={`p-3 rounded-xl shadow-lg border transition-all flex items-center gap-2 ${showMarkers ? 'bg-blue-600 text-white border-blue-600' : 'bg-slate-900 text-slate-400 border-slate-800'}`}
+                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${showMarkers ? 'bg-blue-600 text-white border-blue-500 shadow-blue-950/30' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
                     >
                         <MapPin className="w-4 h-4" />
                         <span className="text-[10px] font-bold uppercase">Puntos</span>
                     </button>
                     <button 
                         onClick={() => setIsReportingMode(!isReportingMode)}
-                        className={`p-3 rounded-xl shadow-lg border transition-all flex items-center gap-2 ${isReportingMode ? 'bg-red-600 text-white border-red-600 animate-pulse' : 'bg-slate-900 text-slate-400 border-slate-800'}`}
+                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${isReportingMode ? 'bg-red-600 text-white border-red-500 animate-pulse shadow-red-950/40' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
                     >
                         <Plus className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase">{isReportingMode ? 'Cancel Report' : 'Reportar Aquí'}</span>
+                        <span className="text-[10px] font-bold uppercase">{isReportingMode ? 'Cancelar reporte' : 'Reportar Aquí'}</span>
                     </button>
                     <button 
                         onClick={() => setShowDealerships(!showDealerships)}
-                        className={`p-3 rounded-xl shadow-lg border transition-all flex items-center gap-2 ${showDealerships ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-900 text-slate-400 border-slate-800'}`}
+                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${showDealerships ? 'bg-indigo-600 text-white border-indigo-500 shadow-indigo-950/30' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
                     >
                         <Building2 className="w-4 h-4" />
                         <span className="text-[10px] font-bold uppercase">Sedes</span>
@@ -741,7 +741,11 @@ export default function MapView() {
                 </div>
 
                 {/* Filters Panel */}
-                <div className="bg-slate-900/90 backdrop-blur-md border border-slate-800 p-4 rounded-2xl shadow-xl w-64 space-y-4">
+                <div className="bg-slate-950/86 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl shadow-black/30 w-72 space-y-4">
+                    <div>
+                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em]">filtros del mapa</p>
+                        <p className="text-xs text-slate-500 mt-1">Mostrá solo lo que importa para operar.</p>
+                    </div>
                     <div>
                         <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Filtrar por Tipo</p>
                         <div className="flex flex-wrap gap-2">
@@ -783,8 +787,8 @@ export default function MapView() {
             </div>
 
             {/* Legend Overlay */}
-            <div className="absolute top-4 right-4 bg-slate-900/90 backdrop-blur-md border border-slate-800 p-4 rounded-2xl shadow-xl z-[1000] w-64">
-                <h3 className="font-bold text-white mb-3 text-sm flex items-center gap-2">
+            <div className="absolute top-4 right-4 bg-slate-950/86 backdrop-blur-xl border border-white/10 p-5 rounded-[1.5rem] shadow-2xl shadow-black/30 z-[1000] w-72 hidden lg:block">
+                <h3 className="font-black text-white mb-3 text-sm flex items-center gap-2 tracking-tight">
                     <Info className="w-4 h-4 text-brand-primary" />
                     Inteligencia Geográfica
                 </h3>
@@ -807,6 +811,19 @@ export default function MapView() {
                         Visualización de puntos calientes basada en reportes de las últimas 24 horas.
                     </p>
                 </div>
+            </div>
+
+            <div className="absolute bottom-5 left-5 z-[1000] hidden md:grid grid-cols-3 gap-3">
+                {[
+                    { label: 'Incidentes visibles', value: filteredIncidents.length, tone: 'text-red-300' },
+                    { label: 'Locales en red', value: dealerships.length, tone: 'text-blue-300' },
+                    { label: 'Capas activas', value: [showHeatmap, showMarkers, showDealerships].filter(Boolean).length, tone: 'text-emerald-300' }
+                ].map(item => (
+                    <div key={item.label} className="min-w-36 rounded-2xl border border-white/10 bg-slate-950/86 p-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
+                        <p className="text-[9px] uppercase tracking-[0.26em] text-slate-500 font-black">{item.label}</p>
+                        <p className={`mt-1 text-3xl font-black tabular-nums ${item.tone}`}>{item.value}</p>
+                    </div>
+                ))}
             </div>
 
             {/* Reporting Modal Overlay */}
@@ -887,7 +904,7 @@ export default function MapView() {
                                             className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 cursor-pointer transition-all ${reportImagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400 shadow-lg shadow-emerald-900/20' : 'border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-600'}`}
                                         >
                                             <Camera className="w-4 h-4" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">{reportImagePreview ? 'Foto Lista' : 'Añadir Foto'}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-widest">{reportImagePreview ? 'Foto lista' : 'Añadir Foto'}</span>
                                         </label>
                                     </div>
                                     <button

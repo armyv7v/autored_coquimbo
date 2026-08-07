@@ -9,6 +9,11 @@ import { generateSecurityTip } from '../services/geminiService';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../hooks/useAuth';
 import IncidentReportForm from './IncidentReportForm';
+import RoadTestForm from './RoadTestForm';
+import InspectionForm from './InspectionForm';
+import StockAutomotoras from './StockAutomotoras';
+import BottomNavbar, { TabType } from './BottomNavbar';
+import { Route, Car, ShieldCheck } from 'lucide-react';
 
 interface Incident {
   id: string;
@@ -53,6 +58,10 @@ export default function Dashboard() {
   const [now, setNow] = useState(Date.now());
   const [openIncidentsCount, setOpenIncidentsCount] = useState(0);
   const [isReporting, setIsReporting] = useState(false);
+  const [isRoadTestOpen, setIsRoadTestOpen] = useState(false);
+  const [isInspectionOpen, setIsInspectionOpen] = useState(false);
+  const [isStockOpen, setIsStockOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabType>('PANEL');
   const { permission } = usePushNotifications();
   const { profile } = useAuth();
 
@@ -415,33 +424,124 @@ export default function Dashboard() {
         </motion.div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        {[
-          { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
-          { label: 'Incidentes Hoy', value: incidents.length, icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-          { label: 'Red Colaborativa', value: '48 Locales', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-          { label: 'Eficacia Red', value: '94%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' }
-        ].map((stat, idx) => (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: idx * 0.1 }}
-            key={stat.label}
-            className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 group hover:border-slate-700 transition-all cursor-default"
-          >
-            <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-              <stat.icon className="w-6 h-6" />
+      {/* PARTE CENTRAL (BOCETO 5): Máximo 4 opciones simples */}
+      {activeTab === 'PANEL' && (
+        <>
+          <section className="space-y-6">
+            <div className="text-center md:text-left">
+              <h2 className="font-display text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
+                Acciones Principales
+              </h2>
+              <p className="text-xs text-slate-400 font-medium">Selecciona una opción o realiza scroll suave para explorar la red</p>
             </div>
-            <div>
-              <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">{stat.label}</p>
-              <h3 className="text-xl font-bold text-white">{stat.value}</h3>
-            </div>
-          </motion.div>
-        ))}
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* 4 Opciones Simples en disposición vertical/grid móvil táctil */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* 1era Opcion: REPORTE Robo / Sospechoso */}
+              <button
+                type="button"
+                onClick={() => setIsReporting(true)}
+                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-red-500/30 bg-gradient-to-r from-red-950/40 to-slate-900/60 hover:from-red-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
+                    <ShieldAlert className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black text-white uppercase tracking-tight">REPORTE</p>
+                    <p className="text-[10px] text-red-300 font-bold uppercase tracking-wider">Robo / Sospechoso</p>
+                  </div>
+                </div>
+                <span className="text-xs font-black text-red-400 group-hover:translate-x-1 transition-transform">➔</span>
+              </button>
+
+              {/* 2da Opcion: PRUEBA EN RUTA */}
+              <button
+                type="button"
+                onClick={() => setIsRoadTestOpen(true)}
+                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-orange-500/30 bg-gradient-to-r from-orange-950/40 to-slate-900/60 hover:from-orange-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-600/20 border border-orange-500/40 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
+                    <Route className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black text-white uppercase tracking-tight">PRUEBA EN RUTA</p>
+                    <p className="text-[10px] text-orange-300 font-bold uppercase tracking-wider">Respaldo Previo</p>
+                  </div>
+                </div>
+                <span className="text-xs font-black text-orange-400 group-hover:translate-x-1 transition-transform">➔</span>
+              </button>
+
+              {/* 3era Opcion: Fiscalización */}
+              <button
+                type="button"
+                onClick={() => setIsInspectionOpen(true)}
+                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-blue-500/30 bg-gradient-to-r from-blue-950/40 to-slate-900/60 hover:from-blue-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
+                    <ShieldCheck className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black text-white uppercase tracking-tight">Fiscalización</p>
+                    <p className="text-[10px] text-blue-300 font-bold uppercase tracking-wider">Registro de Control</p>
+                  </div>
+                </div>
+                <span className="text-xs font-black text-blue-400 group-hover:translate-x-1 transition-transform">➔</span>
+              </button>
+
+              {/* 4ta Opcion: STOCK AUTOMOTORAS */}
+              <button
+                type="button"
+                onClick={() => setIsStockOpen(true)}
+                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 to-slate-900/60 hover:from-emerald-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
+                    <Car className="w-6 h-6" />
+                  </div>
+                  <div className="text-left">
+                    <p className="text-sm font-black text-white uppercase tracking-tight">STOCK AUTOMOTORAS</p>
+                    <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">Inventario Red</p>
+                  </div>
+                </div>
+                <span className="text-xs font-black text-emerald-400 group-hover:translate-x-1 transition-transform">➔</span>
+              </button>
+            </div>
+          </section>
+
+          {/* Stats Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
+              { label: 'Incidentes Hoy', value: incidents.length, icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-500/10' },
+              { label: 'Red Colaborativa', value: '48 Locales', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+              { label: 'Eficacia Red', value: '94%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' }
+            ].map((stat, idx) => (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                key={stat.label}
+                className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 group hover:border-slate-700 transition-all cursor-default"
+              >
+                <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
+                  <stat.icon className="w-6 h-6" />
+                </div>
+                <div>
+                  <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">{stat.label}</p>
+                  <h3 className="text-xl font-bold text-white">{stat.value}</h3>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </>
+      )}
+
+      {/* Intelligence Feed */}
+      {activeTab === 'FEED' && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Intelligence Feed */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-2">
@@ -721,9 +821,11 @@ export default function Dashboard() {
             </div>
         </div>
       </div>
+      )}
 
       {/* Chronological Timeline Section */}
-      <section className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-8 scroll-mt-24" id="timeline">
+      {activeTab === 'HISTORIAL' && (
+        <section className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-8 scroll-mt-24" id="timeline">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2 border-b border-slate-800">
           <div className="space-y-1">
             <h2 className="text-2xl font-black text-white flex items-center gap-3 tracking-tighter">
@@ -875,6 +977,7 @@ export default function Dashboard() {
           )}
         </div>
       </section>
+    )}
 
       {/* Incident Detail Modal */}
 
@@ -1135,6 +1238,27 @@ export default function Dashboard() {
       <IncidentReportForm 
         isOpen={isReporting} 
         onClose={() => setIsReporting(false)} 
+      />
+
+      <RoadTestForm 
+        isOpen={isRoadTestOpen} 
+        onClose={() => setIsRoadTestOpen(false)} 
+      />
+
+      <InspectionForm 
+        isOpen={isInspectionOpen} 
+        onClose={() => setIsInspectionOpen(false)} 
+      />
+
+      <StockAutomotoras 
+        isOpen={isStockOpen} 
+        onClose={() => setIsStockOpen(false)} 
+      />
+
+      <BottomNavbar 
+        activeTab={activeTab} 
+        setActiveTab={setActiveTab} 
+        onTriggerAlert={() => window.dispatchEvent(new CustomEvent('open-flash-report'))} 
       />
     </div>
   );
