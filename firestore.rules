@@ -32,6 +32,41 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // --- Public access requests ---
+    match /accessRequests/{rutKey} {
+      allow create: if request.resource.data.keys().hasAll([
+          'dealershipName',
+          'rut',
+          'rutKey',
+          'contactName',
+          'phone',
+          'email',
+          'requestedRole',
+          'status',
+          'createdAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'dealershipName',
+          'rut',
+          'rutKey',
+          'contactName',
+          'phone',
+          'email',
+          'requestedRole',
+          'status',
+          'createdAt'
+        ])
+        && request.resource.data.rutKey == rutKey
+        && request.resource.data.requestedRole == 'OWNER'
+        && request.resource.data.status == 'PENDING'
+        && request.resource.data.dealershipName is string
+        && request.resource.data.rut is string
+        && request.resource.data.contactName is string
+        && request.resource.data.phone is string
+        && request.resource.data.email is string;
+      allow get, list, update, delete: if isAdmin();
+    }
+
     // --- Incidents ---
     match /incidents/{incidentId} {
       allow get, list: if isSignedIn();
