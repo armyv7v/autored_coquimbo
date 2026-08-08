@@ -15,7 +15,7 @@ service cloud.firestore {
     match /users/{userId} {
       allow get: if isSignedIn();
       allow list: if isAdmin();
-      allow create: if isSignedIn() && request.auth.uid == userId && isValidUser(request.resource.data);
+      allow create: if isAdmin() || (isSignedIn() && request.auth.uid == userId && isValidUser(request.resource.data));
       allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin()) && isValidUser(request.resource.data);
       
       function isValidUser(data) {
@@ -34,13 +34,14 @@ service cloud.firestore {
 
     // --- Public access requests ---
     match /accessRequests/{rutKey} {
-      allow create: if request.resource.data.keys().hasAll([
+allow create: if request.resource.data.keys().hasAll([
           'dealershipName',
           'rut',
           'rutKey',
           'contactName',
           'phone',
           'email',
+          'address',
           'requestedRole',
           'status',
           'createdAt'
@@ -52,6 +53,7 @@ service cloud.firestore {
           'contactName',
           'phone',
           'email',
+          'address',
           'requestedRole',
           'status',
           'createdAt'
@@ -63,7 +65,8 @@ service cloud.firestore {
         && request.resource.data.rut is string
         && request.resource.data.contactName is string
         && request.resource.data.phone is string
-        && request.resource.data.email is string;
+        && request.resource.data.email is string
+        && request.resource.data.address is string;
       allow get, list, update, delete: if isAdmin();
     }
 

@@ -45,6 +45,15 @@ export default function Navbar() {
 
         {/* Right: Notifications & Logout */}
         <div className="flex items-center gap-2">
+          {profile?.role === 'ADMIN' && (
+            <button
+              onClick={() => navigate('/admin')}
+              className="p-2 rounded-2xl bg-brand-primary/15 border border-brand-primary/40 text-brand-primary hover:bg-brand-primary/25 active:scale-95 transition-all"
+              title="Panel de Administración"
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+          )}
           <button
             onClick={toggleNotifications}
             className={`p-2 rounded-2xl border transition-all relative active:scale-95 ${
