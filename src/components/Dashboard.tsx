@@ -1115,7 +1115,7 @@ export default function Dashboard() {
                     </div>
                   )}
 
-                  <div className="p-8 space-y-6">
+                  <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-3 h-3 rounded-full ${selectedIncident.type === 'ROBO' ? 'bg-red-500' : selectedIncident.type === 'SOSPECHOSO' ? 'bg-orange-500' : selectedIncident.type === 'MARCAJE' ? 'bg-blue-500' : 'bg-slate-500'}`} />

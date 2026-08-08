@@ -45,7 +45,7 @@ export default function AlertConfirmationModal({ isOpen, onClose, onConfirm }: A
           initial={{ scale: 0.85, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.85, y: 20 }}
-          className="bg-slate-900 border-2 border-red-500/50 w-full max-w-md rounded-[2.5rem] p-6 text-center shadow-2xl shadow-red-950/80 relative overflow-hidden"
+          className="bg-slate-900 border-2 border-red-500/50 w-full max-w-md rounded-[2.5rem] p-6 text-center shadow-2xl shadow-red-950/80 relative overflow-hidden max-h-[90vh] overflow-y-auto custom-scrollbar"
         >
           {/* Header Warning Icon */}
           <div className="w-16 h-16 mx-auto mb-3 rounded-full bg-red-600/20 border-2 border-red-500 flex items-center justify-center animate-bounce text-red-500">

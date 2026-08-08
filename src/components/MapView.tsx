@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
@@ -10,7 +10,7 @@ import { ShieldAlert, Info, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle
 import { COQUIMBO_CENTER, getGeohash } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
-import { motion, AnimatePresence } from 'motion/react';
+import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { storage } from '../lib/firebase';
 import { useMapEvents } from 'react-leaflet';
@@ -229,6 +229,111 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
 }
 
 const HEARTBEAT_THRESHOLD_MS = 10 * 60 * 1000; // 10 minutes
+
+// Perpetual status pulse (isolated → no parent re-render)
+function LayerStatusDot() {
+    return (
+        <span className="relative inline-flex h-1.5 w-1.5 shrink-0">
+            <span className="absolute inline-flex h-full w-full rounded-full bg-white opacity-70 animate-ping" />
+            <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-white" />
+        </span>
+    );
+}
+
+// Premium button: directional spotlight, spring tap, glass refraction, tinted active shadow
+function SpotlightButton({ active = false, color = 'brand', onClick, title, children, className = '' }: {
+    active?: boolean;
+    color?: 'brand' | 'blue' | 'indigo' | 'red' | 'slate';
+    onClick: () => void;
+    title?: string;
+    children: React.ReactNode;
+    className?: string;
+    key?: React.Key;
+}) {
+    const mx = useMotionValue(-999);
+    const my = useMotionValue(-999);
+    const spotOpacity = useSpring(0, { stiffness: 260, damping: 22 });
+    const spotBg = useMotionTemplate`radial-gradient(circle at ${mx}px ${my}px, rgba(255,255,255,0.18), transparent 70%)`;
+
+    const activeColor: Record<string, string> = {
+        brand: 'bg-brand-primary text-white border-brand-primary shadow-[0_14px_35px_-12px_rgba(255,90,31,0.55)]',
+        blue: 'bg-blue-600 text-white border-blue-500 shadow-[0_14px_35px_-12px_rgba(37,99,235,0.55)]',
+        indigo: 'bg-indigo-600 text-white border-indigo-500 shadow-[0_14px_35px_-12px_rgba(99,102,241,0.55)]',
+        red: 'bg-red-600 text-white border-red-500 shadow-[0_14px_35px_-12px_rgba(220,38,38,0.6)]',
+        slate: 'bg-slate-700 text-white border-slate-500 shadow-[0_14px_35px_-12px_rgba(100,116,139,0.4)]',
+    };
+
+    return (
+        <motion.button
+            onClick={onClick}
+            title={title}
+            className={`relative overflow-hidden rounded-xl border px-3 py-2.5 flex items-center gap-2 transition-all duration-300 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40 ${
+                active
+                    ? activeColor[color]
+                    : 'bg-slate-800/40 text-slate-300 border-white/10 hover:text-white hover:bg-slate-700/50 hover:border-white/20'
+            } ${className}`}
+            onMouseMove={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                mx.set(e.clientX - rect.left);
+                my.set(e.clientY - rect.top);
+                spotOpacity.set(1);
+            }}
+            onMouseLeave={() => spotOpacity.set(0)}
+        >
+            <motion.span
+                className="pointer-events-none absolute inset-0"
+                style={{
+                    backgroundImage: spotBg,
+                    opacity: spotOpacity,
+                    backgroundBlendMode: 'soft-light',
+                }}
+            />
+            <span className="relative z-10 flex items-center gap-2">{children}</span>
+        </motion.button>
+    );
+}
+
+// Magnetic "Controles" toggle (motion values → never re-renders parent)
+function MagneticControlsToggle({ open, onClick }: { open: boolean; onClick: () => void }) {
+    const ref = useRef<HTMLButtonElement>(null);
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const sx = useSpring(x, { stiffness: 160, damping: 14, mass: 0.15 });
+    const sy = useSpring(y, { stiffness: 160, damping: 14, mass: 0.15 });
+
+    const handleMove = (e: React.MouseEvent) => {
+        const el = ref.current;
+        if (!el) return;
+        const rect = el.getBoundingClientRect();
+        x.set((e.clientX - (rect.left + rect.width / 2)) * 0.25);
+        y.set((e.clientY - (rect.top + rect.height / 2)) * 0.25);
+    };
+
+    const reset = () => {
+        x.set(0);
+        y.set(0);
+    };
+
+    return (
+        <motion.button
+            ref={ref}
+            onClick={onClick}
+            onMouseMove={handleMove}
+            onMouseLeave={reset}
+            style={{ x: sx, y: sy }}
+            title={open ? 'Ocultar panel de control' : 'Mostrar panel de control'}
+            className={`relative overflow-hidden px-5 py-3 rounded-2xl font-black backdrop-blur-xl border transition-colors duration-300 active:scale-95 flex items-center gap-2 self-start shadow-2xl shadow-black/50 ${
+                open
+                    ? 'bg-slate-950/85 text-white border-brand-primary/50 shadow-brand-primary/15 text-brand-primary'
+                    : 'bg-slate-900/60 text-slate-300 border-white/10 hover:text-white hover:border-white/25'
+            }`}
+        >
+            <Settings2 className="w-4 h-4 text-brand-primary" />
+            <span className="text-[10px] font-black uppercase tracking-widest">Controles</span>
+            {open && <LayerStatusDot />}
+        </motion.button>
+    );
+}
 
 export default function MapView() {
     const [incidents, setIncidents] = useState<Incident[]>([]);
@@ -709,14 +814,7 @@ export default function MapView() {
 
             {/* Control Panel (unified, collapsible) */}
             <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-3 max-w-[calc(100vw-2rem)]">
-                <button
-                    onClick={() => setShowControls(!showControls)}
-                    className={`px-4 py-3 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all flex items-center gap-2 self-start active:scale-95 ${showControls ? 'bg-slate-950/86 text-white border-brand-primary/40 hover:bg-slate-800/90' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
-                    title={showControls ? 'Ocultar panel de control' : 'Mostrar panel de control'}
-                >
-                    <Settings2 className="w-4 h-4" />
-                    <span className="text-[10px] font-bold uppercase">Controles</span>
-                </button>
+                <MagneticControlsToggle open={showControls} onClick={() => setShowControls(!showControls)} />
 
                 <AnimatePresence>
                     {showControls && (
@@ -724,40 +822,53 @@ export default function MapView() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: 10 }}
-                            className="bg-slate-950/86 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl shadow-black/30 w-[19rem] max-w-[calc(100vw-2rem)] space-y-4"
+                            className="relative rounded-[1.5rem] p-px bg-gradient-to-b from-brand-primary/40 via-white/15 to-white/5 shadow-2xl shadow-black/50"
                         >
+                        <div className="bg-slate-950/90 backdrop-blur-xl rounded-[calc(1.5rem-1px)] p-4 w-[19rem] max-w-[calc(100vw-2rem)] space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                             {/* Capas */}
                             <div>
                                 <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Capas del Mapa</p>
                                 <div className="grid grid-cols-2 gap-2">
-                                    <button
+                                    <SpotlightButton
+                                        active={showHeatmap}
+                                        color="brand"
                                         onClick={() => setShowHeatmap(!showHeatmap)}
-                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${showHeatmap ? 'bg-brand-primary text-white border-brand-primary' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                        title={showHeatmap ? 'Ocultar capa de calor' : 'Mostrar capa de calor'}
                                     >
                                         <Layers className="w-3.5 h-3.5" />
                                         <span className="text-[9px] font-bold uppercase">Calor</span>
-                                    </button>
-                                    <button
+                                        {showHeatmap && <LayerStatusDot />}
+                                    </SpotlightButton>
+                                    <SpotlightButton
+                                        active={showMarkers}
+                                        color="blue"
                                         onClick={() => setShowMarkers(!showMarkers)}
-                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${showMarkers ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                        title={showMarkers ? 'Ocultar puntos' : 'Mostrar puntos'}
                                     >
                                         <MapPin className="w-3.5 h-3.5" />
                                         <span className="text-[9px] font-bold uppercase">Puntos</span>
-                                    </button>
-                                    <button
+                                        {showMarkers && <LayerStatusDot />}
+                                    </SpotlightButton>
+                                    <SpotlightButton
+                                        active={showDealerships}
+                                        color="indigo"
                                         onClick={() => setShowDealerships(!showDealerships)}
-                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${showDealerships ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                        title={showDealerships ? 'Ocultar sedes' : 'Mostrar sedes'}
                                     >
                                         <Building2 className="w-3.5 h-3.5" />
                                         <span className="text-[9px] font-bold uppercase">Sedes</span>
-                                    </button>
-                                    <button
+                                        {showDealerships && <LayerStatusDot />}
+                                    </SpotlightButton>
+                                    <SpotlightButton
+                                        active={isReportingMode}
+                                        color="red"
                                         onClick={() => setIsReportingMode(!isReportingMode)}
-                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${isReportingMode ? 'bg-red-600 text-white border-red-500 animate-pulse' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                        title={isReportingMode ? 'Cancelar reporte' : 'Reportar incidente'}
                                     >
                                         <Plus className="w-3.5 h-3.5" />
                                         <span className="text-[9px] font-bold uppercase">Reportar</span>
-                                    </button>
+                                        {isReportingMode && <LayerStatusDot />}
+                                    </SpotlightButton>
                                 </div>
                             </div>
 
@@ -821,6 +932,7 @@ export default function MapView() {
                                     </p>
                                 </div>
                             </div>
+                        </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -828,19 +940,22 @@ export default function MapView() {
 
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] hidden md:flex items-center gap-2">
                 {[
-                    { label: 'Incidentes', icon: ShieldAlert, value: filteredIncidents.length, tone: 'text-red-300', active: showMarkers, onClick: () => setShowMarkers(!showMarkers) },
-                    { label: 'Locales', icon: Building2, value: dealerships.length, tone: 'text-blue-300', active: showDealerships, onClick: () => setShowDealerships(!showDealerships) },
-                    { label: 'Capas', icon: Layers, value: [showHeatmap, showMarkers, showDealerships].filter(Boolean).length, tone: 'text-emerald-300', active: showHeatmap, onClick: () => setShowHeatmap(!showHeatmap) }
+                    { label: 'Incidentes', icon: ShieldAlert, value: filteredIncidents.length, tone: 'text-red-300', active: showMarkers, onClick: () => setShowMarkers(!showMarkers), color: 'red' as const },
+                    { label: 'Locales', icon: Building2, value: dealerships.length, tone: 'text-blue-300', active: showDealerships, onClick: () => setShowDealerships(!showDealerships), color: 'blue' as const },
+                    { label: 'Capas', icon: Layers, value: [showHeatmap, showMarkers, showDealerships].filter(Boolean).length, tone: 'text-emerald-300', active: showHeatmap, onClick: () => setShowHeatmap(!showHeatmap), color: 'brand' as const }
                 ].map(item => (
-                    <button
+                    <SpotlightButton
                         key={item.label}
+                        active={item.active}
+                        color={item.color}
                         onClick={item.onClick}
-                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 shadow-2xl shadow-black/30 backdrop-blur-xl transition-all active:scale-95 ${item.active ? 'border-white/15 bg-slate-950/86' : 'border-slate-700/40 bg-slate-950/60 opacity-70 hover:opacity-100'}`}
                         title={`${item.active ? 'Ocultar' : 'Mostrar'} ${item.label.toLowerCase()}`}
+                        className="rounded-xl px-4 py-2.5 backdrop-blur-xl shadow-2xl shadow-black/30"
                     >
                         <item.icon className={`w-4 h-4 ${item.tone}`} />
                         <p className={`text-base font-black tabular-nums leading-none ${item.tone}`}>{item.value}</p>
-                    </button>
+                        {item.active && <LayerStatusDot />}
+                    </SpotlightButton>
                 ))}
             </div>
 
@@ -874,7 +989,7 @@ export default function MapView() {
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSubmitReport} className="p-6 space-y-6">
+                            <form onSubmit={handleSubmitReport} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
                                 <div>
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Tipo de Incidente</label>
                                     <div className="grid grid-cols-2 gap-3">
