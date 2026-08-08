@@ -6,7 +6,7 @@ import 'leaflet.heat';
 import { useSearchParams } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
-import { ShieldAlert, Info, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight } from 'lucide-react';
+import { ShieldAlert, Info, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight, Settings2 } from 'lucide-react';
 import { COQUIMBO_CENTER, getGeohash } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
@@ -237,6 +237,7 @@ export default function MapView() {
     const [showHeatmap, setShowHeatmap] = useState(true);
     const [showMarkers, setShowMarkers] = useState(true);
     const [showDealerships, setShowDealerships] = useState(true);
+    const [showControls, setShowControls] = useState(false);
     const [alertingId, setAlertingId] = useState<string | null>(null);
     const [copyingId, setCopyingId] = useState<string | null>(null);
     const [searchParams] = useSearchParams();
@@ -706,123 +707,140 @@ export default function MapView() {
                 )})}
             </MapContainer>
 
-            {/* Top Controls: Layers & Filters */}
+            {/* Control Panel (unified, collapsible) */}
             <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-3 max-w-[calc(100vw-2rem)]">
-                {/* Layer Toggles */}
-                <div className="flex flex-wrap gap-2">
-                    <button 
-                        onClick={() => setShowHeatmap(!showHeatmap)}
-                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${showHeatmap ? 'bg-brand-primary text-white border-brand-primary shadow-brand-primary/20' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
-                    >
-                        <Layers className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase">Calor</span>
-                    </button>
-                    <button 
-                        onClick={() => setShowMarkers(!showMarkers)}
-                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${showMarkers ? 'bg-blue-600 text-white border-blue-500 shadow-blue-950/30' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
-                    >
-                        <MapPin className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase">Puntos</span>
-                    </button>
-                    <button 
-                        onClick={() => setIsReportingMode(!isReportingMode)}
-                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${isReportingMode ? 'bg-red-600 text-white border-red-500 animate-pulse shadow-red-950/40' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
-                    >
-                        <Plus className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase">{isReportingMode ? 'Cancelar reporte' : 'Reportar Aquí'}</span>
-                    </button>
-                    <button 
-                        onClick={() => setShowDealerships(!showDealerships)}
-                        className={`px-4 py-3 rounded-2xl shadow-2xl border transition-all flex items-center gap-2 backdrop-blur-xl active:scale-95 ${showDealerships ? 'bg-indigo-600 text-white border-indigo-500 shadow-indigo-950/30' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
-                    >
-                        <Building2 className="w-4 h-4" />
-                        <span className="text-[10px] font-bold uppercase">Sedes</span>
-                    </button>
-                </div>
+                <button
+                    onClick={() => setShowControls(!showControls)}
+                    className={`px-4 py-3 rounded-2xl shadow-2xl border backdrop-blur-xl transition-all flex items-center gap-2 self-start active:scale-95 ${showControls ? 'bg-slate-950/86 text-white border-brand-primary/40 hover:bg-slate-800/90' : 'bg-slate-950/82 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800/90'}`}
+                    title={showControls ? 'Ocultar panel de control' : 'Mostrar panel de control'}
+                >
+                    <Settings2 className="w-4 h-4" />
+                    <span className="text-[10px] font-bold uppercase">Controles</span>
+                </button>
 
-                {/* Filters Panel */}
-                <div className="bg-slate-950/86 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl shadow-black/30 w-72 space-y-4">
-                    <div>
-                        <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em]">filtros del mapa</p>
-                        <p className="text-xs text-slate-500 mt-1">Mostrá solo lo que importa para operar.</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Filtrar por Tipo</p>
-                        <div className="flex flex-wrap gap-2">
-                            {[
-                                { id: 'ROBO', label: 'Robo', color: 'border-red-500 text-red-500' },
-                                { id: 'SOSPECHOSO', label: 'Sospechoso', color: 'border-orange-500 text-orange-500' },
-                                { id: 'MARCAJE', label: 'Marcaje', color: 'border-blue-500 text-blue-500' }
-                            ].map(t => (
-                                <button
-                                    key={t.id}
-                                    onClick={() => toggleFilter(filterTypes, setFilterTypes, t.id)}
-                                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase transition-all border ${filterTypes.includes(t.id) ? t.color : 'border-slate-800 text-slate-600 bg-slate-800/20'}`}
-                                >
-                                    {t.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+                <AnimatePresence>
+                    {showControls && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: 10 }}
+                            className="bg-slate-950/86 backdrop-blur-xl border border-white/10 p-4 rounded-[1.5rem] shadow-2xl shadow-black/30 w-[19rem] max-w-[calc(100vw-2rem)] space-y-4"
+                        >
+                            {/* Capas */}
+                            <div>
+                                <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Capas del Mapa</p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button
+                                        onClick={() => setShowHeatmap(!showHeatmap)}
+                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${showHeatmap ? 'bg-brand-primary text-white border-brand-primary' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                    >
+                                        <Layers className="w-3.5 h-3.5" />
+                                        <span className="text-[9px] font-bold uppercase">Calor</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setShowMarkers(!showMarkers)}
+                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${showMarkers ? 'bg-blue-600 text-white border-blue-500' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                    >
+                                        <MapPin className="w-3.5 h-3.5" />
+                                        <span className="text-[9px] font-bold uppercase">Puntos</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setShowDealerships(!showDealerships)}
+                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${showDealerships ? 'bg-indigo-600 text-white border-indigo-500' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                    >
+                                        <Building2 className="w-3.5 h-3.5" />
+                                        <span className="text-[9px] font-bold uppercase">Sedes</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setIsReportingMode(!isReportingMode)}
+                                        className={`px-3 py-2.5 rounded-xl shadow-2xl border transition-all flex items-center gap-2 active:scale-95 ${isReportingMode ? 'bg-red-600 text-white border-red-500 animate-pulse' : 'bg-slate-800/50 text-slate-400 border-white/10 hover:text-white hover:bg-slate-800'}`}
+                                    >
+                                        <Plus className="w-3.5 h-3.5" />
+                                        <span className="text-[9px] font-bold uppercase">Reportar</span>
+                                    </button>
+                                </div>
+                            </div>
 
-                    <div className="pt-3 border-t border-slate-800">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Estado del Reporte</p>
-                        <div className="flex flex-wrap gap-2">
-                            {[
-                                { id: 'OPEN', label: 'Abierto' },
-                                { id: 'RESOLVED', label: 'Resuelto' },
-                                { id: 'FALSE_ALARM', label: 'Falsa Alarma' }
-                            ].map(s => (
-                                <button
-                                    key={s.id}
-                                    onClick={() => toggleFilter(filterStatus, setFilterStatus, s.id)}
-                                    className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase transition-all ${filterStatus.includes(s.id) ? 'bg-slate-700 text-white border-slate-600' : 'text-slate-600 border-slate-800 bg-slate-800/20'} border`}
-                                >
-                                    {s.label}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                </div>
+                            {/* Filtros */}
+                            <div className="pt-3 border-t border-slate-800">
+                                <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Filtrar por Tipo</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { id: 'ROBO', label: 'Robo', color: 'border-red-500 text-red-500' },
+                                        { id: 'SOSPECHOSO', label: 'Sospechoso', color: 'border-orange-500 text-orange-500' },
+                                        { id: 'MARCAJE', label: 'Marcaje', color: 'border-blue-500 text-blue-500' }
+                                    ].map(t => (
+                                        <button
+                                            key={t.id}
+                                            onClick={() => toggleFilter(filterTypes, setFilterTypes, t.id)}
+                                            className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase transition-all border ${filterTypes.includes(t.id) ? t.color : 'border-slate-800 text-slate-600 bg-slate-800/20'}`}
+                                        >
+                                            {t.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-slate-800">
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Estado del Reporte</p>
+                                <div className="flex flex-wrap gap-2">
+                                    {[
+                                        { id: 'OPEN', label: 'Abierto' },
+                                        { id: 'RESOLVED', label: 'Resuelto' },
+                                        { id: 'FALSE_ALARM', label: 'Falsa Alarma' }
+                                    ].map(s => (
+                                        <button
+                                            key={s.id}
+                                            onClick={() => toggleFilter(filterStatus, setFilterStatus, s.id)}
+                                            className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase transition-all ${filterStatus.includes(s.id) ? 'bg-slate-700 text-white border-slate-600' : 'text-slate-600 border-slate-800 bg-slate-800/20'} border`}
+                                        >
+                                            {s.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Leyenda */}
+                            <div className="pt-3 border-t border-slate-800">
+                                <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Leyenda</p>
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-3 h-3 rounded-full bg-blue-500/40 border border-blue-500"></div>
+                                        <span className="text-xs text-slate-300 font-medium">Automotora Protegida</span>
+                                    </div>
+                                    <div className="flex flex-col gap-1">
+                                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Gradiente de Densidad</span>
+                                        <div className="h-2 w-full rounded-full bg-gradient-to-r from-blue-500 via-lime-500 to-red-500"></div>
+                                        <div className="flex justify-between text-[8px] text-slate-500 font-mono">
+                                            <span>BAJA</span>
+                                            <span>CRÍTICA</span>
+                                        </div>
+                                    </div>
+                                    <p className="text-[10px] text-slate-500 leading-tight pt-1">
+                                        Visualización de puntos calientes basada en reportes de las últimas 24 horas.
+                                    </p>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
 
-            {/* Legend Overlay */}
-            <div className="absolute top-4 right-4 bg-slate-950/86 backdrop-blur-xl border border-white/10 p-5 rounded-[1.5rem] shadow-2xl shadow-black/30 z-[1000] w-72 hidden lg:block">
-                <h3 className="font-black text-white mb-3 text-sm flex items-center gap-2 tracking-tight">
-                    <Info className="w-4 h-4 text-brand-primary" />
-                    Inteligencia Geográfica
-                </h3>
-                <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                        <div className="w-3 h-3 rounded-full bg-blue-500/40 border border-blue-500"></div>
-                        <span className="text-xs text-slate-300 font-medium">Automotora Protegida</span>
-                    </div>
-                    <div className="flex flex-col gap-1">
-                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Gradiente de Densidad</span>
-                        <div className="h-2 w-full rounded-full bg-gradient-to-r from-blue-500 via-lime-500 to-red-500"></div>
-                        <div className="flex justify-between text-[8px] text-slate-500 font-mono">
-                            <span>BAJA</span>
-                            <span>CRÍTICA</span>
-                        </div>
-                    </div>
-                </div>
-                <div className="mt-4 pt-4 border-t border-slate-800">
-                    <p className="text-[10px] text-slate-500 leading-tight">
-                        Visualización de puntos calientes basada en reportes de las últimas 24 horas.
-                    </p>
-                </div>
-            </div>
-
-            <div className="absolute bottom-5 left-5 z-[1000] hidden md:grid grid-cols-3 gap-3">
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] hidden md:flex items-center gap-2">
                 {[
-                    { label: 'Incidentes visibles', value: filteredIncidents.length, tone: 'text-red-300' },
-                    { label: 'Locales en red', value: dealerships.length, tone: 'text-blue-300' },
-                    { label: 'Capas activas', value: [showHeatmap, showMarkers, showDealerships].filter(Boolean).length, tone: 'text-emerald-300' }
+                    { label: 'Incidentes', icon: ShieldAlert, value: filteredIncidents.length, tone: 'text-red-300', active: showMarkers, onClick: () => setShowMarkers(!showMarkers) },
+                    { label: 'Locales', icon: Building2, value: dealerships.length, tone: 'text-blue-300', active: showDealerships, onClick: () => setShowDealerships(!showDealerships) },
+                    { label: 'Capas', icon: Layers, value: [showHeatmap, showMarkers, showDealerships].filter(Boolean).length, tone: 'text-emerald-300', active: showHeatmap, onClick: () => setShowHeatmap(!showHeatmap) }
                 ].map(item => (
-                    <div key={item.label} className="min-w-36 rounded-2xl border border-white/10 bg-slate-950/86 p-4 shadow-2xl shadow-black/30 backdrop-blur-xl">
-                        <p className="text-[9px] uppercase tracking-[0.26em] text-slate-500 font-black">{item.label}</p>
-                        <p className={`mt-1 text-3xl font-black tabular-nums ${item.tone}`}>{item.value}</p>
-                    </div>
+                    <button
+                        key={item.label}
+                        onClick={item.onClick}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 shadow-2xl shadow-black/30 backdrop-blur-xl transition-all active:scale-95 ${item.active ? 'border-white/15 bg-slate-950/86' : 'border-slate-700/40 bg-slate-950/60 opacity-70 hover:opacity-100'}`}
+                        title={`${item.active ? 'Ocultar' : 'Mostrar'} ${item.label.toLowerCase()}`}
+                    >
+                        <item.icon className={`w-4 h-4 ${item.tone}`} />
+                        <p className={`text-base font-black tabular-nums leading-none ${item.tone}`}>{item.value}</p>
+                    </button>
                 ))}
             </div>
 
