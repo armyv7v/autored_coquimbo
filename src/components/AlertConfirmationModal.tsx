@@ -39,8 +39,9 @@ export default function AlertConfirmationModal({ isOpen, onClose, onConfirm }: A
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl select-none"
+        className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/90 backdrop-blur-xl select-none"
       >
+        <div className="min-h-full flex items-center justify-center p-4">
         <motion.div
           initial={{ scale: 0.85, y: 20 }}
           animate={{ scale: 1, y: 0 }}
@@ -104,6 +105,7 @@ export default function AlertConfirmationModal({ isOpen, onClose, onConfirm }: A
             </button>
           </div>
         </motion.div>
+        </div>
       </motion.div>
     </AnimatePresence>
   );

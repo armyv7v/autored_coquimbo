@@ -163,14 +163,15 @@ export default function FlashReport() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
+            className="fixed inset-0 z-[60] overflow-y-auto bg-slate-950/90 backdrop-blur-md"
           >
+            <div className="min-h-full flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.8, y: 50, rotateX: 20 }}
               animate={{ scale: 1, y: 0, rotateX: 0 }}
               exit={{ scale: 0.8, y: 50, rotateX: 20 }}
               transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] flex flex-col max-h-[90vh] overflow-hidden shadow-[0_20px_100px_-20px_rgba(220,38,38,0.3)] relative"
+              className="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] flex flex-col max-h-[92vh] overflow-hidden shadow-[0_20px_100px_-20px_rgba(220,38,38,0.3)] relative"
               id="flash-report-panel"
             >
               {/* Premium Glow Effect */}
@@ -195,7 +196,7 @@ export default function FlashReport() {
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 flex-1 overflow-y-auto custom-scrollbar">
+              <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                 <div>
                   <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block pl-1">Seleccionar Emergencia</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -398,6 +399,7 @@ export default function FlashReport() {
                 )}
               </AnimatePresence>
             </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

@@ -53,13 +53,14 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[2150] flex items-center justify-center bg-slate-950/92 p-3 backdrop-blur-md sm:p-5"
+          className="fixed inset-0 z-[2150] overflow-y-auto bg-slate-950/92 p-3 backdrop-blur-md sm:p-5"
         >
+          <div className="min-h-full flex items-center justify-center">
           <motion.section
             initial={{ opacity: 0, y: 34, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 34, scale: 0.97 }}
-            className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2.4rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50"
+            className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2.4rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50 max-h-[92vh]"
           >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(255,90,31,.18),transparent_34%),radial-gradient(circle_at_100%_10%,rgba(14,165,233,.13),transparent_30%)]" />
             <header className="relative flex items-center justify-between border-b border-white/10 p-5 sm:p-6">
@@ -134,6 +135,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
               Sistema de calificación entre partes: si una automotora muestra interés, el vehículo pasa a estado “en negociación” por 48 horas. Si no hay respuesta, se notifica para confirmar el estado actual.
             </footer>
           </motion.section>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

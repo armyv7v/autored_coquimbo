@@ -152,13 +152,14 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
+          className="fixed inset-0 z-[2000] overflow-y-auto bg-slate-950/90 backdrop-blur-md"
         >
+          <div className="min-h-full flex items-center justify-center p-4">
           <motion.div
             initial={{ scale: 0.9, y: 50 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.9, y: 50 }}
-            className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl relative"
+            className="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-[2.5rem] overflow-hidden shadow-2xl relative flex flex-col max-h-[95vh]"
           >
             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
               <div className="flex items-center gap-3">
@@ -178,7 +179,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               </button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+            <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
               <div>
                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block">Pestañas de Selección Rápida</label>
                 <div className="grid grid-cols-2 gap-3">
@@ -341,6 +342,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               )}
             </AnimatePresence>
           </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

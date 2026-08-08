@@ -77,13 +77,14 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[2200] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[2200] overflow-y-auto bg-slate-950/90 p-4 backdrop-blur-md"
         >
+          <div className="min-h-full flex items-center justify-center">
           <motion.div
             initial={{ opacity: 0, y: 42, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 42, scale: 0.96 }}
-            className="relative w-full max-w-xl overflow-hidden rounded-[2.35rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50"
+            className="relative w-full max-w-xl overflow-hidden rounded-[2.35rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50 flex flex-col max-h-[95vh]"
           >
             <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(16,185,129,.17),transparent_36%),radial-gradient(circle_at_95%_110%,rgba(255,90,31,.12),transparent_32%)]" />
             <header className="relative flex items-center justify-between border-b border-white/10 p-5 sm:p-6">
@@ -96,7 +97,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
               </button>
             </header>
 
-            <div className="relative max-h-[78vh] space-y-5 overflow-y-auto p-5 sm:p-6">
+            <div className="relative flex-1 min-h-0 space-y-5 overflow-y-auto p-5 sm:p-6">
               <div className="rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-xs leading-5 text-red-100">
                 <strong className="block text-[10px] uppercase tracking-[.28em] text-red-200 mb-1">Nota</strong>
                 Selecciona todas las entidades que te fiscalizaron y alerta a las demás automotoras para que estén preparadas. Puedes elegir más de una opción simultáneamente.
@@ -167,6 +168,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
               )}
             </div>
           </motion.div>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>

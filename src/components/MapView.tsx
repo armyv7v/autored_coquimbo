@@ -966,13 +966,14 @@ export default function MapView() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[2000] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm"
+                        className="fixed inset-0 z-[2000] overflow-y-auto bg-slate-950/80 backdrop-blur-sm"
                     >
+                        <div className="min-h-full flex items-center justify-center p-4">
                         <motion.div
                             initial={{ scale: 0.9, y: 20 }}
                             animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
-                            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-[2rem] overflow-hidden shadow-2xl space-y-6"
+                            className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-[2rem] overflow-hidden shadow-2xl space-y-6 flex flex-col max-h-[92vh]"
                         >
                             <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-slate-900/50">
                                 <div className="flex items-center gap-3">
@@ -989,7 +990,7 @@ export default function MapView() {
                                 </button>
                             </div>
 
-                            <form onSubmit={handleSubmitReport} className="p-6 space-y-6 max-h-[80vh] overflow-y-auto custom-scrollbar">
+                            <form onSubmit={handleSubmitReport} className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                                 <div>
                                     <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Tipo de Incidente</label>
                                     <div className="grid grid-cols-2 gap-3">
@@ -1051,6 +1052,7 @@ export default function MapView() {
                                 </div>
                             </form>
                         </motion.div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

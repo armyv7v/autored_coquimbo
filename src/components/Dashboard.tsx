@@ -987,18 +987,19 @@ export default function Dashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-md"
+            className="fixed inset-0 z-[100] overflow-y-auto bg-slate-950/90 backdrop-blur-md"
             onClick={() => { setSelectedIncident(null); setIsEditing(false); }}
           >
+            <div className="min-h-full flex items-center justify-center p-4">
             <motion.div
               initial={{ scale: 0.9, y: 20 }}
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.9, y: 20 }}
-              className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-[2rem] overflow-hidden shadow-2xl relative"
+              className="bg-slate-900 border border-white/10 w-full max-w-lg rounded-[2rem] overflow-hidden shadow-2xl relative flex flex-col max-h-[94vh]"
               onClick={(e) => e.stopPropagation()}
             >
               {isEditing ? (
-                <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                <div className="p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                   <div className="flex items-center gap-4">
                     <div className="bg-brand-primary p-2.5 rounded-2xl shadow-lg shadow-brand-primary/40 rotate-3 animate-pulse">
                       <Camera className="w-6 h-6 text-white" />
@@ -1115,7 +1116,7 @@ export default function Dashboard() {
                     </div>
                   )}
 
-                  <div className="p-8 space-y-6 max-h-[90vh] overflow-y-auto custom-scrollbar">
+                  <div className="p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-3 h-3 rounded-full ${selectedIncident.type === 'ROBO' ? 'bg-red-500' : selectedIncident.type === 'SOSPECHOSO' ? 'bg-orange-500' : selectedIncident.type === 'MARCAJE' ? 'bg-blue-500' : 'bg-slate-500'}`} />
@@ -1231,6 +1232,7 @@ export default function Dashboard() {
                 </>
               )}
             </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>

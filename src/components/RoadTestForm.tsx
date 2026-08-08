@@ -96,14 +96,15 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[2100] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[2100] overflow-y-auto bg-slate-950/90 p-4 backdrop-blur-md"
         >
+          <div className="min-h-full flex items-center justify-center">
           <motion.form
             onSubmit={submit}
             initial={{ opacity: 0, y: 42, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 42, scale: 0.96 }}
-            className="relative w-full max-w-xl overflow-hidden rounded-[2.35rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50"
+            className="relative w-full max-w-xl overflow-hidden rounded-[2.35rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50 flex flex-col max-h-[95vh]"
           >
             <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_15%_0%,rgba(255,90,31,.18),transparent_36%),radial-gradient(circle_at_90%_110%,rgba(14,165,233,.12),transparent_36%)]" />
             <header className="relative flex items-center justify-between border-b border-white/10 p-5 sm:p-6">
@@ -121,7 +122,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
               </button>
             </header>
 
-            <div className="relative max-h-[78vh] space-y-5 overflow-y-auto p-5 sm:p-6">
+            <div className="relative flex-1 min-h-0 space-y-5 overflow-y-auto p-5 sm:p-6">
               <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-xs leading-5 text-red-100">
                 <strong className="block text-[10px] uppercase font-black tracking-[.28em] text-red-200 mb-1">NOTAS</strong>
                 Cada Prueba en Ruta queda registrada por seguridad y respaldo en caso de algún imprevisto.
@@ -198,6 +199,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
               </button>
             </div>
           </motion.form>
+          </div>
         </motion.div>
       )}
     </AnimatePresence>
