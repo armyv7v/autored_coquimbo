@@ -168,7 +168,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 </div>
                 <div>
                   <h2 className="text-xl font-black text-white uppercase tracking-tight">REPORTE</h2>
-                  <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">Robo / Sospechoso</p>
+                  <p className="text-slate-400 text-xs uppercase font-bold tracking-widest">Robo / Sospechoso</p>
                 </div>
               </div>
               <button 
@@ -181,7 +181,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
 
             <form onSubmit={handleSubmit} className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
               <div>
-                <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block">Pestañas de Selección Rápida</label>
+                <label className="text-xs font-black text-slate-400 uppercase tracking-[0.25em] mb-3 block">Pestañas de Selección Rápida</label>
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { id: 'ROBO', label: 'Robo / Asalto', color: 'bg-red-600', icon: ShieldAlert },
@@ -191,10 +191,10 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       key={item.id}
                       type="button"
                       onClick={() => setType(item.id as any)}
-                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${type === item.id ? `border-white/50 ${item.color} text-white` : 'border-slate-800 bg-slate-800/50 text-slate-500 hover:border-slate-700'}`}
+                      className={`p-4 rounded-2xl border-2 transition-all flex flex-col items-center gap-2 ${type === item.id ? `border-white/50 ${item.color} text-white` : 'border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-700'}`}
                     >
                       <item.icon className="w-6 h-6" />
-                      <span className="text-[9px] font-bold uppercase tracking-widest">{item.label}</span>
+                      <span className="text-[11px] font-bold uppercase tracking-widest">{item.label}</span>
                     </button>
                   ))}
                 </div>
@@ -251,7 +251,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     <button 
                       type="button" 
                       onClick={() => fileInputRef.current?.click()}
-                      className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 transition-all text-[10px] font-black uppercase tracking-widest ${imagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
+                      className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 transition-all text-xs font-black uppercase tracking-widest ${imagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
                     >
                       <Camera className="w-4 h-4" />
                       {imagePreview ? 'Foto Lista' : 'Subir Foto'}
@@ -261,7 +261,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   <button 
                     type="button" 
                     onClick={() => setPickingLocation(true)}
-                    className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 transition-all text-[10px] font-black uppercase tracking-widest ${usingGps ? 'bg-blue-600/20 border-blue-500/50 text-blue-400' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
+                    className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 transition-all text-xs font-black uppercase tracking-widest ${usingGps ? 'bg-blue-600/20 border-blue-500/50 text-blue-400' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
                   >
                     <MapPin className="w-4 h-4" />
                     {usingGps ? 'Punto Fijado' : 'Ubicación'}

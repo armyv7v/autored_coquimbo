@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { auth } from './lib/firebase';
@@ -15,6 +15,8 @@ import MapView from './components/MapView';
 import Navbar from './components/Navbar';
 import FlashReport from './components/FlashReport';
 import NotificationManager from './components/NotificationManager';
+import BottomNavbar from './components/BottomNavbar';
+import { TabType } from './lib/navigation';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
@@ -47,10 +49,16 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
-import Footer from './components/Footer';
 import InteractiveNetworkWeb from './components/InteractiveNetworkWeb';
 
-function MainLayout({ children }: { children: React.ReactNode }) {
+interface MainLayoutProps {
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
+  onTriggerAlert: () => void;
+  children: React.ReactNode;
+}
+
+function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainLayoutProps) {
   return (
     <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden relative">
       {/* Background Interactive Cyber Network (Identical to Landing Page, placed in global background) */}
@@ -60,21 +68,27 @@ function MainLayout({ children }: { children: React.ReactNode }) {
       </div>
 
       <div className="relative z-10 flex flex-col h-full overflow-hidden">
-        <Navbar />
-        <main className="flex-1 overflow-hidden relative flex flex-col justify-between">
-          <div className="flex-1 overflow-y-auto">
+        <Navbar activeTab={activeTab} setActiveTab={setActiveTab} onTriggerAlert={onTriggerAlert} />
+        <main className="flex-1 overflow-hidden relative">
+          <div className="h-full overflow-y-auto pb-28 md:pb-0">
             {children}
           </div>
-          <Footer />
           <FlashReport />
           <NotificationManager />
         </main>
+        <BottomNavbar activeTab={activeTab} setActiveTab={setActiveTab} onTriggerAlert={onTriggerAlert} />
       </div>
     </div>
   );
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<TabType>('PANEL');
+
+  const handleTriggerAlert = () => {
+    window.dispatchEvent(new CustomEvent('open-flash-report'));
+  };
+
   return (
     <AuthProvider>
       <BrowserRouter>
@@ -86,14 +100,22 @@ export default function App() {
           } />
           <Route path="/" element={
             <ProtectedRoute>
-              <MainLayout>
-                <Dashboard />
+              <MainLayout
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                onTriggerAlert={handleTriggerAlert}
+              >
+                <Dashboard activeTab={activeTab} setActiveTab={setActiveTab} />
               </MainLayout>
             </ProtectedRoute>
           } />
           <Route path="/map" element={
             <ProtectedRoute>
-              <MainLayout>
+              <MainLayout
+                activeTab={activeTab}
+                setActiveTab={setActiveTab}
+                onTriggerAlert={handleTriggerAlert}
+              >
                 <MapView />
               </MainLayout>
             </ProtectedRoute>
@@ -101,7 +123,11 @@ export default function App() {
           <Route path="/admin" element={
             <ProtectedRoute>
               <AdminRoute>
-                <MainLayout>
+                <MainLayout
+                  activeTab={activeTab}
+                  setActiveTab={setActiveTab}
+                  onTriggerAlert={handleTriggerAlert}
+                >
                   <AdminDashboard />
                 </MainLayout>
               </AdminRoute>

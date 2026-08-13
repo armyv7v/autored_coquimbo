@@ -38,7 +38,7 @@ function MapPicker({ position, setPosition }: { position: [number, number], setP
 
 export default function FlashReport() {
   const [isOpen, setIsOpen] = useState(false);
-  const [isCountdownOpen, setIsCountdownOpen] = useState(false);
+  const [showAlertConfirm, setShowAlertConfirm] = useState(false);
   const [type, setType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
@@ -150,7 +150,7 @@ export default function FlashReport() {
   };
 
   useEffect(() => {
-    const handleOpen = () => setIsCountdownOpen(true);
+    const handleOpen = () => setShowAlertConfirm(true);
     window.addEventListener('open-flash-report', handleOpen);
     return () => window.removeEventListener('open-flash-report', handleOpen);
   }, []);
@@ -185,7 +185,7 @@ export default function FlashReport() {
                   </div>
                   <div>
                     <h2 className="text-xl font-black text-white tracking-tight">ALERTA FLASH</h2>
-                    <p className="text-red-400/60 text-[9px] font-bold uppercase tracking-[0.2em]">Red de Seguridad Coquimbo</p>
+                    <p className="text-red-400/90 text-[11px] font-bold uppercase tracking-[0.2em]">Red de Seguridad Coquimbo</p>
                   </div>
                 </div>
                 <button 
@@ -198,7 +198,7 @@ export default function FlashReport() {
 
               <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                 <div>
-                  <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-3 block pl-1">Seleccionar Emergencia</label>
+                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] mb-3 block pl-1">Seleccionar Emergencia</label>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {[
                       { id: 'ROBO', label: 'Robo / Asalto', color: 'bg-red-600', icon: ShieldAlert },
@@ -210,10 +210,10 @@ export default function FlashReport() {
                         key={item.id}
                         type="button"
                         onClick={() => setType(item.id as any)}
-                        className={`group p-4 rounded-[1.5rem] border transition-all flex flex-col items-center gap-2.5 relative overflow-hidden ${type === item.id ? `border-white/30 ${item.color} text-white scale-105 shadow-lg` : 'border-white/5 bg-white/5 text-slate-500 hover:border-white/20 hover:bg-white/10'}`}
+                        className={`group p-4 rounded-[1.5rem] border transition-all flex flex-col items-center gap-2.5 relative overflow-hidden ${type === item.id ? `border-white/30 ${item.color} text-white scale-105 shadow-lg` : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}`}
                       >
-                        <item.icon className={`w-7 h-7 transition-transform group-hover:rotate-12 ${type === item.id ? 'text-white' : 'text-slate-600'}`} />
-                        <span className="text-[9px] font-black text-center leading-tight uppercase tracking-wider">{item.label}</span>
+                        <item.icon className={`w-7 h-7 transition-transform group-hover:rotate-12 ${type === item.id ? 'text-white' : 'text-slate-400'}`} />
+                        <span className="text-[11px] font-black text-center leading-tight uppercase tracking-wider">{item.label}</span>
                       </button>
                     ))}
                   </div>
@@ -227,7 +227,7 @@ export default function FlashReport() {
                       value={description}
                       onChange={(e) => setDescription(e.target.value)}
                     />
-                    <div className="absolute bottom-4 right-4 text-[9px] font-mono text-slate-600">
+                    <div className="absolute bottom-4 right-4 text-[11px] font-mono text-slate-400">
                       {description.length}/500
                     </div>
                   </div>
@@ -405,10 +405,10 @@ export default function FlashReport() {
       </AnimatePresence>
 
       <AlertConfirmationModal 
-        isOpen={isCountdownOpen}
-        onClose={() => setIsCountdownOpen(false)}
+        isOpen={showAlertConfirm}
+        onClose={() => setShowAlertConfirm(false)}
         onConfirm={() => {
-          setIsCountdownOpen(false);
+          setShowAlertConfirm(false);
           setIsOpen(true);
         }}
       />

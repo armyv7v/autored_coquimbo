@@ -217,8 +217,8 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
                         >
                             {r.type === 'dealership' ? <Building2 className="w-4 h-4 text-brand-primary" /> : <MapPin className="w-4 h-4 text-slate-500" />}
                             <div className="flex-1 min-w-0">
-                                <p className="text-[11px] font-bold text-white truncate group-hover:text-brand-primary transition-colors">{r.display_name}</p>
-                                <p className="text-[9px] text-slate-500 uppercase font-black tracking-widest">{r.type === 'dealership' ? 'Sede de red' : 'Ubicación'}</p>
+                                <p className="text-xs font-bold text-white truncate group-hover:text-brand-primary transition-colors">{r.display_name}</p>
+                                <p className="text-[11px] text-slate-400 uppercase font-black tracking-widest">{r.type === 'dealership' ? 'Sede de red' : 'Ubicación'}</p>
                             </div>
                         </button>
                     ))}
@@ -329,7 +329,7 @@ function MagneticControlsToggle({ open, onClick }: { open: boolean; onClick: () 
             }`}
         >
             <Settings2 className="w-4 h-4 text-brand-primary" />
-            <span className="text-[10px] font-black uppercase tracking-widest">Controles</span>
+            <span className="text-xs font-black uppercase tracking-widest">Controles</span>
             {open && <LayerStatusDot />}
         </motion.button>
     );
@@ -612,13 +612,13 @@ export default function MapView() {
                                                 <Building2 className="w-5 h-5" />
                                             </div>
                                             <div>
-                                                <h4 className="font-black text-slate-900 leading-none mb-1.5 uppercase tracking-tight text-[11px] flex items-center gap-2">
+                                                <h4 className="font-black text-slate-900 leading-none mb-1.5 uppercase tracking-tight text-xs flex items-center gap-2">
                                                     {dealer.name}
                                                     <div className={`w-2 h-2 rounded-full flex-shrink-0 ${isOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 'bg-slate-300'}`} />
                                                 </h4>
                                                 <div className="flex items-center gap-1.5">
                                                     <div className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'}`} />
-                                                    <span className={`text-[8px] font-black uppercase tracking-widest ${isOnline ? 'text-emerald-600' : 'text-slate-400'}`}>
+                                                    <span className={`text-[11px] font-black uppercase tracking-widest ${isOnline ? 'text-emerald-600' : 'text-slate-600'}`}>
                                                         {isOnline ? 'Sistema Online' : 'Desconectado'}
                                                     </span>
                                                 </div>
@@ -627,21 +627,21 @@ export default function MapView() {
 
                                         <div className="space-y-3">
                                             <div className="bg-slate-50 rounded-xl p-3 border border-slate-100">
-                                                <p className="text-[10px] text-slate-500 font-bold leading-relaxed uppercase tracking-tight">Sede oficial integrante de la Red de Seguridad Automotriz AutoRed.</p>
+                                                <p className="text-xs text-slate-600 font-bold leading-relaxed uppercase tracking-tight">Sede oficial integrante de la Red de Seguridad Automotriz AutoRed.</p>
                                             </div>
 
                                             <div className="flex items-center justify-between px-1">
-                                                <div className="flex items-center gap-2 text-slate-400">
+                                                <div className="flex items-center gap-2 text-slate-600">
                                                     <Clock className="w-3.5 h-3.5" />
-                                                    <span className="text-[9px] font-black uppercase tracking-widest">Último Pulso</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-widest">Último Pulso</span>
                                                 </div>
-                                                <span className="text-[9px] font-mono font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
+                                                <span className="text-[11px] font-mono font-black text-slate-900 bg-slate-100 px-2 py-0.5 rounded-md">
                                                     {dealer.lastSeen ? new Date(dealer.lastSeen).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'N/A'}
                                                 </span>
                                             </div>
 
                                             <button 
-                                                className="w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-black text-[9px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group shadow-xl shadow-slate-900/20 active:scale-[0.98]"
+                                                className="w-full bg-slate-900 hover:bg-black text-white py-3 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] transition-all flex items-center justify-center gap-2 group shadow-xl shadow-slate-900/20 active:scale-[0.98]"
                                             >
                                                 Ver Detalles Red
                                                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
@@ -650,7 +650,7 @@ export default function MapView() {
                                             {(['ADMIN', 'SECURITY'].includes(profile?.role || '') || profile?.dealershipId === dealer.id) && (
                                                 <button 
                                                     onClick={() => handleUpdateDealerStatus(dealer.id, isOnline ? 'offline' : 'online')}
-                                                    className={`w-full py-2.5 rounded-xl font-black text-[9px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 shadow-sm ${isOnline ? 'bg-slate-100 text-slate-500 hover:bg-slate-200' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-900/20'}`}
+                                                    className={`w-full py-2.5 rounded-xl font-black text-[11px] uppercase tracking-[0.15em] transition-all flex items-center justify-center gap-2 shadow-sm ${isOnline ? 'bg-slate-100 text-slate-700 hover:bg-slate-200' : 'bg-emerald-600 text-white hover:bg-emerald-700 shadow-emerald-900/20'}`}
                                                 >
                                                     <Zap className={`w-3.5 h-3.5 ${isOnline ? '' : 'animate-pulse'}`} />
                                                     {isOnline ? 'Simular Desconexión' : 'Activar Conector Red'}
@@ -701,9 +701,9 @@ export default function MapView() {
                                         <div className={`p-1.5 rounded-lg ${incident.type === 'ROBO' ? 'bg-red-600' : incident.type === 'SOSPECHOSO' ? 'bg-orange-500' : 'bg-blue-600'} text-white shadow-sm`}>
                                             <ShieldAlert className="w-4 h-4" />
                                         </div>
-                                        <h4 className="font-extrabold uppercase text-[11px] tracking-widest text-slate-900">{incident.type}</h4>
+                                        <h4 className="font-extrabold uppercase text-xs tracking-widest text-slate-900">{incident.type}</h4>
                                     </div>
-                                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border-2 ${incident.status === 'RESOLVED' ? 'border-emerald-500 text-emerald-600 bg-emerald-50' : incident.status === 'FALSE_ALARM' ? 'border-slate-300 text-slate-500 bg-slate-50' : 'border-red-500 text-red-600 bg-red-50'}`}>
+                                    <span className={`text-[11px] font-black px-2 py-0.5 rounded-full border-2 ${incident.status === 'RESOLVED' ? 'border-emerald-500 text-emerald-600 bg-emerald-50' : incident.status === 'FALSE_ALARM' ? 'border-slate-300 text-slate-500 bg-slate-50' : 'border-red-500 text-red-600 bg-red-50'}`}>
                                         {incident.status || 'OPEN'}
                                     </span>
                                 </div>
@@ -722,49 +722,49 @@ export default function MapView() {
                                     <p className="text-sm font-semibold text-slate-800 leading-snug">{incident.description || 'Sin descripción adicional.'}</p>
                                     
                                     <div className="mt-4 pt-3 border-t border-slate-200/60">
-                                        <p className="text-[9px] font-black text-slate-400 uppercase tracking-[0.15em] mb-2">Reportado por</p>
+                                        <p className="text-[11px] font-black text-slate-600 uppercase tracking-[0.15em] mb-2">Reportado por</p>
                                         <div className="flex items-center gap-2.5">
                                             <div className="w-7 h-7 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-brand-primary shadow-sm">
                                                 <Users className="w-4 h-4" />
                                             </div>
                                             <div className="flex flex-col">
-                                                <span className="text-[11px] font-bold text-slate-700 leading-tight">Red ID: {incident.reporterId?.slice(0, 8)}...</span>
-                                                <span className="text-[9px] font-semibold text-slate-400">Sede: {incident.dealershipId}</span>
+                                                <span className="text-xs font-bold text-slate-700 leading-tight">Red ID: {incident.reporterId?.slice(0, 8)}...</span>
+                                                <span className="text-[11px] font-semibold text-slate-600">Sede: {incident.dealershipId}</span>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <div className="mt-3 flex items-center gap-2 text-slate-400">
+                                    <div className="mt-3 flex items-center gap-2 text-slate-600">
                                         <Clock className="w-3.5 h-3.5" />
-                                        <p className="text-[10px] font-bold font-mono">{new Date(incident.createdAt).toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
+                                        <p className="text-xs font-bold font-mono">{new Date(incident.createdAt).toLocaleString('es-CL', { dateStyle: 'medium', timeStyle: 'short' })}</p>
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-2">
                                     {(profile?.role === 'ADMIN' || profile?.role === 'SECURITY') && (
                                         <>
-                                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-1 pl-1">Acciones de Red</p>
+                                            <p className="text-xs font-black text-slate-600 uppercase tracking-[0.2em] mb-1 pl-1">Acciones de Red</p>
                                             <div className="flex gap-2">
                                                 <button 
                                                     onClick={() => handleUpdateStatus(incident.id, 'RESOLVED')}
-                                                    className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all active:scale-95 ${incident.status === 'RESOLVED' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-500 hover:border-emerald-400 hover:text-emerald-600'}`}
+                                                    className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all active:scale-95 ${incident.status === 'RESOLVED' ? 'bg-emerald-600 border-emerald-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-700 hover:border-emerald-400 hover:text-emerald-600'}`}
                                                 >
                                                     <CheckCircle2 className="w-5 h-5" />
-                                                    <span className="text-[9px] font-black uppercase tracking-wider">RESUELTO</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-wider">RESUELTO</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => handleUpdateStatus(incident.id, 'FALSE_ALARM')}
-                                                    className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all active:scale-95 ${incident.status === 'FALSE_ALARM' ? 'bg-slate-600 border-slate-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-500 hover:border-slate-400 hover:text-slate-700'}`}
+                                                    className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all active:scale-95 ${incident.status === 'FALSE_ALARM' ? 'bg-slate-600 border-slate-600 text-white shadow-lg' : 'bg-white border-slate-200 text-slate-700 hover:border-slate-400 hover:text-slate-700'}`}
                                                 >
                                                     <XCircle className="w-5 h-5" />
-                                                    <span className="text-[9px] font-black uppercase tracking-wider">FALSA A.</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-wider">FALSA A.</span>
                                                 </button>
                                                 <button 
                                                     onClick={() => handleShare(incident.id)}
-                                                    className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all active:scale-95 ${copyingId === incident.id ? 'bg-brand-primary border-brand-primary text-white shadow-lg' : 'bg-white border-slate-200 text-slate-500 hover:border-brand-primary hover:text-brand-primary'}`}
+                                                    className={`flex-1 flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all active:scale-95 ${copyingId === incident.id ? 'bg-brand-primary border-brand-primary text-white shadow-lg' : 'bg-white border-slate-200 text-slate-700 hover:border-brand-primary hover:text-brand-primary'}`}
                                                 >
                                                     <Share2 className="w-5 h-5" />
-                                                    <span className="text-[9px] font-black uppercase tracking-wider">{copyingId === incident.id ? 'COPIADO' : 'COMPARTIR'}</span>
+                                                    <span className="text-[11px] font-black uppercase tracking-wider">{copyingId === incident.id ? 'COPIADO' : 'COMPARTIR'}</span>
                                                 </button>
                                             </div>
                                             
@@ -772,7 +772,7 @@ export default function MapView() {
                                                 <button 
                                                     onClick={() => handleTriggerAlert(incident)}
                                                     disabled={alertingId === incident.id}
-                                                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 rounded-xl font-black text-[10px] tracking-widest shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
+                                                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 text-white py-3 rounded-xl font-black text-xs tracking-widest shadow-lg shadow-red-600/20 flex items-center justify-center gap-2 transition-all active:scale-95 disabled:opacity-50"
                                                 >
                                                     {alertingId === incident.id ? (
                                                         <div className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
@@ -788,7 +788,7 @@ export default function MapView() {
                                             {incident.status !== 'OPEN' && (
                                                 <button 
                                                     onClick={() => handleUpdateStatus(incident.id, 'OPEN')}
-                                                    className="w-full py-2 text-[9px] font-bold text-slate-400 hover:text-red-500 transition-all text-center underline underline-offset-4"
+                                                    className="w-full py-2 text-[11px] font-bold text-slate-600 hover:text-red-500 transition-all text-center underline underline-offset-4"
                                                 >
                                                     REAPERTURAR CASO
                                                 </button>
@@ -799,7 +799,7 @@ export default function MapView() {
                                     {!(profile?.role === 'ADMIN' || profile?.role === 'SECURITY') && (
                                         <button 
                                             onClick={() => handleShare(incident.id)}
-                                            className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all active:scale-95 ${copyingId === incident.id ? 'bg-brand-primary border-brand-primary text-white shadow-lg' : 'bg-white border-slate-200 text-slate-500 hover:border-brand-primary hover:text-brand-primary'}`}
+                                            className={`w-full flex items-center justify-center gap-2 p-3 rounded-xl border-2 transition-all active:scale-95 ${copyingId === incident.id ? 'bg-brand-primary border-brand-primary text-white shadow-lg' : 'bg-white border-slate-200 text-slate-700 hover:border-brand-primary hover:text-brand-primary'}`}
                                         >
                                             <Share2 className="w-5 h-5" />
                                             <span className="text-xs font-black uppercase tracking-wider">{copyingId === incident.id ? 'ENLACE COPIADO' : 'COMPARTIR INCIDENTE'}</span>
@@ -827,7 +827,7 @@ export default function MapView() {
                         <div className="bg-slate-950/90 backdrop-blur-xl rounded-[calc(1.5rem-1px)] p-4 w-[19rem] max-w-[calc(100vw-2rem)] space-y-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
                             {/* Capas */}
                             <div>
-                                <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Capas del Mapa</p>
+                                <p className="text-xs font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Capas del Mapa</p>
                                 <div className="grid grid-cols-2 gap-2">
                                     <SpotlightButton
                                         active={showHeatmap}
@@ -836,7 +836,7 @@ export default function MapView() {
                                         title={showHeatmap ? 'Ocultar capa de calor' : 'Mostrar capa de calor'}
                                     >
                                         <Layers className="w-3.5 h-3.5" />
-                                        <span className="text-[9px] font-bold uppercase">Calor</span>
+                                        <span className="text-[11px] font-bold uppercase">Calor</span>
                                         {showHeatmap && <LayerStatusDot />}
                                     </SpotlightButton>
                                     <SpotlightButton
@@ -846,7 +846,7 @@ export default function MapView() {
                                         title={showMarkers ? 'Ocultar puntos' : 'Mostrar puntos'}
                                     >
                                         <MapPin className="w-3.5 h-3.5" />
-                                        <span className="text-[9px] font-bold uppercase">Puntos</span>
+                                        <span className="text-[11px] font-bold uppercase">Puntos</span>
                                         {showMarkers && <LayerStatusDot />}
                                     </SpotlightButton>
                                     <SpotlightButton
@@ -856,7 +856,7 @@ export default function MapView() {
                                         title={showDealerships ? 'Ocultar sedes' : 'Mostrar sedes'}
                                     >
                                         <Building2 className="w-3.5 h-3.5" />
-                                        <span className="text-[9px] font-bold uppercase">Sedes</span>
+                                        <span className="text-[11px] font-bold uppercase">Sedes</span>
                                         {showDealerships && <LayerStatusDot />}
                                     </SpotlightButton>
                                     <SpotlightButton
@@ -866,7 +866,7 @@ export default function MapView() {
                                         title={isReportingMode ? 'Cancelar reporte' : 'Reportar incidente'}
                                     >
                                         <Plus className="w-3.5 h-3.5" />
-                                        <span className="text-[9px] font-bold uppercase">Reportar</span>
+                                        <span className="text-[11px] font-bold uppercase">Reportar</span>
                                         {isReportingMode && <LayerStatusDot />}
                                     </SpotlightButton>
                                 </div>
@@ -874,7 +874,7 @@ export default function MapView() {
 
                             {/* Filtros */}
                             <div className="pt-3 border-t border-slate-800">
-                                <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Filtrar por Tipo</p>
+                                <p className="text-xs font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Filtrar por Tipo</p>
                                 <div className="flex flex-wrap gap-2">
                                     {[
                                         { id: 'ROBO', label: 'Robo', color: 'border-red-500 text-red-500' },
@@ -884,7 +884,7 @@ export default function MapView() {
                                         <button
                                             key={t.id}
                                             onClick={() => toggleFilter(filterTypes, setFilterTypes, t.id)}
-                                            className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase transition-all border ${filterTypes.includes(t.id) ? t.color : 'border-slate-800 text-slate-600 bg-slate-800/20'}`}
+                                            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all border ${filterTypes.includes(t.id) ? t.color : 'border-slate-800 text-slate-400 bg-slate-800/20'}`}
                                         >
                                             {t.label}
                                         </button>
@@ -893,7 +893,7 @@ export default function MapView() {
                             </div>
 
                             <div className="pt-3 border-t border-slate-800">
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-3">Estado del Reporte</p>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-3">Estado del Reporte</p>
                                 <div className="flex flex-wrap gap-2">
                                     {[
                                         { id: 'OPEN', label: 'Abierto' },
@@ -903,7 +903,7 @@ export default function MapView() {
                                         <button
                                             key={s.id}
                                             onClick={() => toggleFilter(filterStatus, setFilterStatus, s.id)}
-                                            className={`px-3 py-1 rounded-full text-[9px] font-bold uppercase transition-all ${filterStatus.includes(s.id) ? 'bg-slate-700 text-white border-slate-600' : 'text-slate-600 border-slate-800 bg-slate-800/20'} border`}
+                                            className={`px-3 py-1 rounded-full text-[11px] font-bold uppercase transition-all ${filterStatus.includes(s.id) ? 'bg-slate-700 text-white border-slate-600' : 'text-slate-400 border-slate-800 bg-slate-800/20'} border`}
                                         >
                                             {s.label}
                                         </button>
@@ -913,21 +913,21 @@ export default function MapView() {
 
                             {/* Leyenda */}
                             <div className="pt-3 border-t border-slate-800">
-                                <p className="text-[10px] font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Leyenda</p>
+                                <p className="text-xs font-black text-brand-primary uppercase tracking-[0.32em] mb-3">Leyenda</p>
                                 <div className="space-y-3">
                                     <div className="flex items-center gap-3">
                                         <div className="w-3 h-3 rounded-full bg-blue-500/40 border border-blue-500"></div>
                                         <span className="text-xs text-slate-300 font-medium">Automotora Protegida</span>
                                     </div>
                                     <div className="flex flex-col gap-1">
-                                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">Gradiente de Densidad</span>
+                                        <span className="text-xs text-slate-400 uppercase font-bold tracking-tighter">Gradiente de Densidad</span>
                                         <div className="h-2 w-full rounded-full bg-gradient-to-r from-blue-500 via-lime-500 to-red-500"></div>
-                                        <div className="flex justify-between text-[8px] text-slate-500 font-mono">
+                                        <div className="flex justify-between text-[11px] text-slate-400 font-mono">
                                             <span>BAJA</span>
                                             <span>CRÍTICA</span>
                                         </div>
                                     </div>
-                                    <p className="text-[10px] text-slate-500 leading-tight pt-1">
+                                    <p className="text-xs text-slate-400 leading-tight pt-1">
                                         Visualización de puntos calientes basada en reportes de las últimas 24 horas.
                                     </p>
                                 </div>
@@ -982,7 +982,7 @@ export default function MapView() {
                                     </div>
                                     <div>
                                         <h3 className="text-white font-black text-sm uppercase tracking-widest">Nuevo Reporte Geográfico</h3>
-                                        <p className="text-[10px] text-slate-500 font-mono tracking-tighter">Lat: {reportLocation[0].toFixed(5)}, Lng: {reportLocation[1].toFixed(5)}</p>
+                                        <p className="text-xs text-slate-400 font-mono tracking-tighter">Lat: {reportLocation[0].toFixed(5)}, Lng: {reportLocation[1].toFixed(5)}</p>
                                     </div>
                                 </div>
                                 <button onClick={() => setReportLocation(null)} className="p-2 rounded-xl text-slate-400 hover:text-white transition-colors">
@@ -992,7 +992,7 @@ export default function MapView() {
 
                             <form onSubmit={handleSubmitReport} className="p-6 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                                 <div>
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 block">Tipo de Incidente</label>
+                                    <label className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 block">Tipo de Incidente</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         {[
                                             { id: 'ROBO', label: 'Robo', icon: ShieldAlert, color: 'bg-red-600' },
@@ -1007,7 +1007,7 @@ export default function MapView() {
                                                 className={`p-4 rounded-2xl border-2 flex items-center gap-3 transition-all ${reportType === t.id ? `border-white/50 ${t.color} text-white` : 'border-slate-800 bg-slate-800/50 text-slate-400'}`}
                                             >
                                                 <t.icon className="w-5 h-5" />
-                                                <span className="text-[11px] font-bold uppercase tracking-tight">{t.label}</span>
+                                                <span className="text-xs font-bold uppercase tracking-tight">{t.label}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -1038,7 +1038,7 @@ export default function MapView() {
                                             className={`w-full h-12 flex items-center justify-center gap-2 rounded-xl border-2 cursor-pointer transition-all ${reportImagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400 shadow-lg shadow-emerald-900/20' : 'border-slate-800 bg-slate-800/50 text-slate-400 hover:border-slate-600'}`}
                                         >
                                             <Camera className="w-4 h-4" />
-                                            <span className="text-[10px] font-black uppercase tracking-widest">{reportImagePreview ? 'Foto lista' : 'Añadir Foto'}</span>
+                                            <span className="text-xs font-black uppercase tracking-widest">{reportImagePreview ? 'Foto lista' : 'Añadir Foto'}</span>
                                         </label>
                                     </div>
                                     <button

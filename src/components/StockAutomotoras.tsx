@@ -69,7 +69,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                   <Car className="h-6 w-6 text-brand-primary" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-black uppercase tracking-[.28em] text-brand-primary">Automotoras en red</p>
+                  <p className="text-xs font-black uppercase tracking-[.28em] text-brand-primary">Automotoras en red</p>
                   <h2 className="text-2xl font-black tracking-[-.06em] text-white">Stock automotoras</h2>
                 </div>
               </div>
@@ -106,19 +106,19 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                   <article key={vehicle.id} className="group overflow-hidden rounded-[1.7rem] border border-white/10 bg-white/[.045] transition hover:-translate-y-1 hover:border-brand-primary/35 hover:bg-white/[.07]">
                     <div className="relative grid aspect-[4/3] place-items-center bg-[linear-gradient(135deg,rgba(15,23,42,.9),rgba(30,41,59,.62))]">
                       <Car className="h-20 w-20 text-white/35 transition group-hover:scale-110 group-hover:text-brand-primary/70" />
-                      <span className="absolute left-3 top-3 rounded-full bg-slate-950/80 px-3 py-1 text-[10px] font-black text-white ring-1 ring-white/10">{vehicle.id}</span>
-                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-amber-400/15 px-2.5 py-1 text-[10px] font-black text-amber-200 ring-1 ring-amber-300/20">
+                      <span className="absolute left-3 top-3 rounded-full bg-slate-950/80 px-3 py-1 text-xs font-black text-white ring-1 ring-white/10">{vehicle.id}</span>
+                      <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-amber-400/15 px-2.5 py-1 text-xs font-black text-amber-200 ring-1 ring-amber-300/20">
                         <Star className="h-3 w-3 fill-amber-200" /> {vehicle.rating}
                       </span>
                     </div>
                     <div className="space-y-3 p-4">
                       <div>
                         <h3 className="text-lg font-black tracking-[-.04em] text-white">{vehicle.brand} {vehicle.model}</h3>
-                        <p className="text-xs text-slate-500">{vehicle.year} · {vehicle.dealer}</p>
+                        <p className="text-xs text-slate-400">{vehicle.year} · {vehicle.dealer}</p>
                       </div>
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-mono text-sm font-black text-brand-primary">{formatPrice(vehicle.price)}</p>
-                        <span className={`rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-[.14em] ${vehicle.status === 'En negociación' ? 'bg-sky-400/15 text-sky-200' : 'bg-emerald-400/15 text-emerald-200'}`}>
+                        <span className={`rounded-full px-2.5 py-1 text-[11px] font-black uppercase tracking-[.14em] ${vehicle.status === 'En negociación' ? 'bg-sky-400/15 text-sky-200' : 'bg-emerald-400/15 text-emerald-200'}`}>
                           {vehicle.status}
                         </span>
                       </div>

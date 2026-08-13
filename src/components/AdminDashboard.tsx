@@ -108,7 +108,7 @@ export default function AdminDashboard() {
 
   if (!profile || profile.role !== 'ADMIN') {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-slate-500">
+      <div className="flex flex-col items-center justify-center h-full text-slate-400">
         <ShieldAlert className="w-16 h-16 mb-4 opacity-20" />
         <h1 className="text-xl font-black uppercase tracking-widest">Acceso Denegado</h1>
         <p className="text-xs">Solo administradores autorizados pueden ver esta sección.</p>
@@ -181,30 +181,30 @@ export default function AdminDashboard() {
             </div>
             <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Panel de Administración</h1>
           </div>
-          <p className="text-slate-500 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
+          <p className="text-slate-400 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
         </div>
 
         <nav className="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800">
           <button 
             onClick={() => setActiveTab('STATS')}
-            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
           >
             Estadísticas
           </button>
           <button 
             onClick={() => setActiveTab('USERS')}
-            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
           >
             Usuarios
           </button>
           <button 
             onClick={() => setActiveTab('REQUESTS')}
-            className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-white'}`}
+            className={`relative px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
           >
             <Inbox className="w-3.5 h-3.5" />
             Solicitudes
             {pendingCount > 0 && (
-              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[9px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-brand-primary' : 'bg-brand-primary text-white'}`}>
+              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-brand-primary' : 'bg-brand-primary text-white'}`}>
                 {pendingCount}
               </span>
             )}
@@ -231,7 +231,7 @@ export default function AdminDashboard() {
                 <div key={i} className="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden group">
                   <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} blur-3xl -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50`} />
                   <stat.icon className={`w-5 h-5 ${stat.color} mb-4 relative z-10`} />
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1 relative z-10">{stat.label}</p>
+                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">{stat.label}</p>
                   <p className="text-3xl font-black text-white relative z-10">{stat.value}</p>
                 </div>
               ))}
@@ -315,7 +315,7 @@ export default function AdminDashboard() {
                   <select 
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value as any)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-[10px] font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
                   >
                     <option value="ALL">TODOS LOS ROLES</option>
                     <option value="ADMIN">ADMIN</option>
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
                   <select 
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-[10px] font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
                   >
                     <option value="ALL">TODOS LOS ESTADOS</option>
                     <option value="ACTIVE">ACTIVOS</option>
@@ -338,7 +338,7 @@ export default function AdminDashboard() {
               </div>
               <button 
                 onClick={handleExportCSV}
-                className="w-full lg:w-auto px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-[10px] font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all border border-slate-700 shadow-lg shadow-black/20"
+                className="w-full lg:w-auto px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all border border-slate-700 shadow-lg shadow-black/20"
               >
                 <Download className="w-3.5 h-3.5" />
                 Exportar CSV
@@ -350,11 +350,11 @@ export default function AdminDashboard() {
                 <table className="w-full text-left">
                   <thead>
                     <tr className="border-b border-slate-800 bg-slate-900/50">
-                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Usuario</th>
-                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Rol</th>
-                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Sede</th>
-                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest">Estado</th>
-                      <th className="p-6 text-[10px] font-black text-slate-500 uppercase tracking-widest text-right">Acciones</th>
+                      <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Usuario</th>
+                      <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Rol</th>
+                      <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Sede</th>
+                      <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest">Estado</th>
+                      <th className="p-6 text-xs font-black text-slate-400 uppercase tracking-widest text-right">Acciones</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-800/50">
@@ -368,7 +368,7 @@ export default function AdminDashboard() {
                               </div>
                               <div>
                                 <p className="text-xs font-bold text-white leading-none mb-1">{user.displayName || 'Sin nombre'}</p>
-                                <p className="text-[10px] text-slate-500 font-mono tracking-tighter">{user.email}</p>
+                                <p className="text-xs text-slate-400 font-mono tracking-tighter">{user.email}</p>
                               </div>
                             </div>
                           </td>
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
                             <select 
                               value={user.role}
                               onChange={(e) => handleUpdateRole(user.uid, e.target.value)}
-                              className="bg-slate-800 text-[10px] font-black text-white px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-brand-primary uppercase tracking-widest transition-all cursor-pointer"
+                              className="bg-slate-800 text-xs font-black text-white px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-brand-primary uppercase tracking-widest transition-all cursor-pointer"
                             >
                               <option value="ADMIN">ADMIN</option>
                               <option value="OWNER">PROPIETARIO</option>
@@ -384,10 +384,10 @@ export default function AdminDashboard() {
                             </select>
                           </td>
                           <td className="p-6">
-                            <span className="text-[10px] font-bold text-slate-400">Chile Motors Coquimbo</span>
+                            <span className="text-xs font-bold text-slate-400">Chile Motors Coquimbo</span>
                           </td>
                           <td className="p-6">
-                            <span className={`text-[9px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${user.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
+                            <span className={`text-[11px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${user.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>
                               {user.status || 'ACTIVE'}
                             </span>
                           </td>
@@ -406,7 +406,7 @@ export default function AdminDashboard() {
                       <tr>
                         <td colSpan={5} className="p-20 text-center">
                           <Users className="w-12 h-12 text-slate-800 mx-auto mb-4 opacity-50" />
-                          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">No se encontraron usuarios</p>
+                          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">No se encontraron usuarios</p>
                         </td>
                       </tr>
                     )}
@@ -417,7 +417,7 @@ export default function AdminDashboard() {
               {/* Pagination Controls */}
               {totalPages > 1 && (
                 <div className="p-6 border-t border-slate-800 bg-slate-900/50 flex items-center justify-between">
-                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                     Mostrando <span className="text-white">{((currentPage - 1) * itemsPerPage) + 1}</span> - <span className="text-white">{Math.min(currentPage * itemsPerPage, filteredUsers.length)}</span> de <span className="text-white">{filteredUsers.length}</span>
                   </p>
                   <div className="flex items-center gap-2">
@@ -433,7 +433,7 @@ export default function AdminDashboard() {
                         <button
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
-                          className={`w-8 h-8 rounded-lg text-[10px] font-black transition-all ${currentPage === i + 1 ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-500 hover:text-white bg-slate-800/50'}`}
+                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${currentPage === i + 1 ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white bg-slate-800/50'}`}
                         >
                           {i + 1}
                         </button>

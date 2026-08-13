@@ -142,7 +142,7 @@ export default function AdminAccessRequests() {
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
-            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all border ${
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${
               filter === tab.key
                 ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-blue-500/20'
                 : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
@@ -151,7 +151,7 @@ export default function AdminAccessRequests() {
             <tab.icon className="w-3.5 h-3.5" />
             {tab.label}
             <span
-              className={`px-1.5 py-0.5 rounded-md text-[9px] ${
+              className={`px-1.5 py-0.5 rounded-md text-[11px] ${
                 filter === tab.key ? 'bg-white/20' : tab.tone
               }`}
             >
@@ -162,14 +162,14 @@ export default function AdminAccessRequests() {
       </div>
 
       {loading ? (
-        <div className="flex flex-col items-center justify-center py-24 text-slate-500">
+        <div className="flex flex-col items-center justify-center py-24 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin mb-4 text-brand-primary" />
           <p className="text-xs font-black uppercase tracking-widest">Cargando solicitudes...</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-16 flex flex-col items-center text-center">
           <Inbox className="w-14 h-14 text-slate-800 mb-4" />
-          <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+          <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
             {filter === 'PENDING'
               ? 'No hay solicitudes pendientes'
               : filter === 'APPROVED'
@@ -177,7 +177,7 @@ export default function AdminAccessRequests() {
               : 'No hay solicitudes rechazadas'}
           </p>
           {filter === 'PENDING' && (
-            <p className="text-[10px] text-slate-600 mt-1">Las nuevas solicitudes de alta aparecerán aquí.</p>
+            <p className="text-xs text-slate-400 mt-1">Las nuevas solicitudes de alta aparecerán aquí.</p>
           )}
         </div>
       ) : (
@@ -203,12 +203,12 @@ export default function AdminAccessRequests() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
                     <h4 className="text-sm font-black text-white truncate">{req.dealershipName}</h4>
-                    <span className="text-[10px] font-mono text-slate-500 bg-slate-800 px-2 py-0.5 rounded-md tracking-tight">
+                    <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md tracking-tight">
                       RUT {req.rut}
                     </span>
                   </div>
 
-                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-[10px] text-slate-400">
+                  <div className="flex flex-wrap gap-x-5 gap-y-1 text-xs text-slate-400">
                     <span className="flex items-center gap-1.5">
                       <User className="w-3 h-3 text-slate-500" />
                       {req.contactName}
@@ -228,12 +228,12 @@ export default function AdminAccessRequests() {
                   </div>
 
                   {req.status === 'REJECTED' && req.reason && (
-                    <p className="mt-2 text-[10px] text-red-400/80 italic flex items-center gap-1">
+                    <p className="mt-2 text-xs text-red-400/80 italic flex items-center gap-1">
                       <XCircle className="w-3 h-3" /> Motivo: {req.reason}
                     </p>
                   )}
                   {req.status === 'APPROVED' && (
-                    <p className="mt-2 text-[10px] text-emerald-400/80 flex items-center gap-1">
+                    <p className="mt-2 text-xs text-emerald-400/80 flex items-center gap-1">
                       <CheckCircle2 className="w-3 h-3" /> Aprobada el {formatDate(req.approvedAt)}
                     </p>
                   )}
@@ -245,13 +245,13 @@ export default function AdminAccessRequests() {
                   <>
                     <button
                       onClick={() => openModal(req)}
-                      className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                      className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
                     >
                       Aprobar y generar credenciales
                     </button>
                     <button
                       onClick={() => openModal(req)}
-                      className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/20 hover:text-red-400 transition-all active:scale-95"
+                      className="px-5 py-2.5 rounded-xl bg-slate-800 text-slate-300 text-xs font-black uppercase tracking-widest hover:bg-red-500/20 hover:text-red-400 transition-all active:scale-95"
                     >
                       Rechazar
                     </button>
@@ -259,7 +259,7 @@ export default function AdminAccessRequests() {
                 ) : (
                   <button
                     onClick={() => openModal(req)}
-                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-[10px] font-black uppercase tracking-widest hover:text-white transition-all"
+                    className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 text-slate-400 text-xs font-black uppercase tracking-widest hover:text-white transition-all"
                   >
                     <Eye className="w-3.5 h-3.5" />
                     Detalle
@@ -300,7 +300,7 @@ export default function AdminAccessRequests() {
                   </p>
 
                   <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 mb-5">
-                    <p className="text-[9px] font-black uppercase tracking-[0.25em] text-emerald-300 mb-2 flex items-center gap-1.5 justify-center">
+                    <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-300 mb-2 flex items-center gap-1.5 justify-center">
                       <KeyRound className="w-3.5 h-3.5" />
                       Contraseña temporal
                     </p>
@@ -318,7 +318,7 @@ export default function AdminAccessRequests() {
                     </div>
                   </div>
 
-                  <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-3 text-[10px] text-amber-300/80 leading-relaxed mb-6 flex gap-2 text-left">
+                  <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-3 text-xs text-amber-300/80 leading-relaxed mb-6 flex gap-2 text-left">
                     <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     <span>Entrega esta contraseña por un canal seguro. No volverá a mostrarse.</span>
                   </div>
@@ -326,13 +326,13 @@ export default function AdminAccessRequests() {
                   <div className="grid grid-cols-2 gap-3">
                     <button
                       onClick={copyPassword}
-                      className="rounded-xl bg-slate-800 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all"
+                      className="rounded-xl bg-slate-800 text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-slate-700 transition-all"
                     >
                       {copied ? '¡Copiada!' : 'Copiar'}
                     </button>
                     <button
                       onClick={() => setModal(null)}
-                      className="rounded-xl bg-brand-primary text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-orange-600 transition-all"
+                      className="rounded-xl bg-brand-primary text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-all"
                     >
                       Listo
                     </button>
@@ -343,10 +343,10 @@ export default function AdminAccessRequests() {
                   <div className="flex items-start justify-between gap-4 mb-5">
                     <div>
                       <h3 className="text-lg font-black text-white uppercase tracking-tight">Detalle de solicitud</h3>
-                      <p className="text-[10px] text-slate-500 font-mono tracking-tight mt-0.5">RUT {modal.rutKey}</p>
+                      <p className="text-xs text-slate-400 font-mono tracking-tight mt-0.5">RUT {modal.rutKey}</p>
                     </div>
                     <span
-                      className={`text-[9px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${
+                      className={`text-[11px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${
                         modal.status === 'PENDING'
                           ? 'bg-amber-400/10 text-amber-400'
                           : modal.status === 'APPROVED'
@@ -372,7 +372,7 @@ export default function AdminAccessRequests() {
                         key={label}
                         className="flex items-start justify-between gap-4 pb-1 border-b border-slate-800/60"
                       >
-                        <dt className="text-[9px] font-black uppercase tracking-widest text-slate-500 pt-0.5">
+                        <dt className="text-[11px] font-black uppercase tracking-widest text-slate-400 pt-0.5">
                           {label}
                         </dt>
                         <dd className="text-xs text-slate-200 text-right font-semibold break-all">{value}</dd>
@@ -388,7 +388,7 @@ export default function AdminAccessRequests() {
 
                   {modal.status === 'PENDING' ? (
                     <>
-                      <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4 text-[10px] text-amber-300/80 mb-5 flex gap-2">
+                      <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4 text-xs text-amber-300/80 mb-5 flex gap-2">
                         <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                         <span>
                           Al aprobar se generará una cuenta de acceso con contraseña temporal y la sede quedará activa
@@ -400,7 +400,7 @@ export default function AdminAccessRequests() {
                         <button
                           disabled={busy}
                           onClick={handleApprove}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-emerald-500/25 transition-all disabled:opacity-50 active:scale-95"
+                          className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 py-3 text-xs font-black uppercase tracking-widest hover:bg-emerald-500/25 transition-all disabled:opacity-50 active:scale-95"
                         >
                           {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
                           Aprobar
@@ -408,7 +408,7 @@ export default function AdminAccessRequests() {
                         <button
                           disabled={busy}
                           onClick={() => setShowReason(true)}
-                          className="flex items-center justify-center gap-2 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 py-3 text-[10px] font-black uppercase tracking-widest hover:bg-red-500/25 transition-all disabled:opacity-50 active:scale-95"
+                          className="flex items-center justify-center gap-2 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 py-3 text-xs font-black uppercase tracking-widest hover:bg-red-500/25 transition-all disabled:opacity-50 active:scale-95"
                         >
                           <XCircle className="w-3.5 h-3.5" />
                           Rechazar
@@ -427,7 +427,7 @@ export default function AdminAccessRequests() {
                           <button
                             disabled={busy}
                             onClick={handleReject}
-                            className="w-full rounded-xl bg-red-500 text-white py-2.5 text-[10px] font-black uppercase tracking-widest hover:bg-red-600 transition-all disabled:opacity-50 active:scale-95"
+                            className="w-full rounded-xl bg-red-500 text-white py-2.5 text-xs font-black uppercase tracking-widest hover:bg-red-600 transition-all disabled:opacity-50 active:scale-95"
                           >
                             Confirmar rechazo
                           </button>
@@ -437,7 +437,7 @@ export default function AdminAccessRequests() {
                   ) : (
                     <button
                       onClick={() => setModal(null)}
-                      className="w-full rounded-xl bg-slate-800 text-white py-3 text-[10px] font-black uppercase tracking-widest hover:bg-slate-700 transition-all"
+                      className="w-full rounded-xl bg-slate-800 text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-slate-700 transition-all"
                     >
                       Cerrar
                     </button>

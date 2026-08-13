@@ -3,7 +3,7 @@ import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, where, upda
 import { db, auth, storage } from '../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { safeUUID } from '../lib/uuid';
-import { ShieldAlert, Users, TrendingUp, AlertCircle, Clock, Info, Sparkles, Filter, Calendar, ChevronDown, Search, X, Activity, ListFilter, History, Bell, BellOff, CheckCircle, Ban, AlertTriangle, MapPin, Plus, Camera, Loader2, Save } from 'lucide-react';
+import { ShieldAlert, Users, TrendingUp, AlertCircle, Clock, Info, Sparkles, Filter, Calendar, ChevronDown, Search, X, Activity, ListFilter, History, Bell, BellOff, CheckCircle, Ban, AlertTriangle, MapPin, Plus, Camera, Loader2, Save, ArrowRight, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { generateSecurityTip } from '../services/geminiService';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -12,7 +12,7 @@ import IncidentReportForm from './IncidentReportForm';
 import RoadTestForm from './RoadTestForm';
 import InspectionForm from './InspectionForm';
 import StockAutomotoras from './StockAutomotoras';
-import BottomNavbar, { TabType } from './BottomNavbar';
+import { TabType } from '../lib/navigation';
 import { Route, Car, ShieldCheck } from 'lucide-react';
 
 interface Incident {
@@ -45,7 +45,12 @@ interface Dealership {
 
 const HEARTBEAT_THRESHOLD_MS = 10 * 60 * 1000;
 
-export default function Dashboard() {
+interface DashboardProps {
+  activeTab: TabType;
+  setActiveTab: (tab: TabType) => void;
+}
+
+export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [newIncidentNotify, setNewIncidentNotify] = useState<Incident | null>(null);
   const [dealerships, setDealerships] = useState<Dealership[]>([]);
@@ -61,7 +66,6 @@ export default function Dashboard() {
   const [isRoadTestOpen, setIsRoadTestOpen] = useState(false);
   const [isInspectionOpen, setIsInspectionOpen] = useState(false);
   const [isStockOpen, setIsStockOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<TabType>('PANEL');
   const { permission } = usePushNotifications();
   const { profile } = useAuth();
 
@@ -370,7 +374,7 @@ export default function Dashboard() {
                 <Bell className="w-6 h-6 text-white animate-bounce" />
               </div>
               <div className="flex-1">
-                <p className="text-[10px] font-black text-white/60 uppercase tracking-widest">Nueva Alerta Crítica</p>
+                <p className="text-xs font-black text-white/85 uppercase tracking-widest">Nueva Alerta Crítica</p>
                 <h4 className="text-white font-bold leading-tight">{newIncidentNotify.type}: {newIncidentNotify.description.slice(0, 40)}...</h4>
               </div>
               <ChevronDown className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
@@ -391,7 +395,7 @@ export default function Dashboard() {
               <BellOff className="w-5 h-5 animate-pulse" />
               <div>
                 <p className="text-xs font-black uppercase tracking-widest">Alertas no Permitidas</p>
-                <p className="text-[10px] opacity-70">Para recibir notificaciones críticas, por favor habilita los permisos en tu navegador.</p>
+                <p className="text-xs opacity-85">Para recibir notificaciones críticas, por favor habilita los permisos en tu navegador.</p>
               </div>
             </div>
           </motion.div>
@@ -415,7 +419,7 @@ export default function Dashboard() {
           </div>
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">Incidentes Activos</p>
+              <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">Incidentes Activos</p>
               <p className={`text-2xl font-black ${openIncidentsCount > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
                 {openIncidentsCount}
               </p>
@@ -449,10 +453,10 @@ export default function Dashboard() {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-black text-white uppercase tracking-tight">REPORTE</p>
-                    <p className="text-[10px] text-red-300 font-bold uppercase tracking-wider">Robo / Sospechoso</p>
+                    <p className="text-xs text-red-300 font-bold uppercase tracking-wider">Robo / Sospechoso</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-red-400 group-hover:translate-x-1 transition-transform">➔</span>
+                <ArrowRight className="w-5 h-5 shrink-0 text-red-400 group-hover:translate-x-1 transition-transform" />
               </button>
 
               {/* 2da Opcion: PRUEBA EN RUTA */}
@@ -467,10 +471,10 @@ export default function Dashboard() {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-black text-white uppercase tracking-tight">PRUEBA EN RUTA</p>
-                    <p className="text-[10px] text-orange-300 font-bold uppercase tracking-wider">Respaldo Previo</p>
+                    <p className="text-xs text-orange-300 font-bold uppercase tracking-wider">Respaldo Previo</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-orange-400 group-hover:translate-x-1 transition-transform">➔</span>
+                <ArrowRight className="w-5 h-5 shrink-0 text-orange-400 group-hover:translate-x-1 transition-transform" />
               </button>
 
               {/* 3era Opcion: Fiscalización */}
@@ -485,10 +489,10 @@ export default function Dashboard() {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-black text-white uppercase tracking-tight">Fiscalización</p>
-                    <p className="text-[10px] text-blue-300 font-bold uppercase tracking-wider">Registro de Control</p>
+                    <p className="text-xs text-blue-300 font-bold uppercase tracking-wider">Registro de Control</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-blue-400 group-hover:translate-x-1 transition-transform">➔</span>
+                <ArrowRight className="w-5 h-5 shrink-0 text-blue-400 group-hover:translate-x-1 transition-transform" />
               </button>
 
               {/* 4ta Opcion: STOCK AUTOMOTORAS */}
@@ -503,10 +507,10 @@ export default function Dashboard() {
                   </div>
                   <div className="text-left">
                     <p className="text-sm font-black text-white uppercase tracking-tight">STOCK AUTOMOTORAS</p>
-                    <p className="text-[10px] text-emerald-300 font-bold uppercase tracking-wider">Inventario Red</p>
+                    <p className="text-xs text-emerald-300 font-bold uppercase tracking-wider">Inventario Red</p>
                   </div>
                 </div>
-                <span className="text-xs font-black text-emerald-400 group-hover:translate-x-1 transition-transform">➔</span>
+                <ArrowRight className="w-5 h-5 shrink-0 text-emerald-400 group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
           </section>
@@ -516,8 +520,8 @@ export default function Dashboard() {
             {[
               { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
               { label: 'Incidentes Hoy', value: incidents.length, icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-              { label: 'Red Colaborativa', value: '48 Locales', icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-              { label: 'Eficacia Red', value: '94%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' }
+              { label: 'Red Colaborativa', value: dealerships.length, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
+              { label: 'Eficacia Red', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' }
             ].map((stat, idx) => (
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -530,7 +534,7 @@ export default function Dashboard() {
                   <stat.icon className="w-6 h-6" />
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase font-bold text-slate-500 tracking-wider font-mono">{stat.label}</p>
+                  <p className="text-xs uppercase font-bold text-slate-400 tracking-wider font-mono">{stat.label}</p>
                   <h3 className="text-xl font-bold text-white">{stat.value}</h3>
                 </div>
               </motion.div>
@@ -585,7 +589,7 @@ export default function Dashboard() {
                   const element = document.getElementById('timeline');
                   element?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="text-xs text-slate-500 hover:text-white transition-all uppercase font-bold tracking-widest"
+                className="text-xs text-slate-400 hover:text-white transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
               </button>
@@ -605,7 +609,7 @@ export default function Dashboard() {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Type Filter */}
                     <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <ShieldAlert className="w-3 h-3" /> Tipo de Incidente
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -613,7 +617,7 @@ export default function Dashboard() {
                           <button
                             key={type}
                             onClick={() => toggleTempType(type)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${tempTypeFilter.includes(type) ? 'bg-brand-primary/20 border-brand-primary/40 text-brand-primary' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${tempTypeFilter.includes(type) ? 'bg-brand-primary/20 border-brand-primary/40 text-brand-primary' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
                           >
                             {type}
                           </button>
@@ -623,7 +627,7 @@ export default function Dashboard() {
 
                     {/* Status Filter */}
                     <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <AlertCircle className="w-3 h-3" /> Estado
                       </p>
                       <div className="flex flex-wrap gap-2">
@@ -631,7 +635,7 @@ export default function Dashboard() {
                           <button
                             key={status.id}
                             onClick={() => toggleTempStatus(status.id)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all flex items-center gap-2 ${tempStatusFilter.includes(status.id) ? 'bg-slate-800 border-slate-600 text-white' : 'bg-slate-800/30 border-slate-800 text-slate-600'}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all flex items-center gap-2 ${tempStatusFilter.includes(status.id) ? 'bg-slate-800 border-slate-600 text-white' : 'bg-slate-800/30 border-slate-800 text-slate-400'}`}
                           >
                             <div className={`w-1.5 h-1.5 rounded-full ${tempStatusFilter.includes(status.id) ? status.color : 'bg-slate-700'}`} />
                             {status.label}
@@ -642,7 +646,7 @@ export default function Dashboard() {
 
                     {/* Dealership Filter */}
                     <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Users className="w-3 h-3" /> Dealership / Sede
                       </p>
                       <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
@@ -650,7 +654,7 @@ export default function Dashboard() {
                           <button
                             key={dealer.id}
                             onClick={() => toggleTempDealership(dealer.id)}
-                            className={`px-3 py-1.5 rounded-lg text-[10px] font-bold border transition-all ${tempDealershipFilter.includes(dealer.id) ? 'bg-blue-500/20 border-blue-500/40 text-blue-400' : 'bg-slate-800/50 border-slate-700 text-slate-500'}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${tempDealershipFilter.includes(dealer.id) ? 'bg-blue-500/20 border-blue-500/40 text-blue-400' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
                           >
                             {dealer.name}
                           </button>
@@ -660,7 +664,7 @@ export default function Dashboard() {
 
                     {/* Date Filter */}
                     <div>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-3 flex items-center gap-2">
+                      <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Calendar className="w-3 h-3" /> Rango de Fechas
                       </p>
                       <div className="flex items-center gap-2">
@@ -668,14 +672,14 @@ export default function Dashboard() {
                           type="date"
                           value={tempDateRange.start}
                           onChange={(e) => setTempDateRange(prev => ({ ...prev, start: e.target.value }))}
-                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-slate-300 focus:ring-1 focus:ring-brand-primary outline-none flex-1"
+                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-brand-primary outline-none flex-1"
                         />
-                        <span className="text-slate-600">-</span>
+                        <span className="text-slate-400">-</span>
                         <input 
                           type="date"
                           value={tempDateRange.end}
                           onChange={(e) => setTempDateRange(prev => ({ ...prev, end: e.target.value }))}
-                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-[10px] text-slate-300 focus:ring-1 focus:ring-brand-primary outline-none flex-1"
+                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-brand-primary outline-none flex-1"
                         />
                       </div>
                     </div>
@@ -684,7 +688,7 @@ export default function Dashboard() {
                   <div className="flex items-center justify-between pt-4 border-t border-slate-800/50">
                     <button 
                       onClick={clearFilters}
-                      className="text-[10px] font-bold text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest flex items-center gap-1.5"
+                      className="text-xs font-bold text-slate-400 hover:text-slate-300 transition-colors uppercase tracking-widest flex items-center gap-1.5"
                     >
                       <X className="w-3 h-3" /> Limpiar Filtros
                     </button>
@@ -692,7 +696,7 @@ export default function Dashboard() {
                     <button 
                       onClick={applyFilters}
                       disabled={!hasPendingChanges}
-                      className={`text-[10px] font-black py-2.5 px-6 rounded-xl transition-all uppercase tracking-[0.15em] shadow-lg flex items-center gap-2 ${hasPendingChanges ? 'bg-brand-primary hover:bg-brand-primary/90 text-white shadow-brand-primary/20 cursor-pointer' : 'bg-slate-800 text-slate-500 cursor-not-allowed opacity-50'}`}
+                      className={`text-xs font-black py-2.5 px-6 rounded-xl transition-all uppercase tracking-[0.15em] shadow-lg flex items-center gap-2 ${hasPendingChanges ? 'bg-brand-primary hover:bg-brand-primary/90 text-white shadow-brand-primary/20 cursor-pointer' : 'bg-slate-800 text-slate-400 cursor-not-allowed opacity-50'}`}
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       {hasPendingChanges ? 'Aplicar Cambios' : 'Filtros Aplicados'}
@@ -706,9 +710,9 @@ export default function Dashboard() {
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {loading ? (
-                <div className="p-8 text-center text-slate-500 italic">Analizando reportes...</div>
+                <div className="p-8 text-center text-slate-400 italic">Analizando reportes...</div>
               ) : filteredIncidents.length === 0 ? (
-                <div className="p-12 text-center bg-slate-900/50 border border-slate-800 border-dashed rounded-3xl text-slate-500">
+                <div className="p-12 text-center bg-slate-900/50 border border-slate-800 border-dashed rounded-3xl text-slate-400">
                     <ShieldAlert className="w-12 h-12 mx-auto mb-4 opacity-10" />
                     <p>Sin incidentes que coincidan con los filtros</p>
                 </div>
@@ -735,14 +739,14 @@ export default function Dashboard() {
                   <div className="flex-1">
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
                         {incident.isEdited && (
-                          <span className="text-[8px] font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
-                            ✏️ Editado
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
+                            <Pencil className="w-3 h-3" /> Editado
                           </span>
                         )}
                       </div>
-                      <span className="flex items-center gap-1 text-[10px] text-slate-500 font-medium">
+                      <span className="flex items-center gap-1 text-xs text-slate-400 font-medium">
                         <Clock className="w-3 h-3" />
                         {new Date(incident.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                       </span>
@@ -773,7 +777,7 @@ export default function Dashboard() {
                 </h3>
                 <div className="space-y-4">
                     {dealerships.length === 0 ? (
-                        <div className="text-xs text-slate-500 italic">No hay locales registrados...</div>
+                        <div className="text-xs text-slate-400 italic">No hay locales registrados...</div>
                     ) : dealerships.slice(0, 5).map((dealer) => {
                         let isOnline = dealer.status === 'online';
                         if (dealer.lastSeen) {
@@ -787,7 +791,7 @@ export default function Dashboard() {
                                     <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`}></div>
                                     <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">{dealer.name}</span>
                                 </div>
-                                <span className={`text-[9px] font-black uppercase tracking-tighter ${isOnline ? 'text-emerald-500/50' : 'text-slate-600'}`}>
+                                <span className={`text-[11px] font-black uppercase tracking-tighter ${isOnline ? 'text-emerald-400/80' : 'text-slate-400'}`}>
                                     {isOnline ? 'LIVE' : 'OFF'}
                                 </span>
                             </div>
@@ -832,7 +836,7 @@ export default function Dashboard() {
               <History className="w-6 h-6 text-brand-primary" />
               Cronología de Eventos
             </h2>
-            <p className="text-slate-500 text-xs font-medium uppercase tracking-[0.2em]">Historial completo de la red de seguridad</p>
+            <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em]">Historial completo de la red de seguridad</p>
           </div>
 
           <div className="flex flex-wrap items-center gap-4">
@@ -842,10 +846,10 @@ export default function Dashboard() {
                 <button
                   key={type}
                   onClick={() => setTimelineType(type)}
-                  className={`px-3 py-1.5 rounded-lg text-[10px] font-black tracking-widest uppercase transition-all ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-widest uppercase transition-all ${
                     timelineType === type 
                       ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
-                      : 'text-slate-500 hover:text-slate-300'
+                      : 'text-slate-400 hover:text-slate-300'
                   }`}
                 >
                   {type === 'ALL' ? 'Todos' : type}
@@ -861,19 +865,19 @@ export default function Dashboard() {
                   type="date" 
                   value={timelineDate.start}
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, start: e.target.value }))}
-                  className="bg-transparent border-none text-[10px] text-white focus:ring-0 w-24 p-0 outline-none"
+                  className="bg-transparent border-none text-xs text-white focus:ring-0 w-24 p-0 outline-none"
                 />
-                <span className="text-slate-600 text-xs">→</span>
+                <span className="text-slate-400 text-xs">→</span>
                 <input 
                   type="date" 
                   value={timelineDate.end}
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, end: e.target.value }))}
-                  className="bg-transparent border-none text-[10px] text-white focus:ring-0 w-24 p-0 outline-none"
+                  className="bg-transparent border-none text-xs text-white focus:ring-0 w-24 p-0 outline-none"
                 />
                 {(timelineDate.start || timelineDate.end) && (
                   <button 
                     onClick={() => setTimelineDate({ start: '', end: '' })}
-                    className="p-1 hover:bg-slate-700 rounded-full text-slate-400"
+                    className="p-2 hover:bg-slate-700 rounded-full text-slate-400"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -885,7 +889,7 @@ export default function Dashboard() {
 
         <div className="relative pl-8 border-l border-slate-800 space-y-12 ml-4 pt-4">
           {filteredTimelineIncidents.length === 0 ? (
-            <div className="py-12 text-center text-slate-500 italic flex flex-col items-center gap-4">
+            <div className="py-12 text-center text-slate-400 italic flex flex-col items-center gap-4">
               <Search className="w-10 h-10 opacity-20" />
               <p>No se encontraron eventos en este periodo o categoría.</p>
             </div>
@@ -908,20 +912,20 @@ export default function Dashboard() {
 
                 <div className="flex flex-col gap-3">
                   <div className="flex items-center gap-3">
-                    <span className="text-[11px] font-black text-brand-primary font-mono bg-brand-primary/10 px-2 py-0.5 rounded border border-brand-primary/20">
+                    <span className="text-xs font-black text-brand-primary font-mono bg-brand-primary/10 px-2 py-0.5 rounded border border-brand-primary/20">
                       {new Date(incident.createdAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
                     </span>
-                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
                       {new Date(incident.createdAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
                     </span>
-                    <div className={`px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter ${
+                    <div className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-tighter ${
                       incident.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
                     }`}>
                       {incident.status || 'OPEN'}
                     </div>
                     {incident.isEdited && (
-                      <div className="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-tighter bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                        ✏️ Editado
+                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-tighter bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                        <Pencil className="w-3 h-3" /> Editado
                       </div>
                     )}
                   </div>
@@ -935,20 +939,20 @@ export default function Dashboard() {
                       <div>
                         <h3 className="text-lg font-black text-white tracking-tighter leading-none mb-1 group-hover:text-brand-primary transition-colors flex items-center gap-2">
                           {incident.type === 'ROBO' ? (
-                            <><ShieldAlert className="w-5 h-5 text-red-500" /> 🛑 ROBO DETECTADO</>
+                            <><ShieldAlert className="w-5 h-5 text-red-500" /> ROBO DETECTADO</>
                           ) : incident.type === 'SOSPECHOSO' ? (
-                            <><AlertTriangle className="w-5 h-5 text-orange-500" /> ⚠️ ACTIVIDAD SOSPECHOSA</>
+                            <><AlertTriangle className="w-5 h-5 text-orange-500" /> ACTIVIDAD SOSPECHOSA</>
                           ) : incident.type === 'MARCAJE' ? (
-                            <><MapPin className="w-5 h-5 text-blue-500" /> 📍 MARCAJE DETECTADO</>
+                            <><MapPin className="w-5 h-5 text-blue-500" /> MARCAJE DETECTADO</>
                           ) : (
-                            <><Info className="w-5 h-5 text-slate-500" /> ℹ️ REPORTE DE SEGURIDAD</>
+                            <><Info className="w-5 h-5 text-slate-500" /> REPORTE DE SEGURIDAD</>
                           )}
                         </h3>
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest font-mono">#{incident.id.slice(0, 12)}</p>
+                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">#{incident.id.slice(0, 12)}</p>
                       </div>
                       <button 
                         onClick={() => setSelectedIncident(incident)}
-                        className="text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-widest bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 transition-all"
+                        className="text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 transition-all"
                       >
                         Ver Detalles
                       </button>
@@ -958,7 +962,7 @@ export default function Dashboard() {
                       {incident.description}
                     </p>
 
-                    <div className="mt-4 flex items-center gap-6 text-[10px] font-bold text-slate-600 uppercase tracking-widest">
+                    <div className="mt-4 flex items-center gap-6 text-xs font-bold text-slate-400 uppercase tracking-widest">
                       <div className="flex items-center gap-2">
                         <Users className="w-3.5 h-3.5" />
                         <span>Sede: {incident.dealershipId || 'Central Coquimbo'}</span>
@@ -1006,13 +1010,13 @@ export default function Dashboard() {
                     </div>
                     <div>
                       <h3 className="text-xl font-black text-white tracking-tight uppercase">Editar Evento</h3>
-                      <p className="text-brand-primary/60 text-[9px] font-bold uppercase tracking-[0.2em]">Actualizar detalles e imágenes del evento</p>
+                      <p className="text-brand-primary/85 text-[11px] font-bold uppercase tracking-[0.2em]">Actualizar detalles e imágenes del evento</p>
                     </div>
                   </div>
 
                   <div className="space-y-5">
                     <div>
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-2 block pl-1">Descripción del Suceso</label>
+                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block pl-1">Descripción del Suceso</label>
                       <textarea
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
@@ -1022,7 +1026,7 @@ export default function Dashboard() {
                     </div>
 
                     <div>
-                      <label className="text-[9px] font-black text-slate-500 uppercase tracking-[0.25em] mb-2 block pl-1">Evidencia Fotográfica</label>
+                      <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] mb-2 block pl-1">Evidencia Fotográfica</label>
                       <div className="flex gap-3">
                         <input
                           type="file"
@@ -1044,7 +1048,7 @@ export default function Dashboard() {
                           <button
                             type="button"
                             onClick={() => { setEditImage(null); setEditImagePreview(null); }}
-                            className="px-5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-500 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all"
+                            className="px-5 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-500 rounded-2xl text-xs font-black uppercase tracking-widest transition-all"
                           >
                             Quitar Foto
                           </button>
@@ -1120,7 +1124,7 @@ export default function Dashboard() {
                     <div>
                       <div className="flex items-center gap-2 mb-2">
                         <div className={`w-3 h-3 rounded-full ${selectedIncident.type === 'ROBO' ? 'bg-red-500' : selectedIncident.type === 'SOSPECHOSO' ? 'bg-orange-500' : selectedIncident.type === 'MARCAJE' ? 'bg-blue-500' : 'bg-slate-500'}`} />
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest font-mono">
+                        <span className="text-xs font-black text-slate-400 uppercase tracking-widest font-mono">
                           #{selectedIncident.id.slice(0, 12)}
                         </span>
                       </div>
@@ -1132,10 +1136,10 @@ export default function Dashboard() {
                         {selectedIncident.type}
                       </h2>
                       <div className="flex items-center gap-3">
-                        <p className="text-brand-primary text-[10px] font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
+                        <p className="text-brand-primary text-xs font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
                         {selectedIncident.isEdited && (
-                          <span className="text-[9px] font-black uppercase bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2 py-0.5 rounded-md animate-pulse">
-                            ✏️ Editado / Actualizado
+                          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2 py-0.5 rounded-md animate-pulse">
+                            <Pencil className="w-3 h-3" /> Editado / Actualizado
                           </span>
                         )}
                       </div>
@@ -1149,21 +1153,21 @@ export default function Dashboard() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 overflow-hidden">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1">Reportero</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1">Reportero</p>
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-[10px] font-bold text-white shrink-0">
+                          <div className="w-6 h-6 rounded-full bg-slate-700 flex items-center justify-center text-xs font-bold text-white shrink-0">
                             {reporterInfo?.displayName?.[0] || 'S'}
                           </div>
                           <div className="min-w-0">
                             <p className="text-xs font-bold text-white truncate">
                               {reporterInfo?.displayName || 'Personal de Seguridad'}
                             </p>
-                            <p className="text-[9px] text-slate-500 truncate">{reporterInfo?.email || selectedIncident.reporterId}</p>
+                            <p className="text-[11px] text-slate-400 truncate">{reporterInfo?.email || selectedIncident.reporterId}</p>
                           </div>
                         </div>
                       </div>
                       <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 shadow-inner">
-                        <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mb-1 font-mono">Sede / Dealership</p>
+                        <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 font-mono">Sede / Dealership</p>
                         <p className="text-xs font-mono text-white truncate">{selectedIncident.dealershipId || 'Central Coquimbo'}</p>
                       </div>
                     </div>
@@ -1171,20 +1175,20 @@ export default function Dashboard() {
                     {/* Admin/Security/Owner Actions */}
                     {['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '') && (
                       <div className="flex flex-col gap-3 pt-2">
-                        <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
+                        <p className="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
                         <div className="flex gap-3">
                           {selectedIncident.status === 'OPEN' || !selectedIncident.status ? (
                             <>
                               <button
                                 onClick={() => handleUpdateStatus('RESOLVED')}
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
                               >
                                 <CheckCircle className="w-4 h-4" />
                                 Resolver
                               </button>
                               <button
                                 onClick={() => handleUpdateStatus('FALSE_ALARM')}
-                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 border border-white/5"
+                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 border border-white/5"
                               >
                                 <Ban className="w-4 h-4" />
                                 Falsa Alarma
@@ -1193,7 +1197,7 @@ export default function Dashboard() {
                           ) : (
                             <button
                               onClick={() => handleUpdateStatus('OPEN')}
-                              className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
+                              className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
                             >
                               <AlertCircle className="w-4 h-4" />
                               Reabrir Incidente
@@ -1207,7 +1211,7 @@ export default function Dashboard() {
                       <div className="pt-2">
                         <button
                           onClick={startEditing}
-                          className="w-full bg-slate-800/80 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all uppercase text-[10px] tracking-widest flex items-center justify-center gap-2 border border-white/5 active:scale-[0.98]"
+                          className="w-full bg-slate-800/80 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 border border-white/5 active:scale-[0.98]"
                         >
                           <Camera className="w-4 h-4 text-slate-400" />
                           Editar Reporte (Agregar Foto / Detalles)
@@ -1215,15 +1219,15 @@ export default function Dashboard() {
                       </div>
                     )}
 
-                    <div className="flex items-center justify-between text-slate-500 pb-2">
+                    <div className="flex items-center justify-between text-slate-400 pb-2">
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
-                        <span className="text-[11px] font-bold font-mono">
+                        <span className="text-xs font-bold font-mono">
                           {new Date(selectedIncident.createdAt).toLocaleString('es-CL')}
                         </span>
                       </div>
                       {selectedIncident.isEdited && selectedIncident.editedAt && (
-                        <span className="text-[9px] font-bold font-mono text-brand-primary">
+                        <span className="text-[11px] font-bold font-mono text-brand-primary">
                           Actualizado: {new Date(selectedIncident.editedAt).toLocaleString('es-CL')}
                         </span>
                       )}
@@ -1255,12 +1259,6 @@ export default function Dashboard() {
       <StockAutomotoras 
         isOpen={isStockOpen} 
         onClose={() => setIsStockOpen(false)} 
-      />
-
-      <BottomNavbar 
-        activeTab={activeTab} 
-        setActiveTab={setActiveTab} 
-        onTriggerAlert={() => window.dispatchEvent(new CustomEvent('open-flash-report'))} 
       />
     </div>
   );

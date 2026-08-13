@@ -12,6 +12,12 @@
   font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
+/* Visible keyboard focus for all interactive controls */
+:where(a, button, input, select, textarea, [role="button"]):focus-visible {
+  outline: 3px solid var(--color-brand-primary) !important;
+  outline-offset: 2px !important;
+}
+
 html, body, #root {
   min-height: 100%;
 }

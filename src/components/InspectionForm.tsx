@@ -90,7 +90,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
             <header className="relative flex items-center justify-between border-b border-white/10 p-5 sm:p-6">
               <div>
                 <h2 className="text-xl font-black tracking-[-.04em] text-white">Fiscalización</h2>
-                <p className="mt-1 text-[10px] font-black uppercase tracking-[.25em] text-slate-500">alerta entre automotoras</p>
+                <p className="mt-1 text-xs font-black uppercase tracking-[.25em] text-slate-400">alerta entre automotoras</p>
               </div>
               <button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
                 <X className="h-5 w-5" />
@@ -99,7 +99,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
 
             <div className="relative flex-1 min-h-0 space-y-5 overflow-y-auto p-5 sm:p-6">
               <div className="rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-xs leading-5 text-red-100">
-                <strong className="block text-[10px] uppercase tracking-[.28em] text-red-200 mb-1">Nota</strong>
+                <strong className="block text-xs uppercase tracking-[.28em] text-red-200 mb-1">Nota</strong>
                 Selecciona todas las entidades que te fiscalizaron y alerta a las demás automotoras para que estén preparadas. Puedes elegir más de una opción simultáneamente.
               </div>
 
@@ -124,7 +124,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
               </div>
 
               <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[.22em] text-slate-500">
+                <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[.22em] text-slate-400">
                   <Mic className="h-4 w-4" /> Mensaje
                 </span>
                 <textarea
@@ -141,7 +141,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
                   animate={{ opacity: 1, y: 0 }}
                   className="rounded-3xl border border-white/10 bg-slate-900/90 p-4"
                 >
-                  <p className="text-[10px] font-black uppercase tracking-[.24em] text-brand-primary">Seleccionaste</p>
+                  <p className="text-xs font-black uppercase tracking-[.24em] text-brand-primary">Seleccionaste</p>
                   <p className="mt-2 text-sm leading-6 text-slate-300">{selectedText || 'Mensaje personalizado sin entidad seleccionada'}</p>
                   <div className="mt-4 grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setConfirming(false)} className="rounded-2xl border border-white/10 py-3 text-xs font-black uppercase tracking-[.16em] text-slate-300 transition hover:bg-white/10">

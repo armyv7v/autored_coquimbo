@@ -203,7 +203,7 @@ export default function NotificationManager() {
                 
                 <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-xl border border-white/5 font-mono">
                   <MapPin className="w-3 h-3 text-brand-primary" />
-                  <span className="text-[10px] text-slate-300">Cercano a Dealership Red</span>
+                  <span className="text-xs text-slate-300">Cercano a Dealership Red</span>
                 </div>
               </div>
             </div>
@@ -213,7 +213,7 @@ export default function NotificationManager() {
                 navigate(`/map?incident=${activeAlert.id}`);
                 setActiveAlert(null);
               }}
-              className="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-white text-[10px] font-black py-3 rounded-xl transition-all uppercase tracking-widest border border-white/5 flex items-center justify-center gap-2"
+              className="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-black py-3 rounded-xl transition-all uppercase tracking-widest border border-white/5 flex items-center justify-center gap-2"
             >
               <Bell className="w-3 h-3" /> Ver en Mapa
             </button>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { ShieldAlert, X, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -9,28 +9,6 @@ interface AlertConfirmationModalProps {
 }
 
 export default function AlertConfirmationModal({ isOpen, onClose, onConfirm }: AlertConfirmationModalProps) {
-  const [seconds, setSeconds] = useState(5);
-
-  useEffect(() => {
-    let timer: any = null;
-    if (isOpen) {
-      setSeconds(5);
-      timer = setInterval(() => {
-        setSeconds((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            onConfirm();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isOpen]);
-
   if (!isOpen) return null;
 
   return (
@@ -58,33 +36,8 @@ export default function AlertConfirmationModal({ isOpen, onClose, onConfirm }: A
           </h3>
 
           <p className="text-xs text-slate-300 mb-5 font-medium leading-relaxed">
-            Se enviará una notificación crítica de alta prioridad a todas las automotoras de la red en:
+            Se enviará una notificación crítica de alta prioridad a todas las automotoras de la red. Esta acción requiere tu confirmación explícita.
           </p>
-
-          {/* 5-Second Countdown Ring */}
-          <div className="relative w-28 h-28 mx-auto mb-6 flex items-center justify-center">
-            <svg className="w-full h-full -rotate-90" viewBox="0 0 36 36">
-              <path
-                className="text-slate-800"
-                strokeWidth="3.5"
-                stroke="currentColor"
-                fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-              <path
-                className="text-red-500 transition-all duration-1000 ease-linear"
-                strokeDasharray={`${(seconds / 5) * 100}, 100`}
-                strokeWidth="3.5"
-                strokeLinecap="round"
-                stroke="currentColor"
-                fill="none"
-                d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
-              />
-            </svg>
-            <span className="absolute font-black text-4xl text-white font-display">
-              {seconds}s
-            </span>
-          </div>
 
           {/* Action buttons */}
           <div className="space-y-3">
@@ -101,7 +54,7 @@ export default function AlertConfirmationModal({ isOpen, onClose, onConfirm }: A
               className="w-full py-3.5 px-6 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black text-xs uppercase tracking-widest shadow-xl shadow-red-950/80 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
             >
               <Check className="w-4 h-4" />
-              Disparar Inmediatamente
+              Continuar al Reporte
             </button>
           </div>
         </motion.div>

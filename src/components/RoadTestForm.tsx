@@ -114,7 +114,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                 </div>
                 <div>
                   <h2 className="text-xl font-black tracking-[-.04em] text-white">PRUEBA EN RUTA</h2>
-                  <p className="text-[10px] font-black uppercase tracking-[.25em] text-slate-500">Respaldo previo a salida</p>
+                  <p className="text-xs font-black uppercase tracking-[.25em] text-slate-400">Respaldo previo a salida</p>
                 </div>
               </div>
               <button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
@@ -124,7 +124,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
 
             <div className="relative flex-1 min-h-0 space-y-5 overflow-y-auto p-5 sm:p-6">
               <div className="rounded-2xl border border-red-500/30 bg-red-500/10 p-4 text-xs leading-5 text-red-100">
-                <strong className="block text-[10px] uppercase font-black tracking-[.28em] text-red-200 mb-1">NOTAS</strong>
+                <strong className="block text-xs uppercase font-black tracking-[.28em] text-red-200 mb-1">NOTAS</strong>
                 Cada Prueba en Ruta queda registrada por seguridad y respaldo en caso de algún imprevisto.
               </div>
 
@@ -152,14 +152,14 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                               <Check className="h-3.5 w-3.5" /> [✓]
                             </span>
                           ) : (
-                            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-[10px] font-black text-amber-400 border border-amber-500/20">
+                            <span className="rounded-full bg-amber-500/10 px-2 py-0.5 text-xs font-black text-amber-400 border border-amber-500/20">
                               [✗]
                             </span>
                           )}
                         </span>
                         <span>
                           <span className="block text-xs font-black uppercase tracking-wider">{field.label}</span>
-                          <span className="mt-1 block text-[10px] text-slate-400">{selected ? selected.name : field.helper}</span>
+                          <span className="mt-1 block text-xs text-slate-400">{selected ? selected.name : field.helper}</span>
                         </span>
                       </button>
                     </div>
@@ -182,7 +182,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
               <div className="rounded-2xl border border-blue-500/20 bg-blue-500/10 p-3.5 text-xs leading-relaxed text-blue-200 flex items-start gap-3">
                 <ShieldCheck className="h-5 w-5 text-blue-400 shrink-0 mt-0.5" />
                 <div>
-                  <strong className="block text-[10px] uppercase font-black tracking-widest text-blue-300">Respaldo Automático de Seguridad</strong>
+                  <strong className="block text-xs uppercase font-black tracking-widest text-blue-300">Respaldo Automático de Seguridad</strong>
                   Cada viaje queda registrado en su totalidad con ID propio en su panel de control como respaldo de algún siniestro.
                 </div>
               </div>

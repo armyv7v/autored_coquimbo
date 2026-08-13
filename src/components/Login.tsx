@@ -189,14 +189,14 @@ export default function Login() {
 
           <div className="grid grid-cols-[1fr_1fr] gap-5 items-end">
             <div className="panel-surface rounded-[2rem] border border-white/10 p-5 backdrop-blur-xl bg-slate-950/70">
-              <p className="text-[10px] uppercase tracking-[.28em] text-slate-400 font-black mb-4 flex items-center justify-between">
+              <p className="text-xs uppercase tracking-[.28em] text-slate-400 font-black mb-4 flex items-center justify-between">
                 <span>Nodos en red</span>
                 <span className="h-2 w-2 rounded-full bg-emerald-400 animate-ping" />
               </p>
               <div className="grid grid-cols-2 gap-2 text-xs text-slate-300">
                 {networkPoints.map((point, index) => (
                   <div key={point} className="flex items-center gap-2 truncate">
-                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-primary/20 text-[9px] text-brand-primary font-black">
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-primary/20 text-[11px] text-brand-primary font-black">
                       {index + 1}
                     </span>
                     <span className="truncate">{point}</span>
@@ -206,7 +206,7 @@ export default function Login() {
             </div>
 
             <div className="panel-surface relative rounded-[2rem] border border-brand-primary/30 p-5 overflow-hidden backdrop-blur-xl bg-slate-950/80">
-              <p className="text-[10px] uppercase tracking-[.32em] text-brand-primary font-black mb-2">
+              <p className="text-xs uppercase tracking-[.32em] text-brand-primary font-black mb-2">
                 Simulación en vivo
               </p>
               <p className="text-xs text-slate-300 leading-relaxed mb-4">
@@ -288,7 +288,7 @@ export default function Login() {
                   <div className="grid gap-3 sm:grid-cols-2">
                     {capabilityCards.map(([number, text]) => (
                       <div key={number} className="rounded-3xl border border-white/10 bg-white/[.04] p-4">
-                        <p className="mb-3 text-[10px] font-black text-brand-primary tracking-[.3em]">{number}</p>
+                        <p className="mb-3 text-xs font-black text-brand-primary tracking-[.3em]">{number}</p>
                         <p className="text-sm leading-6 text-slate-300">{text}</p>
                       </div>
                     ))}
@@ -355,7 +355,7 @@ export default function Login() {
                     <>
                       {/* Notice Banner (Boceto 3) */}
                       <div className="rounded-2xl border border-red-500/40 bg-red-500/15 p-4 text-xs leading-relaxed text-red-100 shadow-lg">
-                        <strong className="block text-[11px] font-black uppercase tracking-[.28em] text-red-300 mb-1">IMPORTANTE</strong>
+                        <strong className="block text-xs font-black uppercase tracking-[.28em] text-red-300 mb-1">IMPORTANTE</strong>
                         INGRESAR SOLO DATOS de Automotora y Representante legal para blindar nuestra RED de posibles impostores.
                       </div>
 
@@ -415,7 +415,7 @@ export default function Login() {
                       </button>
                     </div>
                   ) : (
-                    <p className="pt-2 text-xs leading-5 text-slate-500">
+                    <p className="pt-2 text-xs leading-5 text-slate-400">
                       Si ya tienes credenciales activas, vuelve al acceso e inicia sesión normalmente.
                     </p>
                   )}
@@ -442,7 +442,7 @@ function BrandHeader({ compact = false }: { compact?: boolean }) {
       </div>
       <div>
         <p className={`${compact ? 'text-lg' : 'text-xl'} font-black tracking-[-.04em]`}>AutoRed <span className="text-brand-primary">Coquimbo</span></p>
-        <p className="text-[9px] uppercase tracking-[.32em] text-slate-500 font-black">red privada automotora</p>
+        <p className="text-[11px] uppercase tracking-[.32em] text-slate-400 font-black">red privada automotora</p>
       </div>
     </div>
   );
@@ -451,7 +451,7 @@ function BrandHeader({ compact = false }: { compact?: boolean }) {
 function Field({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-xs font-bold uppercase tracking-[.18em] text-slate-500">{label}</span>
+      <span className="mb-2 block text-xs font-bold uppercase tracking-[.18em] text-slate-400">{label}</span>
       <span className="relative block">
         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 [&_svg]:h-5 [&_svg]:w-5">{icon}</span>
         {children}
