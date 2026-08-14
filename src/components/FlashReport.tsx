@@ -184,12 +184,12 @@ export default function FlashReport() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.95 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full sm:max-w-lg bg-slate-950 border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
+              className="w-full sm:max-w-lg bg-slate-950 border-2 border-red-500/90 rounded-t-3xl sm:rounded-3xl shadow-[0_0_50px_rgba(239,68,68,0.4)] overflow-hidden flex flex-col max-h-[92vh]"
             >
               {/* Header */}
-              <div className="p-5 border-b border-slate-800/80 flex items-center justify-between bg-red-950/30">
+              <div className="p-5 border-b border-red-500/30 flex items-center justify-between bg-gradient-to-r from-red-950/50 via-slate-950 to-slate-950">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-900/40">
+                  <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-900/50 border border-red-400/40">
                     <AlertTriangle className="w-5 h-5" />
                   </div>
                   <div>

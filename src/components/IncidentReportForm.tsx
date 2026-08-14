@@ -154,24 +154,24 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl overflow-hidden"
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border-2 border-red-500/90 bg-slate-950 shadow-[0_0_50px_rgba(239,68,68,0.4)] overflow-hidden"
           >
             {/* Mobile Sheet Drag Handle */}
             <div className="flex sm:hidden justify-center pt-3 pb-1">
-              <div className="w-12 h-1.5 rounded-full bg-slate-700/80" />
+              <div className="w-12 h-1.5 rounded-full bg-red-500/50" />
             </div>
 
-            <div className="p-4 border-b border-slate-800/80 flex items-center justify-between">
+            <div className="p-4 border-b border-red-500/30 bg-gradient-to-r from-red-950/50 via-slate-950 to-slate-950 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400">
+                <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center justify-center text-red-400 shadow-md shadow-red-950">
                   <ShieldAlert className="w-5 h-5" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                     REPORTE DE INCIDENTE
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/10 text-red-400 border border-red-500/20">ALERTA</span>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">ALERTA</span>
                   </h2>
-                  <p className="text-xs text-slate-400">Notificación inmediata a la red de concesionarias</p>
+                  <p className="text-xs text-red-300/80">Notificación inmediata a la red de concesionarias</p>
                 </div>
               </div>
               <button 

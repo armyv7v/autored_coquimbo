@@ -48,19 +48,19 @@ export default function ExecutiveDigestModal({
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: 50, scale: 0.96 }}
           transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          className="w-full sm:max-w-xl bg-slate-950 border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+          className="w-full sm:max-w-xl bg-slate-950 border-2 border-brand-primary/90 rounded-t-3xl sm:rounded-3xl shadow-[0_0_50px_rgba(255,107,0,0.4)] overflow-hidden flex flex-col max-h-[90vh]"
         >
           {/* Header */}
-          <div className="p-5 border-b border-slate-800/80 flex items-center justify-between bg-slate-900/50">
+          <div className="p-5 border-b border-brand-primary/30 flex items-center justify-between bg-gradient-to-r from-orange-950/50 via-slate-950 to-slate-950">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand-primary/10 border border-brand-primary/20 flex items-center justify-center text-brand-primary">
+              <div className="w-10 h-10 rounded-xl bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center text-brand-primary shadow-md shadow-orange-950">
                 <FileText className="w-5 h-5" />
               </div>
               <div>
                 <h3 className="font-bold text-white text-sm uppercase tracking-wider">
                   Minuta Ejecutiva de Seguridad
                 </h3>
-                <p className="text-xs text-slate-400 font-mono">
+                <p className="text-xs text-brand-primary/80 font-mono">
                   Resumen de estado para Directorio y Gerencia
                 </p>
               </div>

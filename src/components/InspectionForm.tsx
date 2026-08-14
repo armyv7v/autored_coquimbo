@@ -87,24 +87,24 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl overflow-hidden"
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border-2 border-sky-500/90 bg-slate-950 shadow-[0_0_50px_rgba(14,165,233,0.4)] overflow-hidden"
           >
             {/* Mobile Sheet Drag Handle */}
             <div className="flex sm:hidden justify-center pt-3 pb-1">
-              <div className="w-12 h-1.5 rounded-full bg-slate-700/80" />
+              <div className="w-12 h-1.5 rounded-full bg-sky-500/50" />
             </div>
 
-            <header className="flex items-center justify-between border-b border-slate-800/80 px-5 py-4">
+            <header className="flex items-center justify-between border-b border-sky-500/30 bg-gradient-to-r from-sky-950/50 via-slate-950 to-slate-950 px-5 py-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/20 border border-sky-500/50 flex items-center justify-center text-sky-400 shadow-md shadow-sky-950">
                   <ShieldCheck className="h-5 w-5" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-2">
                     FISCALIZACIÓN
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">ALERTA RED</span>
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40 font-bold">ALERTA RED</span>
                   </h2>
-                  <p className="text-xs text-slate-400">Notificar presencia de fiscalizadores a la red</p>
+                  <p className="text-xs text-sky-300/80">Notificar presencia de fiscalizadores a la red</p>
                 </div>
               </div>
               <button
