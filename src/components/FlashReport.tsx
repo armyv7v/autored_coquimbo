@@ -437,7 +437,7 @@ export default function FlashReport() {
       <AlertConfirmationModal
         isOpen={showAlertConfirm}
         onClose={() => setShowAlertConfirm(false)}
-        onConfirm={() => {
+        onOpenDetailedReport={() => {
           setShowAlertConfirm(false);
           setIsOpen(true);
         }}
