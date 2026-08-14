@@ -13,6 +13,7 @@ import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { safeUUID } from '../lib/uuid';
+import { formatTimeCL, formatDateCL, formatFullDateTimeCL } from '../lib/dateUtils';
 
 // Fix for default marker icons in Leaflet + React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -608,94 +609,133 @@ export default function MapView() {
             )
             .map((incident) => {
               const isSelected = incident.id === selectedIncidentId;
+              const isPanicOrRobo = incident.type === 'ROBO' || (incident as any).isPanic === true;
+              const isOpen = !incident.status || incident.status === 'OPEN';
               const typeColor =
-                incident.type === 'ROBO' ? '#ef4444' : incident.type === 'SOSPECHOSO' ? '#f97316' : '#0ea5e9';
+                incident.type === 'ROBO' ? '#ef4444' : incident.type === 'SOSPECHOSO' ? '#f59e0b' : '#0ea5e9';
+
+              const formattedDateTime = formatFullDateTimeCL(incident.createdAt || (incident as any).clientTimestamp);
 
               return (
-                <Marker
-                  key={incident.id}
-                  position={[incident.location.lat, incident.location.lng]}
-                  icon={L.divIcon({
-                    className: 'incident-icon',
-                    html: `
-                      <div class="relative flex items-center justify-center">
-                        ${isSelected ? `<div class="absolute w-12 h-12 bg-red-500/30 rounded-full animate-ping"></div>` : ''}
-                        <div class="w-8 h-8 rounded-xl border border-white/20 shadow-xl flex items-center justify-center transition-all ${isSelected ? 'scale-125 z-[1001]' : ''}" style="background-color: ${typeColor}; color: white;">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg>
+                <React.Fragment key={incident.id}>
+                  {/* Pulsing Radar Wave on Map for Active Panic / Robbery Alerts */}
+                  {isPanicOrRobo && isOpen && (
+                    <Circle
+                      center={[incident.location.lat, incident.location.lng]}
+                      radius={350}
+                      pathOptions={{
+                        color: '#ef4444',
+                        fillColor: '#ef4444',
+                        fillOpacity: 0.15,
+                        weight: 2,
+                        dashArray: '6, 6',
+                      }}
+                    />
+                  )}
+
+                  <Marker
+                    position={[incident.location.lat, incident.location.lng]}
+                    icon={L.divIcon({
+                      className: 'incident-icon',
+                      html: `
+                        <div class="relative flex items-center justify-center">
+                          ${
+                            isPanicOrRobo && isOpen
+                              ? `<div class="absolute w-16 h-16 bg-red-600/35 rounded-full animate-ping pointer-events-none"></div>
+                                 <div class="absolute w-24 h-24 border-2 border-red-500/40 rounded-full animate-pulse pointer-events-none"></div>`
+                              : isSelected
+                              ? `<div class="absolute w-12 h-12 bg-red-500/30 rounded-full animate-ping pointer-events-none"></div>`
+                              : ''
+                          }
+                          <div class="w-8 h-8 rounded-xl border border-white/25 shadow-xl flex items-center justify-center transition-all ${
+                            isPanicOrRobo && isOpen
+                              ? 'scale-110 ring-4 ring-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.9)] animate-bounce'
+                              : isSelected
+                              ? 'scale-125 z-[1001]'
+                              : ''
+                          }" style="background-color: ${typeColor}; color: white;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg>
+                          </div>
                         </div>
-                      </div>
-                    `,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
-                  })}
-                  ref={(ref) => {
-                    if (ref && isSelected) {
-                      ref.openPopup();
-                    }
-                  }}
-                >
-                  <Popup>
-                    <div className="p-4 w-72 bg-slate-950/95 border border-slate-800 rounded-2xl text-slate-100 shadow-2xl backdrop-blur-xl">
-                      <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-800/80">
-                        <div className="flex items-center gap-2">
-                          <div
-                            className={`p-1.5 rounded-lg ${
-                              incident.type === 'ROBO' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                      `,
+                      iconSize: [32, 32],
+                      iconAnchor: [16, 16],
+                    })}
+                    ref={(ref) => {
+                      if (ref && isSelected) {
+                        ref.openPopup();
+                      }
+                    }}
+                  >
+                    <Popup>
+                      <div className="p-4 w-72 bg-slate-950/95 border border-slate-800 rounded-2xl text-slate-100 shadow-2xl backdrop-blur-xl">
+                        <div className="flex items-center justify-between mb-3 pb-3 border-b border-slate-800/80">
+                          <div className="flex items-center gap-2">
+                            <div
+                              className={`p-1.5 rounded-lg ${
+                                incident.type === 'ROBO' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
+                              }`}
+                            >
+                              <ShieldAlert className="w-4 h-4" />
+                            </div>
+                            <h4 className="font-mono font-bold uppercase text-xs tracking-wider text-white">
+                              {incident.type}
+                            </h4>
+                          </div>
+                          <span
+                            className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded ${
+                              incident.status === 'RESOLVED'
+                                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                                : incident.status === 'FALSE_ALARM'
+                                ? 'bg-slate-800 text-slate-400 border border-slate-700'
+                                : 'bg-red-500/15 text-red-400 border border-red-500/30'
                             }`}
                           >
-                            <ShieldAlert className="w-4 h-4" />
-                          </div>
-                          <h4 className="font-mono font-bold uppercase text-xs tracking-wider text-white">
-                            {incident.type}
-                          </h4>
-                        </div>
-                        <span
-                          className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded ${
-                            incident.status === 'RESOLVED'
-                              ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
-                              : incident.status === 'FALSE_ALARM'
-                              ? 'bg-slate-800 text-slate-400 border border-slate-700'
-                              : 'bg-red-500/15 text-red-400 border border-red-500/30'
-                          }`}
-                        >
-                          {incident.status || 'OPEN'}
-                        </span>
-                      </div>
-
-                      <div className="space-y-3">
-                        {incident.imageUrl && (
-                          <div className="rounded-xl overflow-hidden border border-slate-800 h-32 relative group">
-                            <img src={incident.imageUrl} alt="Evidencia" className="w-full h-full object-cover" />
-                          </div>
-                        )}
-                        <p className="text-xs text-slate-300 leading-relaxed">{incident.description || 'Sin descripción.'}</p>
-
-                        <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 pt-2 border-t border-slate-800/60">
-                          <span>Sede: {incident.dealershipId}</span>
-                          <span>{new Date(incident.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            {incident.status || 'OPEN'}
+                          </span>
                         </div>
 
-                        <div className="flex gap-2 pt-1">
-                          {profile?.role === 'ADMIN' && (
-                            <button
-                              onClick={() => handleUpdateStatus(incident.id, incident.status === 'RESOLVED' ? 'OPEN' : 'RESOLVED')}
-                              className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono font-bold text-slate-300 hover:text-white transition"
-                            >
-                              {incident.status === 'RESOLVED' ? 'Reabrir' : 'Resolver'}
-                            </button>
+                        <div className="space-y-3">
+                          {incident.imageUrl && (
+                            <div className="rounded-xl overflow-hidden border border-slate-800 h-32 relative group">
+                              <img src={incident.imageUrl} alt="Evidencia" className="w-full h-full object-cover" />
+                            </div>
                           )}
-                          <button
-                            onClick={() => handleShare(incident.id)}
-                            className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition"
-                            title="Copiar Enlace"
-                          >
-                            <Share2 className="w-4 h-4" />
-                          </button>
+                          <p className="text-xs text-slate-300 leading-relaxed">{incident.description || 'Sin descripción.'}</p>
+
+                          <div className="flex flex-col gap-1 text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/60">
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-500">Sede:</span>
+                              <span className="text-slate-200 font-bold truncate max-w-[170px]">{incident.dealershipId || 'Automotora Central'}</span>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <span className="text-slate-500">Fecha / Hora:</span>
+                              <span className="text-slate-300 font-bold">{formattedDateTime}</span>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-2 pt-1">
+                            {profile?.role === 'ADMIN' && (
+                              <button
+                                onClick={() => handleUpdateStatus(incident.id, incident.status === 'RESOLVED' ? 'OPEN' : 'RESOLVED')}
+                                className="flex-1 py-2 rounded-xl bg-slate-900 border border-slate-800 text-xs font-mono font-bold text-slate-300 hover:text-white transition"
+                              >
+                                {incident.status === 'RESOLVED' ? 'Reabrir' : 'Resolver'}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => handleShare(incident.id)}
+                              className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition"
+                              title="Copiar Enlace"
+                            >
+                              <Share2 className="w-4 h-4" />
+                            </button>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Popup>
-                </Marker>
+                    </Popup>
+                  </Marker>
+                </React.Fragment>
               );
             })}
       </MapContainer>

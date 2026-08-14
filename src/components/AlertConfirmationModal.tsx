@@ -60,18 +60,20 @@ export default function AlertConfirmationModal({
       const incidentId = safeUUID();
       const alertId = safeUUID();
       const currentUserId = auth.currentUser?.uid || profile?.uid || 'PANIC_TRIGGER';
+      const dealershipName = profile?.dealershipName || (profile?.dealershipId && profile.dealershipId !== 'TEMP_ID' ? profile.dealershipId : 'Automotora Central');
 
       const incidentData = {
         id: incidentId,
         type: 'ROBO',
         description: '🚨 ALERTA MÁXIMA / BOTÓN DE PÁNICO ACTIVADO EN AUTOMOTORA',
         reporterId: currentUserId,
-        dealershipId: profile?.dealershipId || 'CENTRAL_COQUIMBO',
+        dealershipId: dealershipName,
         location: { lat: location[0], lng: location[1], geohash },
         imageUrl: '',
         status: 'OPEN',
         isPanic: true,
         createdAt: serverTimestamp(),
+        clientTimestamp: new Date().toISOString(),
       };
 
       await setDoc(doc(db, 'incidents', incidentId), incidentData);
@@ -80,6 +82,7 @@ export default function AlertConfirmationModal({
         id: alertId,
         incidentId: incidentId,
         createdAt: serverTimestamp(),
+        clientTimestamp: new Date().toISOString(),
         triggeredManually: true,
         triggeredBy: currentUserId,
         notifiedDealershipIds: [],

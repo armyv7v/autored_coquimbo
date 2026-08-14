@@ -51,35 +51,49 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
           );
         }
 
+        const getActiveStyle = (tabName?: string) => {
+          switch (tabName) {
+            case 'MAPA':
+              return 'text-sky-400 font-black scale-105 bg-sky-500/10 border border-sky-500/40 shadow-[0_0_15px_rgba(14,165,233,0.25)]';
+            case 'FEED':
+              return 'text-emerald-400 font-black scale-105 bg-emerald-500/10 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)]';
+            case 'HISTORIAL':
+              return 'text-amber-400 font-black scale-105 bg-amber-500/10 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.25)]';
+            case 'PANEL':
+            default:
+              return 'text-brand-primary font-black scale-105 bg-brand-primary/10 border border-brand-primary/40 shadow-[0_0_15px_rgba(255,107,0,0.25)]';
+          }
+        };
+
         if (item.path) {
           return (
             <NavLink
               key={item.id}
               to={item.path}
               className={({ isActive }) =>
-                `flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all active:scale-95 ${
-                  isActive ? 'text-brand-primary font-black scale-105' : 'text-slate-400 hover:text-slate-200'
+                `flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
+                  isActive ? getActiveStyle(item.tab) : 'text-slate-400 hover:text-slate-200'
                 }`
               }
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
+              <span className="text-[10px] uppercase tracking-wider font-bold">{item.label}</span>
             </NavLink>
           );
         }
+
+        const isCurrentActive = location.pathname === '/' && activeTab === item.tab;
 
         return (
           <button
             key={item.id}
             onClick={() => handleTabClick(item.tab!)}
-            className={`flex flex-col items-center gap-1 py-2 px-3 rounded-2xl transition-all active:scale-95 ${
-              location.pathname === '/' && activeTab === item.tab
-                ? 'text-brand-primary font-black scale-105'
-                : 'text-slate-400 hover:text-slate-200'
+            className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
+              isCurrentActive ? getActiveStyle(item.tab) : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Icon className="w-5 h-5" />
-            <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
+            <span className="text-[10px] uppercase tracking-wider font-bold">{item.label}</span>
           </button>
         );
       })}
