@@ -50,6 +50,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 import InteractiveNetworkWeb from './components/InteractiveNetworkWeb';
+import CommandPalette from './components/CommandPalette';
 
 interface MainLayoutProps {
   activeTab: TabType;
@@ -59,14 +60,16 @@ interface MainLayoutProps {
 }
 
 function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainLayoutProps) {
-  return (
-    <div className="flex flex-col h-screen bg-slate-950 text-slate-100 overflow-hidden relative">
-      {/* Background Interactive Cyber Network (Identical to Landing Page, placed in global background) */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-25">
-        <InteractiveNetworkWeb className="w-full h-full" interactive={false} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_20%,rgba(2,6,23,0.85)_100%)]" />
-      </div>
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
+  React.useEffect(() => {
+    const handleOpenPalette = () => setIsPaletteOpen(true);
+    window.addEventListener('open-command-palette', handleOpenPalette);
+    return () => window.removeEventListener('open-command-palette', handleOpenPalette);
+  }, []);
+
+  return (
+    <div className="flex flex-col h-screen bg-slate-950 tactical-bg text-slate-100 overflow-hidden relative">
       <div className="relative z-10 flex flex-col h-full overflow-hidden">
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} onTriggerAlert={onTriggerAlert} />
         <main className="flex-1 overflow-hidden relative">
@@ -75,6 +78,11 @@ function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainL
           </div>
           <FlashReport />
           <NotificationManager />
+          <CommandPalette
+            isOpen={isPaletteOpen}
+            onClose={() => setIsPaletteOpen(false)}
+            setActiveTab={setActiveTab}
+          />
         </main>
         <BottomNavbar activeTab={activeTab} setActiveTab={setActiveTab} onTriggerAlert={onTriggerAlert} />
       </div>

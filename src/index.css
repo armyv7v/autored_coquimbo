@@ -7,14 +7,15 @@
 }
 
 :root {
-  background-color: #020617;
+  background-color: #030712;
   color: #f8fafc;
   font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
 /* Visible keyboard focus for all interactive controls */
 :where(a, button, input, select, textarea, [role="button"]):focus-visible {
-  outline: 3px solid var(--color-brand-primary) !important;
+  outline: 2px solid var(--color-brand-primary) !important;
   outline-offset: 2px !important;
 }
 
@@ -25,53 +26,59 @@ html, body, #root {
 body {
   margin: 0;
   overflow-x: hidden;
+  background-color: #030712;
 }
 
 .font-display {
   font-family: "Rajdhani", "Outfit", ui-sans-serif, system-ui, sans-serif;
 }
 
-.dashboard-shell {
-  background:
-    radial-gradient(circle at 16% 8%, rgba(255, 90, 31, 0.13), transparent 28rem),
-    radial-gradient(circle at 86% 18%, rgba(14, 165, 233, 0.08), transparent 30rem),
-    linear-gradient(180deg, #070b14 0%, #040712 58%, #020617 100%);
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
 }
 
-.dashboard-shell::before {
-  content: "";
-  position: fixed;
-  inset: 72px 0 0;
-  pointer-events: none;
-  opacity: 0.075;
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.48) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.48) 1px, transparent 1px);
-  background-size: 44px 44px;
-  mask-image: linear-gradient(to bottom, black, transparent 78%);
+/* Tactical Background Mesh */
+.tactical-bg {
+  background-color: #030712;
+  background-image: 
+    radial-gradient(circle at 50% 0%, rgba(255, 90, 31, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 100%, rgba(14, 165, 233, 0.03) 0%, transparent 40%),
+    linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
 }
 
-.dashboard-shell::after,
-.auth-noise::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.065;
-  background-image:
-    radial-gradient(circle at 20% 20%, rgba(255,255,255,.12) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 80% 60%, rgba(255,255,255,.08) 0 1px, transparent 1.5px);
-  background-size: 22px 22px, 28px 28px;
-  mix-blend-mode: screen;
+/* High-precision tactical panels */
+.tactical-card {
+  background: linear-gradient(180deg, rgba(15, 23, 42, 0.75) 0%, rgba(10, 15, 29, 0.85) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 10px 30px -10px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.tactical-card-hover {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.tactical-card-hover:hover {
+  border-color: rgba(255, 90, 31, 0.35);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 16px 36px -12px rgba(255, 90, 31, 0.12);
 }
 
 .panel-surface {
   background:
-    linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.025)),
-    radial-gradient(circle at top, rgba(255, 90, 31, .08), transparent 38%);
+    linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)),
+    radial-gradient(circle at top, rgba(255, 90, 31, .06), transparent 45%),
+    #090d16;
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.06),
-    0 28px 60px rgba(0,0,0,.28);
+    0 20px 45px rgba(0,0,0,.45);
 }
 
 .network-mark {
@@ -165,29 +172,35 @@ body {
   background: #020617 !important;
 }
 
-/* Red Team Alert Pulsing */
-@keyframes alert-pulse {
-  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
-  70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+.leaflet-popup-content-wrapper {
+  background: #090d16 !important;
+  color: #f8fafc !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 1.25rem !important;
+  box-shadow: 0 25px 60px -12px rgba(0, 0, 0, 0.8) !important;
+  padding: 0 !important;
 }
 
-.alert-pulse {
-  animation: alert-pulse 2s infinite;
+.leaflet-popup-content {
+  margin: 0 !important;
+  line-height: inherit !important;
 }
 
-.network-orb {
-  position: absolute;
-  width: 18rem;
-  height: 18rem;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 90, 31, 0.18);
-  background:
-    radial-gradient(circle, rgba(255, 90, 31, 0.16) 0 2px, transparent 3px),
-    radial-gradient(circle, rgba(255, 255, 255, 0.14) 0 1px, transparent 2px);
-  background-size: 74px 74px, 38px 38px;
-  box-shadow: inset 0 0 70px rgba(255, 90, 31, 0.08), 0 0 80px rgba(14, 165, 233, 0.06);
-  animation: network-drift 9s ease-in-out infinite;
+.leaflet-popup-tip {
+  background: #090d16 !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  box-shadow: none !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button {
+  top: 12px !important;
+  right: 12px !important;
+  color: #94a3b8 !important;
+  padding: 4px !important;
+}
+
+.leaflet-container a.leaflet-popup-close-button:hover {
+  color: #ffffff !important;
 }
 
 .animation-delay-700 {

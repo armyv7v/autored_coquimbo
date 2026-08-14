@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Image as ImageIcon, Check, Loader2, Info } from 'lucide-react';
+import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Share2, Copy, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
 import { db, auth, storage } from '../lib/firebase';
@@ -12,16 +12,17 @@ import { safeUUID } from '../lib/uuid';
 import AlertConfirmationModal from './AlertConfirmationModal';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 
 // Fix for default marker icons in Leaflet + React
 import icon from 'leaflet/dist/images/marker-icon.png';
 import iconShadow from 'leaflet/dist/images/marker-shadow.png';
 
 let DefaultIcon = L.icon({
-    iconUrl: icon,
-    shadowUrl: iconShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: icon,
+  shadowUrl: iconShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 
 function MapPicker({ position, setPosition }: { position: [number, number], setPosition: (pos: [number, number]) => void }) {
@@ -49,6 +50,7 @@ export default function FlashReport() {
   const [location, setLocation] = useState<[number, number]>(COQUIMBO_CENTER);
   const [usingGps, setUsingGps] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -73,6 +75,23 @@ export default function FlashReport() {
         console.error("GPS Error:", err);
       });
     }
+  };
+
+  const getPreviewText = () => {
+    return formatWhatsAppFlashReport({
+      id: 'DRAFT',
+      type: type || 'ALERTA',
+      description,
+      dealershipId: profile?.dealershipId,
+      createdAt: new Date().toISOString(),
+      location: { lat: location[0], lng: location[1] }
+    }, profile?.displayName || profile?.email);
+  };
+
+  const handleCopyWhatsApp = () => {
+    navigator.clipboard.writeText(getPreviewText());
+    setCopiedWhatsApp(true);
+    setTimeout(() => setCopiedWhatsApp(false), 2500);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -102,7 +121,7 @@ export default function FlashReport() {
         type,
         description,
         reporterId: auth.currentUser.uid,
-        dealershipId: profile?.dealershipId || 'TEMP_ID',
+        dealershipId: profile?.dealershipId || 'CENTRAL',
         location: { lat: location[0], lng: location[1], geohash },
         imageUrl,
         status: 'OPEN',
@@ -159,252 +178,263 @@ export default function FlashReport() {
     <>
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[60] overflow-y-auto bg-slate-950/90 backdrop-blur-md"
-          >
-            <div className="min-h-full flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-slate-950/85 backdrop-blur-md">
             <motion.div
-              initial={{ scale: 0.8, y: 50, rotateX: 20 }}
-              animate={{ scale: 1, y: 0, rotateX: 0 }}
-              exit={{ scale: 0.8, y: 50, rotateX: 20 }}
-              transition={{ type: "spring", damping: 20, stiffness: 300 }}
-              className="bg-slate-900 border border-white/10 w-full max-w-xl rounded-[2.5rem] flex flex-col max-h-[92vh] overflow-hidden shadow-[0_20px_100px_-20px_rgba(220,38,38,0.3)] relative"
-              id="flash-report-panel"
+              initial={{ opacity: 0, y: 50, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 50, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full sm:max-w-lg bg-slate-950 border border-slate-800 rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]"
             >
-              {/* Premium Glow Effect */}
-              <div className="absolute -top-24 -left-24 w-48 h-48 bg-red-600/20 blur-[80px] pointer-events-none" />
-              <div className="absolute -bottom-24 -right-24 w-48 h-48 bg-brand-primary/20 blur-[80px] pointer-events-none" />
-
-              <div className="bg-gradient-to-br from-red-600/20 to-transparent p-6 flex items-center justify-between border-b border-white/5 shrink-0">
-                <div className="flex items-center gap-4">
-                  <div className="bg-red-600 p-2.5 rounded-2xl shadow-lg shadow-red-600/40 rotate-3">
-                    <AlertTriangle className="w-6 h-6 text-white" />
+              {/* Header */}
+              <div className="p-5 border-b border-slate-800/80 flex items-center justify-between bg-red-950/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-900/40">
+                    <AlertTriangle className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-black text-white tracking-tight">ALERTA FLASH</h2>
-                    <p className="text-red-400/90 text-[11px] font-bold uppercase tracking-[0.2em]">Red de Seguridad Coquimbo</p>
+                    <h3 className="font-bold text-white text-sm uppercase tracking-wider">
+                      Alerta Máxima / Flash Report
+                    </h3>
+                    <p className="text-xs text-red-400 font-mono">
+                      Notificación inmediata a toda la red
+                    </p>
                   </div>
                 </div>
-                <button 
-                  onClick={() => setIsOpen(false)} 
-                  className="bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white p-2.5 rounded-xl transition-all"
+                <button
+                  onClick={() => setIsOpen(false)}
+                  className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition"
                 >
                   <X className="w-5 h-5" />
                 </button>
               </div>
 
-              <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
+              {/* Form Body */}
+              <form onSubmit={handleSubmit} className="p-5 overflow-y-auto space-y-4">
                 <div>
-                  <label className="text-[11px] font-black text-slate-400 uppercase tracking-[0.25em] mb-3 block pl-1">Seleccionar Emergencia</label>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <label className="text-[11px] font-mono uppercase text-slate-400 font-bold block mb-2">
+                    Tipo de Emergencia
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { id: 'ROBO', label: 'Robo / Asalto', color: 'bg-red-600', icon: ShieldAlert },
-                      { id: 'SOSPECHOSO', label: 'Sospechoso', color: 'bg-orange-600', icon: AlertTriangle },
-                      { id: 'MARCAJE', label: 'Marcaje', color: 'bg-blue-600', icon: MapPin },
-                      { id: 'OTRO', label: 'Otro / Info', color: 'bg-slate-600', icon: Info }
-                    ].map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        onClick={() => setType(item.id as any)}
-                        className={`group p-4 rounded-[1.5rem] border transition-all flex flex-col items-center gap-2.5 relative overflow-hidden ${type === item.id ? `border-white/30 ${item.color} text-white scale-105 shadow-lg` : 'border-white/5 bg-white/5 text-slate-400 hover:border-white/20 hover:bg-white/10'}`}
-                      >
-                        <item.icon className={`w-7 h-7 transition-transform group-hover:rotate-12 ${type === item.id ? 'text-white' : 'text-slate-400'}`} />
-                        <span className="text-[11px] font-black text-center leading-tight uppercase tracking-wider">{item.label}</span>
-                      </button>
-                    ))}
+                      { id: 'ROBO', label: 'Robo', icon: ShieldAlert, activeColor: 'bg-red-600 border-red-500 text-white' },
+                      { id: 'SOSPECHOSO', label: 'Sospechoso', icon: AlertTriangle, activeColor: 'bg-amber-600 border-amber-500 text-white' },
+                      { id: 'MARCAJE', label: 'Marcaje', icon: MapPin, activeColor: 'bg-sky-600 border-sky-500 text-white' },
+                      { id: 'OTRO', label: 'Otro', icon: Info, activeColor: 'bg-slate-700 border-slate-600 text-white' }
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isSelected = type === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          onClick={() => setType(item.id as any)}
+                          className={`p-3 rounded-2xl border text-left flex flex-col items-center gap-1.5 transition ${
+                            isSelected
+                              ? item.activeColor
+                              : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200 hover:bg-slate-850'
+                          }`}
+                        >
+                          <Icon className="w-5 h-5" />
+                          <span className="text-[11px] font-mono font-bold uppercase">{item.label}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
-                <div className="space-y-5">
-                  <div className="relative group">
-                     <textarea
-                      placeholder="¿Qué está pasando? Sé breve y específico..."
-                      className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-sm focus:outline-none focus:border-red-500/50 focus:bg-white/[0.07] transition-all min-h-[80px] placeholder:text-slate-600"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                    />
-                    <div className="absolute bottom-4 right-4 text-[11px] font-mono text-slate-400">
-                      {description.length}/500
-                    </div>
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-mono uppercase text-slate-400 font-bold block">
+                    Descripción del Suceso
+                  </label>
+                  <textarea
+                    placeholder="Detalles clave: personas involucradas, patente, dirección de fuga..."
+                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 min-h-[90px]"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    maxLength={500}
+                  />
+                  <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                    <span>Sé lo más conciso posible</span>
+                    <span>{description.length}/500</span>
                   </div>
+                </div>
 
-                  <div className="flex gap-3">
-                    <div className="flex-1">
-                      <input 
-                        type="file" 
-                        accept="image/*" 
-                        ref={fileInputRef} 
-                        className="hidden" 
-                        onChange={handleFileChange}
-                        id="photo-upload-input"
-                      />
-                      <button 
-                        type="button" 
-                        onClick={() => fileInputRef.current?.click()}
-                        className={`w-full h-12 flex items-center justify-center gap-3 rounded-2xl border transition-all text-xs font-black uppercase tracking-widest ${imagePreview ? 'bg-emerald-600/20 border-emerald-500/50 text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 select-none'}`}
-                      >
-                        {imagePreview ? <Check className="w-4 h-4" /> : <Camera className="w-4 h-4" />}
-                        {imagePreview ? 'Imagen lista' : 'Adjuntar Foto'}
-                      </button>
-                    </div>
-
-                    <button 
-                      type="button" 
-                      onClick={() => setPickingLocation(true)}
-                      className={`flex-1 h-12 flex items-center justify-center gap-3 rounded-2xl border transition-all text-xs font-black uppercase tracking-widest ${usingGps ? 'bg-blue-600/20 border-blue-500/50 text-blue-400 shadow-[0_0_20px_rgba(59,130,246,0.2)]' : 'bg-white/5 border-white/5 hover:border-white/20 text-slate-400 underline decoration-dotted decoration-slate-700'}`}
+                {/* Quick Attachments */}
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      ref={fileInputRef}
+                      className="hidden"
+                      onChange={handleFileChange}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className={`w-full py-2.5 px-3 rounded-xl border text-xs font-mono font-bold flex items-center justify-center gap-2 transition ${
+                        imagePreview
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                          : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-850'
+                      }`}
                     >
-                      <MapPin className="w-4 h-4" />
-                      {usingGps ? 'Ubicación OK' : 'Fijar Ubicación'}
+                      <Camera className="w-4 h-4" />
+                      {imagePreview ? 'Foto Cargada' : 'Adjuntar Foto'}
                     </button>
                   </div>
 
-                  {imagePreview && (
-                    <motion.div 
-                      initial={{ opacity: 0, scale: 0.9, y: 10 }}
-                      animate={{ opacity: 1, scale: 1, y: 0 }}
-                      className="relative w-full h-32 rounded-[1.5rem] overflow-hidden border border-white/10 group"
-                    >
-                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                      <button 
-                        type="button"
-                        onClick={() => { setImage(null); setImagePreview(null); }}
-                        className="absolute top-3 right-3 bg-red-600 p-2 rounded-xl text-white shadow-xl hover:bg-red-700 active:scale-95 transition-all"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    </motion.div>
-                  )}
+                  <button
+                    type="button"
+                    onClick={() => setPickingLocation(true)}
+                    className={`w-full py-2.5 px-3 rounded-xl border text-xs font-mono font-bold flex items-center justify-center gap-2 transition ${
+                      usingGps
+                        ? 'bg-sky-500/10 border-sky-500/30 text-sky-400'
+                        : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-850'
+                    }`}
+                  >
+                    <MapPin className="w-4 h-4" />
+                    {usingGps ? 'Punto Fijado' : 'Fijar Mapa'}
+                  </button>
                 </div>
 
-                {error && (
-                  <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs">
-                    <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
-                    <div>
-                      <p className="font-bold uppercase tracking-wider mb-1">Error al guardar reporte</p>
-                      <p className="text-slate-400 font-medium leading-relaxed">{error}</p>
-                    </div>
+                {imagePreview && (
+                  <div className="relative rounded-2xl overflow-hidden border border-slate-800 h-32">
+                    <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => { setImage(null); setImagePreview(null); }}
+                      className="absolute top-2 right-2 bg-slate-950/80 p-1.5 rounded-lg text-slate-400 hover:text-white border border-slate-800"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 )}
 
-                <button
-                  type="submit"
-                  disabled={loading || !type}
-                  className="w-full group relative h-16 bg-red-600 hover:bg-red-700 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl shadow-xl shadow-red-600/20 transition-all flex items-center justify-center gap-3 transform active:scale-95 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
-                  {loading ? (
-                    <Loader2 className="w-6 h-6 animate-spin text-white/50" />
-                  ) : (
-                    <>
-                      <Send className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-                      <span className="text-lg font-black tracking-tighter italic">ENVIAR ALERTA RED</span>
-                    </>
-                  )}
-                </button>
+                {error && (
+                  <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono">
+                    {error}
+                  </div>
+                )}
+
+                {/* WhatsApp Text Preview & Quick Copy */}
+                <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">
+                      Copia Táctica para WhatsApp
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleCopyWhatsApp}
+                      className="text-[10px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
+                    >
+                      {copiedWhatsApp ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                      {copiedWhatsApp ? 'Copiado' : 'Copiar Texto'}
+                    </button>
+                  </div>
+                  <pre className="text-[10px] font-mono text-slate-400 whitespace-pre-wrap max-h-20 overflow-y-auto leading-relaxed">
+                    {getPreviewText()}
+                  </pre>
+                </div>
+
+                <div className="pt-2 flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="submit"
+                    disabled={loading || !type}
+                    className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-950 transition active:scale-[0.98]"
+                  >
+                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                    Disparar Alerta Red
+                  </button>
+                </div>
               </form>
 
               {/* Internal Map Picker Overlay */}
               <AnimatePresence>
-                {showConfirmation && (
+                {pickingLocation && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="absolute inset-0 z-40 bg-slate-900/95 backdrop-blur-md flex items-center justify-center p-8"
+                    className="absolute inset-0 z-30 bg-slate-950 flex flex-col"
                   >
-                    <motion.div
-                      initial={{ scale: 0.9, y: 20 }}
-                      animate={{ scale: 1, y: 0 }}
-                      exit={{ scale: 0.9, y: 20 }}
-                      className="text-center space-y-6"
-                    >
-                      <div className="bg-red-600 w-20 h-20 rounded-full flex items-center justify-center mx-auto shadow-2xl shadow-red-600/40 animate-pulse">
-                        <AlertTriangle className="w-10 h-10 text-white" />
+                    <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+                      <h4 className="font-bold text-white text-xs uppercase tracking-wider">
+                        Seleccionar Coordenadas en el Mapa
+                      </h4>
+                      <button
+                        onClick={() => setPickingLocation(false)}
+                        className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                    <div className="flex-1 relative">
+                      <MapContainer center={location} zoom={15} className="h-full w-full">
+                        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+                        <MapPicker position={location} setPosition={(pos) => { setLocation(pos); setUsingGps(true); }} />
+                      </MapContainer>
+                      <div className="absolute bottom-4 left-4 right-4 z-[1000] flex gap-2">
+                        <button
+                          type="button"
+                          onClick={requestGps}
+                          className="flex-1 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-mono text-xs font-bold uppercase"
+                        >
+                          Mi GPS
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setPickingLocation(false)}
+                          className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white font-mono text-xs font-bold uppercase"
+                        >
+                          Fijar Punto
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Confirmation Prompt */}
+              <AnimatePresence>
+                {showConfirmation && (
+                  <div className="absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6 text-center">
+                    <div className="space-y-4 max-w-xs">
+                      <div className="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto text-white shadow-xl shadow-red-950 animate-pulse">
+                        <AlertTriangle className="w-7 h-7" />
                       </div>
                       <div>
-                        <h3 className="text-2xl font-black text-white uppercase tracking-tighter mb-2">¿Confirmar Alerta?</h3>
-                        <p className="text-slate-400 text-xs leading-relaxed max-w-[240px] mx-auto font-medium">
-                          Esta acción notificará inmediatamente a toda la red de seguridad.
+                        <h4 className="font-bold text-white text-base uppercase">¿Confirmar Alerta Máxima?</h4>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          Se emitirá una notificación de alta prioridad a todas las automotoras de la red.
                         </p>
                       </div>
-                      <div className="flex flex-col gap-3">
+                      <div className="flex flex-col gap-2 pt-2">
                         <button
                           type="button"
                           onClick={confirmSubmit}
-                          className="w-full h-14 bg-red-600 text-white rounded-2xl font-black uppercase tracking-widest text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-900/20 active:scale-95"
+                          className="w-full py-3 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold uppercase tracking-wider"
                         >
-                          SÍ, ENVIAR AHORA
+                          Confirmar y Emitir
                         </button>
                         <button
                           type="button"
                           onClick={() => setShowConfirmation(false)}
-                          className="w-full h-14 bg-slate-800 text-slate-300 rounded-2xl font-black uppercase tracking-widest text-xs hover:bg-slate-700 transition-all active:scale-95"
+                          className="w-full py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 font-mono text-xs font-bold uppercase"
                         >
-                          CANCELAR
+                          Volver
                         </button>
                       </div>
-                    </motion.div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              {/* Internal Map Picker Overlay */}
-              <AnimatePresence>
-                {pickingLocation && (
-                  <motion.div 
-                    initial={{ y: "100%" }}
-                    animate={{ y: 0 }}
-                    exit={{ y: "100%" }}
-                    transition={{ type: "spring", damping: 30, stiffness: 200 }}
-                    className="absolute inset-0 z-20 bg-slate-900 flex flex-col"
-                  >
-                    <div className="p-6 flex items-center justify-between border-b border-white/5 bg-slate-900/80 backdrop-blur-md">
-                       <div className="flex items-center gap-3">
-                         <div className="bg-blue-600/20 p-2 rounded-xl">
-                           <MapPin className="w-6 h-6 text-blue-500" />
-                         </div>
-                         <h3 className="text-white font-black text-sm uppercase tracking-widest">Punto de Incidente</h3>
-                       </div>
-                       <button onClick={() => setPickingLocation(false)} className="bg-white/5 p-2 rounded-xl text-slate-400 hover:text-white transition-colors">
-                         <X className="w-5 h-5" />
-                       </button>
                     </div>
-                    <div className="flex-1 relative">
-                       <MapContainer center={location} zoom={15} className="h-full w-full grayscale-[0.8] contrast-[1.2]">
-                         <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-                         <MapPicker position={location} setPosition={(pos) => { setLocation(pos); setUsingGps(true); }} />
-                       </MapContainer>
-                       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-[1000] flex gap-3">
-                         <button 
-                           onClick={requestGps}
-                           className="bg-white text-slate-900 px-6 h-14 rounded-2xl shadow-2xl hover:bg-slate-100 flex items-center gap-3 font-black text-xs uppercase tracking-widest transition-all active:scale-95"
-                         >
-                           <MapPin className="w-5 h-5" />
-                           GPS Actual
-                         </button>
-                         <button 
-                          onClick={() => setPickingLocation(false)}
-                          className="bg-blue-600 text-white px-8 h-14 rounded-2xl shadow-2xl hover:bg-blue-700 font-black text-xs uppercase tracking-widest transition-all active:scale-95"
-                         >
-                           Confirmar Punto
-                         </button>
-                       </div>
-                    </div>
-                  </motion.div>
+                  </div>
                 )}
               </AnimatePresence>
             </motion.div>
-            </div>
-          </motion.div>
+          </div>
         )}
       </AnimatePresence>
 
-      <AlertConfirmationModal 
+      <AlertConfirmationModal
         isOpen={showAlertConfirm}
         onClose={() => setShowAlertConfirm(false)}
         onConfirm={() => {
@@ -415,10 +445,3 @@ export default function FlashReport() {
     </>
   );
 }
-
-// Add animation to index.css or local style block if needed
-// @keyframes shimmer {
-//   100% { transform: translateX(100%); }
-// }
-
-

@@ -1,8 +1,8 @@
 import React, { useMemo, useState } from 'react';
-import { sendPasswordResetEmail, signInWithEmailAndPassword } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import { ArrowLeft, Building2, CheckCircle2, Info, Lock, Mail, Phone, ShieldAlert, User, Zap, Activity } from 'lucide-react';
+import { ArrowLeft, Building2, CheckCircle2, Info, Lock, Mail, Phone, ShieldAlert, User, Zap, Activity, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import InteractiveNetworkWeb from './InteractiveNetworkWeb';
 import Footer from './Footer';
@@ -56,6 +56,44 @@ export default function Login() {
 
   const handleTriggerNetworkAlert = () => {
     setAlertPulseCount((prev) => prev + 1);
+  };
+
+  const handleDemoLogin = async (demoEmail: string, role: 'ADMIN' | 'SECURITY' = 'ADMIN') => {
+    setLoading(true);
+    resetFeedback();
+    const demoPass = 'autored2026';
+    try {
+      let userCredential;
+      try {
+        userCredential = await signInWithEmailAndPassword(auth, demoEmail, demoPass);
+      } catch (err: any) {
+        if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password') {
+          userCredential = await createUserWithEmailAndPassword(auth, demoEmail, demoPass);
+        } else {
+          throw err;
+        }
+      }
+      const user = userCredential.user;
+      const profileRef = doc(db, 'users', user.uid);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        await setDoc(profileRef, {
+          uid: user.uid,
+          email: user.email,
+          displayName: role === 'ADMIN' ? 'Administrador AutoRed' : 'Operador Seguridad',
+          role: role,
+          dealershipId: 'DEALERSHIP_DEMO',
+          status: 'ACTIVE',
+          createdAt: serverTimestamp(),
+        });
+      }
+    } catch (err: any) {
+      console.error('Demo login error:', err);
+      setError('Error en acceso demo: ' + (err.message || String(err)));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResetPassword = async () => {
@@ -311,6 +349,33 @@ export default function Login() {
                     </button>
                   </div>
 
+                  {/* Acceso Rápido de Prueba Local */}
+                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-brand-primary/30 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-brand-primary flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" />
+                        Acceso Rápido de Prueba (Local)
+                      </span>
+                      <span className="text-[10px] font-mono text-slate-500">1-Click Login</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleDemoLogin('admin@autored.cl', 'ADMIN')}
+                        className="py-2.5 px-3 rounded-xl bg-brand-primary/20 hover:bg-brand-primary/30 border border-brand-primary/40 text-brand-primary font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
+                      >
+                        Entrar como Admin
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDemoLogin('seguridad@autored.cl', 'SECURITY')}
+                        className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
+                      >
+                        Entrar Operador
+                      </button>
+                    </div>
+                  </div>
+
                   <p className="rounded-2xl border border-sky-400/15 bg-sky-400/8 p-4 text-xs leading-5 text-slate-300">
                     Próxima etapa: reputación entre automotoras, inventario compartido, sensores externos y alerta comunitaria opcional.
                   </p>
@@ -382,9 +447,25 @@ export default function Login() {
                   </Field>
 
                   {mode === 'login' && (
-                    <Field icon={<Lock />} label="Contraseña">
-                      <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="auth-input" placeholder="••••••••" />
-                    </Field>
+                    <>
+                      <Field icon={<Lock />} label="Contraseña">
+                        <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="auth-input" placeholder="••••••••" />
+                      </Field>
+
+                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] font-mono flex items-center justify-between gap-2">
+                        <span className="text-slate-400 truncate">Prueba: <strong className="text-white">admin@autored.cl</strong> / <strong className="text-white">autored2026</strong></span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEmail('admin@autored.cl');
+                            setPassword('autored2026');
+                          }}
+                          className="text-brand-primary hover:underline font-bold shrink-0"
+                        >
+                          Auto-llenar
+                        </button>
+                      </div>
+                    </>
                   )}
 
                   {error && <Feedback tone="error">{error}</Feedback>}

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { AlertTriangle, Check, Loader2, Mic, Send, ShieldCheck, X } from 'lucide-react';
+import { Check, Loader2, Mic, Send, ShieldCheck, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { auth, db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -77,98 +77,146 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-[2200] overflow-y-auto bg-slate-950/90 p-4 backdrop-blur-md"
+          className="fixed inset-0 z-[2200] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md p-0 sm:p-4"
         >
-          <div className="min-h-full flex items-center justify-center">
+          {/* Backdrop Click to close */}
+          <div className="absolute inset-0" onClick={onClose} />
+
           <motion.div
-            initial={{ opacity: 0, y: 42, scale: 0.96 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 42, scale: 0.96 }}
-            className="relative w-full max-w-xl overflow-hidden rounded-[2.35rem] border border-white/10 bg-slate-950 shadow-2xl shadow-black/50 flex flex-col max-h-[95vh]"
+            initial={{ opacity: 0, y: '100%' }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: '100%' }}
+            transition={{ type: 'spring', damping: 28, stiffness: 300 }}
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-slate-800 bg-slate-950 shadow-2xl overflow-hidden"
           >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_0%,rgba(16,185,129,.17),transparent_36%),radial-gradient(circle_at_95%_110%,rgba(255,90,31,.12),transparent_32%)]" />
-            <header className="relative flex items-center justify-between border-b border-white/10 p-5 sm:p-6">
-              <div>
-                <h2 className="text-xl font-black tracking-[-.04em] text-white">Fiscalización</h2>
-                <p className="mt-1 text-xs font-black uppercase tracking-[.25em] text-slate-400">alerta entre automotoras</p>
+            {/* Mobile Sheet Drag Handle */}
+            <div className="flex sm:hidden justify-center pt-3 pb-1">
+              <div className="w-12 h-1.5 rounded-full bg-slate-700/80" />
+            </div>
+
+            <header className="flex items-center justify-between border-b border-slate-800/80 px-5 py-4">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400">
+                  <ShieldCheck className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-2">
+                    FISCALIZACIÓN
+                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-sky-500/10 text-sky-400 border border-sky-500/20">ALERTA RED</span>
+                  </h2>
+                  <p className="text-xs text-slate-400">Notificar presencia de fiscalizadores a la red</p>
+                </div>
               </div>
-              <button type="button" onClick={onClose} className="rounded-xl p-2 text-slate-400 transition hover:bg-white/10 hover:text-white">
+              <button
+                type="button"
+                onClick={onClose}
+                className="rounded-lg p-2 text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
                 <X className="h-5 w-5" />
               </button>
             </header>
 
-            <div className="relative flex-1 min-h-0 space-y-5 overflow-y-auto p-5 sm:p-6">
-              <div className="rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-xs leading-5 text-red-100">
-                <strong className="block text-xs uppercase tracking-[.28em] text-red-200 mb-1">Nota</strong>
-                Selecciona todas las entidades que te fiscalizaron y alerta a las demás automotoras para que estén preparadas. Puedes elegir más de una opción simultáneamente.
+            <div className="flex-1 min-h-0 space-y-4 overflow-y-auto p-5 text-left">
+              <div>
+                <p className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-2">
+                  Entidades Fiscalizadoras (Selección Múltiple)
+                </p>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  {agencies.map((agency) => {
+                    const active = selected.includes(agency);
+                    return (
+                      <button
+                        key={agency}
+                        type="button"
+                        onClick={() => {
+                          if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+                            navigator.vibrate?.(10);
+                          }
+                          toggle(agency);
+                        }}
+                        className={`min-h-[4rem] rounded-xl border p-2.5 text-xs font-semibold transition active:scale-[0.98] flex flex-col justify-between text-left ${
+                          active
+                            ? 'border-sky-500/50 bg-sky-500/15 text-sky-200 shadow-sm'
+                            : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                        }`}
+                      >
+                        <div className="flex items-center justify-between w-full">
+                          <span className={`w-2 h-2 rounded-full ${active ? 'bg-sky-400' : 'bg-slate-700'}`} />
+                          {active && <Check className="w-3.5 h-3.5 text-sky-400" />}
+                        </div>
+                        <span className="leading-tight mt-1">{agency}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                {agencies.map((agency) => {
-                  const active = selected.includes(agency);
-                  return (
-                    <button
-                      key={agency}
-                      type="button"
-                      onClick={() => toggle(agency)}
-                      className={`min-h-24 rounded-2xl border p-3 text-sm font-black transition active:scale-[.98] ${active ? 'border-emerald-300/50 bg-emerald-400/15 text-emerald-100' : 'border-white/10 bg-white/[.04] text-slate-300 hover:border-brand-primary/35 hover:bg-white/[.07]'}`}
-                    >
-                      <span className="mb-3 flex items-center justify-between gap-2">
-                        <ShieldCheck className="h-5 w-5 text-brand-primary" />
-                        {active && <Check className="h-4 w-4 text-emerald-300" />}
-                      </span>
-                      <span className="block text-left leading-5">{agency}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
-              <label className="block">
-                <span className="mb-2 flex items-center gap-2 text-xs font-black uppercase tracking-[.22em] text-slate-400">
-                  <Mic className="h-4 w-4" /> Mensaje
-                </span>
+              <div>
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
+                  <Mic className="w-3.5 h-3.5 text-slate-400" />
+                  Detalles o Requerimientos
+                </label>
                 <textarea
                   value={message}
                   onChange={(event) => setMessage(event.target.value)}
-                  placeholder="Escribe un mensaje personalizado o pega una transcripción de nota de voz. Ej: pidieron libro de asistencia y documentos tributarios."
-                  className="min-h-28 w-full rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-white outline-none transition focus:border-brand-primary/60 focus:ring-4 focus:ring-brand-primary/10"
+                  placeholder="Ej: Están solicitando libros de asistencia, contratos y patentes al día..."
+                  rows={3}
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-xs text-white placeholder:text-slate-600 outline-none focus:border-sky-500/60 transition"
                 />
-              </label>
+              </div>
 
               {confirming && (
                 <motion.div
-                  initial={{ opacity: 0, y: 10 }}
+                  initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="rounded-3xl border border-white/10 bg-slate-900/90 p-4"
+                  className="rounded-xl border border-sky-500/30 bg-sky-950/30 p-3.5"
                 >
-                  <p className="text-xs font-black uppercase tracking-[.24em] text-brand-primary">Seleccionaste</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{selectedText || 'Mensaje personalizado sin entidad seleccionada'}</p>
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <button type="button" onClick={() => setConfirming(false)} className="rounded-2xl border border-white/10 py-3 text-xs font-black uppercase tracking-[.16em] text-slate-300 transition hover:bg-white/10">
-                      Seleccionar más
+                  <p className="text-[11px] font-mono font-bold uppercase tracking-wider text-sky-400">Resumen de Alerta</p>
+                  <p className="mt-1 text-xs text-slate-200 leading-relaxed font-mono">
+                    {selectedText || 'Mensaje general de fiscalización sin entidad específica'}
+                  </p>
+                  <div className="mt-3 grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setConfirming(false)}
+                      className="rounded-xl border border-slate-800 bg-slate-900 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-300 hover:bg-slate-800 transition"
+                    >
+                      Modificar
                     </button>
-                    <button type="button" onClick={send} disabled={saving} className="rounded-2xl bg-brand-primary py-3 text-xs font-black uppercase tracking-[.16em] text-white transition hover:bg-orange-600 disabled:opacity-60">
-                      {saving ? 'Enviando...' : 'Enviar'}
+                    <button
+                      type="button"
+                      onClick={send}
+                      disabled={saving}
+                      className="rounded-xl bg-sky-500 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 hover:bg-sky-400 transition disabled:opacity-60 flex items-center justify-center gap-1.5"
+                    >
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {saving ? 'Emitiendo...' : 'Confirmar Envío'}
                     </button>
                   </div>
                 </motion.div>
               )}
 
-              {error && <div className="rounded-2xl border border-red-400/25 bg-red-500/10 p-4 text-sm text-red-100">{error}</div>}
+              {error && (
+                <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-3 text-xs text-red-300">
+                  {error}
+                </div>
+              )}
+            </div>
 
-              {!confirming && (
+            {!confirming && (
+              <footer className="border-t border-slate-800/80 bg-slate-950 p-4">
                 <button
                   type="button"
                   onClick={() => setConfirming(true)}
                   disabled={!ready}
-                  className="flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-brand-primary font-black uppercase tracking-[.18em] text-white shadow-xl shadow-brand-primary/20 transition hover:bg-orange-600 active:scale-[.98] disabled:bg-slate-800 disabled:text-slate-600 disabled:shadow-none"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-sky-500 font-bold uppercase tracking-wider text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 active:scale-[0.99] disabled:bg-slate-800 disabled:text-slate-600 disabled:shadow-none"
                 >
-                  <Send className="h-5 w-5" /> Enviar
+                  <Send className="h-4 w-4" /> Emitir Alerta a la Red
                 </button>
-              )}
-            </div>
+              </footer>
+            )}
           </motion.div>
-          </div>
         </motion.div>
       )}
     </AnimatePresence>

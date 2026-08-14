@@ -12,8 +12,10 @@ import IncidentReportForm from './IncidentReportForm';
 import RoadTestForm from './RoadTestForm';
 import InspectionForm from './InspectionForm';
 import StockAutomotoras from './StockAutomotoras';
+import ExecutiveDigestModal from './ExecutiveDigestModal';
+import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 import { TabType } from '../lib/navigation';
-import { Route, Car, ShieldCheck } from 'lucide-react';
+import { Route, Car, ShieldCheck, FileText, Share2, Copy } from 'lucide-react';
 
 interface Incident {
   id: string;
@@ -66,6 +68,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [isRoadTestOpen, setIsRoadTestOpen] = useState(false);
   const [isInspectionOpen, setIsInspectionOpen] = useState(false);
   const [isStockOpen, setIsStockOpen] = useState(false);
+  const [isDigestOpen, setIsDigestOpen] = useState(false);
+  const [copiedIncidentWhatsApp, setCopiedIncidentWhatsApp] = useState(false);
   const { permission } = usePushNotifications();
   const { profile } = useAuth();
 
@@ -85,6 +89,28 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   useEffect(() => {
     const timer = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    const handleOpenRoadTest = () => setIsRoadTestOpen(true);
+    const handleOpenInspection = () => setIsInspectionOpen(true);
+    const handleOpenIncident = () => setIsReporting(true);
+    const handleOpenStock = () => setIsStockOpen(true);
+    const handleOpenDigest = () => setIsDigestOpen(true);
+
+    window.addEventListener('open-road-test', handleOpenRoadTest);
+    window.addEventListener('open-inspection', handleOpenInspection);
+    window.addEventListener('open-incident-report', handleOpenIncident);
+    window.addEventListener('open-stock', handleOpenStock);
+    window.addEventListener('open-executive-digest', handleOpenDigest);
+
+    return () => {
+      window.removeEventListener('open-road-test', handleOpenRoadTest);
+      window.removeEventListener('open-inspection', handleOpenInspection);
+      window.removeEventListener('open-incident-report', handleOpenIncident);
+      window.removeEventListener('open-stock', handleOpenStock);
+      window.removeEventListener('open-executive-digest', handleOpenDigest);
+    };
   }, []);
   
   useEffect(() => {
@@ -384,43 +410,49 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
       </AnimatePresence>
 
       {/* Alert Banner System */}
-      <div className="space-y-4">
+      <div className="space-y-3">
         {permission !== 'granted' && (
           <motion.div 
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-4 bg-orange-500/10 border border-orange-500/20 rounded-2xl flex items-center justify-between text-orange-400"
+            className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-between text-amber-400"
           >
             <div className="flex items-center gap-3">
-              <BellOff className="w-5 h-5 animate-pulse" />
+              <BellOff className="w-4 h-4 shrink-0" />
               <div>
-                <p className="text-xs font-black uppercase tracking-widest">Alertas no Permitidas</p>
-                <p className="text-xs opacity-85">Para recibir notificaciones críticas, por favor habilita los permisos en tu navegador.</p>
+                <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
+                <p className="text-xs text-amber-300/80">Habilitá las notificaciones del navegador para recibir telemetría y alertas críticas en tiempo real.</p>
               </div>
             </div>
           </motion.div>
         )}
 
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-2xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-500/10 border-red-500/30' : 'bg-emerald-500/10 border-emerald-500/30'}`}
+          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-950/20 border-red-500/30' : 'bg-slate-900/80 border-slate-800'}`}
         >
-          <div className="flex items-center gap-4">
-            <div className={`p-2 rounded-full ${openIncidentsCount > 0 ? 'bg-red-500 animate-pulse' : 'bg-emerald-500'}`}>
-              <Activity className="w-5 h-5 text-white" />
+          <div className="flex items-center gap-3.5">
+            <div className="relative flex items-center justify-center">
+              <span className={`w-3 h-3 rounded-full ${openIncidentsCount > 0 ? 'bg-red-500 animate-ping' : 'bg-emerald-500'}`} />
+              <span className={`absolute w-2 h-2 rounded-full ${openIncidentsCount > 0 ? 'bg-red-400' : 'bg-emerald-400'}`} />
             </div>
             <div>
-              <h2 className={`font-bold text-sm uppercase tracking-widest ${openIncidentsCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-                Estado de Operación en Tiempo Real
-              </h2>
-              <p className="text-xs text-slate-400"> Monitoreo continuo de seguridad en toda la red </p>
+              <div className="flex items-center gap-2">
+                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
+                  Estado Operativo de la Red
+                </h2>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${openIncidentsCount > 0 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'}`}>
+                  {openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
+                </span>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">Telemetría y cobertura activa en automotoras de Coquimbo y La Serena</p>
             </div>
           </div>
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-xs font-black text-slate-400 uppercase tracking-tighter">Incidentes Activos</p>
-              <p className={`text-2xl font-black ${openIncidentsCount > 0 ? 'text-red-500' : 'text-emerald-500'}`}>
+              <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
+              <p className={`text-xl font-bold tabular-nums ${openIncidentsCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
                 {openIncidentsCount}
               </p>
             </div>
@@ -428,114 +460,126 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         </motion.div>
       </div>
 
-      {/* PARTE CENTRAL (BOCETO 5): Máximo 4 opciones simples */}
+      {/* PARTE CENTRAL: Acciones Tácticas Principales */}
       {activeTab === 'PANEL' && (
         <>
-          <section className="space-y-6">
-            <div className="text-center md:text-left">
-              <h2 className="font-display text-2xl md:text-3xl font-black uppercase tracking-tight text-white">
-                Acciones Principales
-              </h2>
-              <p className="text-xs text-slate-400 font-medium">Selecciona una opción o realiza scroll suave para explorar la red</p>
+          <section className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="font-display text-xl font-bold tracking-tight text-white flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-brand-primary" />
+                  ACCIONES OPERATIVAS
+                </h2>
+                <p className="text-xs text-slate-400">Módulos tácticos de gestión y seguridad en patio</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsDigestOpen(true)}
+                className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white hover:border-slate-700 font-mono text-xs font-bold uppercase transition active:scale-95 shadow-sm"
+              >
+                <FileText className="w-4 h-4 text-brand-primary" />
+                <span className="hidden sm:inline">Minuta Ejecutiva</span>
+                <span className="sm:hidden">Minuta</span>
+              </button>
             </div>
 
-            {/* 4 Opciones Simples en disposición vertical/grid móvil táctil */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* 4 Opciones Tácticas */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
               {/* 1era Opcion: REPORTE Robo / Sospechoso */}
               <button
                 type="button"
                 onClick={() => setIsReporting(true)}
-                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-red-500/30 bg-gradient-to-r from-red-950/40 to-slate-900/60 hover:from-red-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+                className="tactical-card tactical-card-hover p-4 rounded-xl flex items-center justify-between group border-red-500/20 bg-gradient-to-br from-red-950/20 via-slate-900/80 to-slate-900 text-left active:scale-[0.98]"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-red-600/20 border border-red-500/40 flex items-center justify-center text-red-400 group-hover:scale-110 transition-transform">
-                    <ShieldAlert className="w-6 h-6" />
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-lg bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:scale-105 transition-transform">
+                    <ShieldAlert className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black text-white uppercase tracking-tight">REPORTE</p>
-                    <p className="text-xs text-red-300 font-bold uppercase tracking-wider">Robo / Sospechoso</p>
+                  <div>
+                    <p className="text-xs font-mono font-bold text-red-400 uppercase tracking-wider">REPORTE SOSPECHOSO</p>
+                    <p className="text-sm font-semibold text-slate-100">Alerta de Seguridad</p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 shrink-0 text-red-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-red-400 group-hover:translate-x-0.5 transition-all" />
               </button>
 
               {/* 2da Opcion: PRUEBA EN RUTA */}
               <button
                 type="button"
                 onClick={() => setIsRoadTestOpen(true)}
-                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-orange-500/30 bg-gradient-to-r from-orange-950/40 to-slate-900/60 hover:from-orange-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+                className="tactical-card tactical-card-hover p-4 rounded-xl flex items-center justify-between group border-amber-500/20 bg-gradient-to-br from-amber-950/20 via-slate-900/80 to-slate-900 text-left active:scale-[0.98]"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-orange-600/20 border border-orange-500/40 flex items-center justify-center text-orange-400 group-hover:scale-110 transition-transform">
-                    <Route className="w-6 h-6" />
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:scale-105 transition-transform">
+                    <Route className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black text-white uppercase tracking-tight">PRUEBA EN RUTA</p>
-                    <p className="text-xs text-orange-300 font-bold uppercase tracking-wider">Respaldo Previo</p>
+                  <div>
+                    <p className="text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">PRUEBA EN RUTA</p>
+                    <p className="text-sm font-semibold text-slate-100">Respaldo Test Drive</p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 shrink-0 text-orange-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-amber-400 group-hover:translate-x-0.5 transition-all" />
               </button>
 
               {/* 3era Opcion: Fiscalización */}
               <button
                 type="button"
                 onClick={() => setIsInspectionOpen(true)}
-                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-blue-500/30 bg-gradient-to-r from-blue-950/40 to-slate-900/60 hover:from-blue-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+                className="tactical-card tactical-card-hover p-4 rounded-xl flex items-center justify-between group border-sky-500/20 bg-gradient-to-br from-sky-950/20 via-slate-900/80 to-slate-900 text-left active:scale-[0.98]"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-blue-600/20 border border-blue-500/40 flex items-center justify-center text-blue-400 group-hover:scale-110 transition-transform">
-                    <ShieldCheck className="w-6 h-6" />
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-lg bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:scale-105 transition-transform">
+                    <ShieldCheck className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black text-white uppercase tracking-tight">Fiscalización</p>
-                    <p className="text-xs text-blue-300 font-bold uppercase tracking-wider">Registro de Control</p>
+                  <div>
+                    <p className="text-xs font-mono font-bold text-sky-400 uppercase tracking-wider">FISCALIZACIÓN</p>
+                    <p className="text-sm font-semibold text-slate-100">Control de Visita</p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 shrink-0 text-blue-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-sky-400 group-hover:translate-x-0.5 transition-all" />
               </button>
 
               {/* 4ta Opcion: STOCK AUTOMOTORAS */}
               <button
                 type="button"
                 onClick={() => setIsStockOpen(true)}
-                className="glass-button-action p-5 rounded-[1.8rem] flex items-center justify-between group border border-emerald-500/30 bg-gradient-to-r from-emerald-950/40 to-slate-900/60 hover:from-emerald-900/50 hover:to-slate-900 transition-all shadow-lg active:scale-95"
+                className="tactical-card tactical-card-hover p-4 rounded-xl flex items-center justify-between group border-emerald-500/20 bg-gradient-to-br from-emerald-950/20 via-slate-900/80 to-slate-900 text-left active:scale-[0.98]"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-600/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 group-hover:scale-110 transition-transform">
-                    <Car className="w-6 h-6" />
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:scale-105 transition-transform">
+                    <Car className="w-5 h-5" />
                   </div>
-                  <div className="text-left">
-                    <p className="text-sm font-black text-white uppercase tracking-tight">STOCK AUTOMOTORAS</p>
-                    <p className="text-xs text-emerald-300 font-bold uppercase tracking-wider">Inventario Red</p>
+                  <div>
+                    <p className="text-xs font-mono font-bold text-emerald-400 uppercase tracking-wider">INVENTARIO</p>
+                    <p className="text-sm font-semibold text-slate-100">Stock en Red</p>
                   </div>
                 </div>
-                <ArrowRight className="w-5 h-5 shrink-0 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="w-4 h-4 text-slate-500 group-hover:text-emerald-400 group-hover:translate-x-0.5 transition-all" />
               </button>
             </div>
           </section>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             {[
-              { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-red-500', bg: 'bg-red-500/10' },
-              { label: 'Incidentes Hoy', value: incidents.length, icon: ShieldAlert, color: 'text-orange-500', bg: 'bg-orange-500/10' },
-              { label: 'Red Colaborativa', value: dealerships.length, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-              { label: 'Eficacia Red', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '0%', icon: TrendingUp, color: 'text-emerald-500', bg: 'bg-emerald-500/10' }
+              { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
+              { label: 'Incidentes Registrados', value: incidents.length, icon: ShieldAlert, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
+              { label: 'Nodos en Red', value: dealerships.length, icon: Users, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
+              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '100%', icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' }
             ].map((stat, idx) => (
               <motion.div
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: idx * 0.1 }}
+                transition={{ delay: idx * 0.05 }}
                 key={stat.label}
-                className="bg-slate-900 border border-slate-800 p-5 rounded-2xl flex items-center gap-4 group hover:border-slate-700 transition-all cursor-default"
+                className="tactical-card p-4 rounded-xl flex items-center gap-3.5 group cursor-default"
               >
-                <div className={`p-3 rounded-xl ${stat.bg} ${stat.color} group-hover:scale-110 transition-transform`}>
-                  <stat.icon className="w-6 h-6" />
+                <div className={`p-2.5 rounded-lg border ${stat.bg} ${stat.color}`}>
+                  <stat.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-xs uppercase font-bold text-slate-400 tracking-wider font-mono">{stat.label}</p>
-                  <h3 className="text-xl font-bold text-white">{stat.value}</h3>
+                  <p className="text-[11px] uppercase font-mono text-slate-400 tracking-wider leading-none mb-1.5">{stat.label}</p>
+                  <h3 className="text-xl font-bold tabular-nums text-white tracking-tight">{stat.value}</h3>
                 </div>
               </motion.div>
             ))}
@@ -1219,6 +1263,25 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </div>
                     )}
 
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const text = formatWhatsAppFlashReport(
+                            selectedIncident,
+                            reporterInfo?.displayName || reporterInfo?.email
+                          );
+                          navigator.clipboard.writeText(text);
+                          setCopiedIncidentWhatsApp(true);
+                          setTimeout(() => setCopiedIncidentWhatsApp(false), 2000);
+                        }}
+                        className="w-full py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold uppercase flex items-center justify-center gap-2 transition active:scale-[0.98]"
+                      >
+                        <Share2 className="w-4 h-4" />
+                        {copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : 'Copiar Formato WhatsApp'}
+                      </button>
+                    </div>
+
                     <div className="flex items-center justify-between text-slate-400 pb-2">
                       <div className="flex items-center gap-2">
                         <Clock className="w-4 h-4" />
@@ -1259,6 +1322,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
       <StockAutomotoras 
         isOpen={isStockOpen} 
         onClose={() => setIsStockOpen(false)} 
+      />
+
+      <ExecutiveDigestModal
+        isOpen={isDigestOpen}
+        onClose={() => setIsDigestOpen(false)}
+        incidents={incidents}
+        dealershipsCount={dealerships.length}
       />
     </div>
   );
