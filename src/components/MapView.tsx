@@ -539,11 +539,11 @@ export default function MapView() {
                   position={position}
                   icon={L.divIcon({
                     className: 'custom-div-icon',
-                    html: `<div class="w-8 h-8 rounded-xl border border-white/20 shadow-lg flex items-center justify-center ${isOnline ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-300'}">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
+                    html: `<div class="w-6 h-6 rounded-lg border border-white/20 shadow-md flex items-center justify-center ${isOnline ? 'bg-sky-600 text-white' : 'bg-slate-700 text-slate-300'}">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2" ry="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01"/><path d="M16 6h.01"/><path d="M8 10h.01"/><path d="M16 10h.01"/><path d="M8 14h.01"/><path d="M16 14h.01"/></svg>
                     </div>`,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 16],
+                    iconSize: [24, 24],
+                    iconAnchor: [12, 12],
                   })}
                 >
                   <Popup>
@@ -641,25 +641,25 @@ export default function MapView() {
                         <div class="relative flex items-center justify-center">
                           ${
                             isPanicOrRobo && isOpen
-                              ? `<div class="absolute w-16 h-16 bg-red-600/35 rounded-full animate-ping pointer-events-none"></div>
-                                 <div class="absolute w-24 h-24 border-2 border-red-500/40 rounded-full animate-pulse pointer-events-none"></div>`
+                              ? `<div class="absolute w-12 h-12 bg-red-600/35 rounded-full animate-ping pointer-events-none"></div>
+                                 <div class="absolute w-18 h-18 border-2 border-red-500/40 rounded-full animate-pulse pointer-events-none"></div>`
                               : isSelected
-                              ? `<div class="absolute w-12 h-12 bg-red-500/30 rounded-full animate-ping pointer-events-none"></div>`
+                              ? `<div class="absolute w-10 h-10 bg-red-500/30 rounded-full animate-ping pointer-events-none"></div>`
                               : ''
                           }
-                          <div class="w-8 h-8 rounded-xl border border-white/25 shadow-xl flex items-center justify-center transition-all ${
+                          <div class="w-6 h-6 rounded-lg border border-white/30 shadow-lg flex items-center justify-center transition-all ${
                             isPanicOrRobo && isOpen
-                              ? 'scale-110 ring-4 ring-red-500/40 shadow-[0_0_25px_rgba(239,68,68,0.9)] animate-bounce'
+                              ? 'scale-110 ring-2 ring-red-500/60 shadow-[0_0_18px_rgba(239,68,68,0.9)] animate-bounce'
                               : isSelected
                               ? 'scale-125 z-[1001]'
                               : ''
                           }" style="background-color: ${typeColor}; color: white;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m14.5 9-5 5"/><path d="m9.5 9 5 5"/></svg>
                           </div>
                         </div>
                       `,
-                      iconSize: [32, 32],
-                      iconAnchor: [16, 16],
+                      iconSize: [24, 24],
+                      iconAnchor: [12, 12],
                     })}
                     ref={(ref) => {
                       if (ref && isSelected) {
