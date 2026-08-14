@@ -379,7 +379,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   };
 
   return (
-    <div className="h-full overflow-y-auto p-6 space-y-8 max-w-7xl mx-auto">
+    <div className="h-full overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 pb-28 md:pb-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       {/* New Incident Toast Notification */}
       <AnimatePresence>
         {newIncidentNotify && (
@@ -873,55 +873,58 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
       {/* Chronological Timeline Section */}
       {activeTab === 'HISTORIAL' && (
-        <section className="bg-slate-900 border border-slate-800 rounded-3xl p-8 space-y-8 scroll-mt-24" id="timeline">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2 border-b border-slate-800">
-          <div className="space-y-1">
-            <h2 className="text-2xl font-black text-white flex items-center gap-3 tracking-tighter">
-              <History className="w-6 h-6 text-brand-primary" />
-              Cronología de Eventos
-            </h2>
-            <p className="text-slate-400 text-xs font-medium uppercase tracking-[0.2em]">Historial completo de la red de seguridad</p>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-4">
-            {/* Type Filter */}
-            <div className="flex items-center gap-2 bg-slate-800/50 p-1 rounded-xl border border-slate-700/50">
-              {['ALL', ...incidentTypes].map((type) => (
-                <button
-                  key={type}
-                  onClick={() => setTimelineType(type)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-black tracking-widest uppercase transition-all ${
-                    timelineType === type 
-                      ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/20' 
-                      : 'text-slate-400 hover:text-slate-300'
-                  }`}
-                >
-                  {type === 'ALL' ? 'Todos' : type}
-                </button>
-              ))}
+        <section className="bg-slate-900/90 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 scroll-mt-24 overflow-hidden" id="timeline">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+            <div className="space-y-1">
+              <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5 tracking-tight">
+                <History className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primary shrink-0" />
+                Cronología de Eventos
+              </h2>
+              <p className="text-slate-400 text-[11px] sm:text-xs font-mono uppercase tracking-wider">
+                Historial completo de la red de seguridad
+              </p>
             </div>
 
-            {/* Date Filters */}
-            <div className="flex items-center gap-2 bg-slate-800/50 p-1.5 rounded-xl border border-slate-700/50">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5 text-slate-500 ml-1" />
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 max-w-full">
+              {/* Type Filter */}
+              <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 overflow-x-auto max-w-full no-scrollbar">
+                {['ALL', ...incidentTypes].map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => setTimelineType(type)}
+                    className={`px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold tracking-wider uppercase whitespace-nowrap transition-all ${
+                      timelineType === type 
+                        ? 'bg-brand-primary text-white shadow-md shadow-brand-primary/25' 
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {type === 'ALL' ? 'Todos' : type}
+                  </button>
+                ))}
+              </div>
+
+              {/* Date Filters */}
+              <div className="flex items-center gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300">
+                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0 ml-1" />
                 <input 
                   type="date" 
                   value={timelineDate.start}
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, start: e.target.value }))}
-                  className="bg-transparent border-none text-xs text-white focus:ring-0 w-24 p-0 outline-none"
+                  className="bg-transparent border-none text-[11px] font-mono text-white focus:ring-0 w-24 p-0 outline-none"
                 />
-                <span className="text-slate-400 text-xs">→</span>
+                <span className="text-slate-500">→</span>
                 <input 
                   type="date" 
                   value={timelineDate.end}
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, end: e.target.value }))}
-                  className="bg-transparent border-none text-xs text-white focus:ring-0 w-24 p-0 outline-none"
+                  className="bg-transparent border-none text-[11px] font-mono text-white focus:ring-0 w-24 p-0 outline-none"
                 />
                 {(timelineDate.start || timelineDate.end) && (
                   <button 
+                    type="button"
                     onClick={() => setTimelineDate({ start: '', end: '' })}
-                    className="p-2 hover:bg-slate-700 rounded-full text-slate-400"
+                    className="p-1 hover:bg-slate-800 rounded-md text-slate-400 hover:text-white"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -929,103 +932,107 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </div>
             </div>
           </div>
-        </div>
 
-        <div className="relative pl-8 border-l border-slate-800 space-y-12 ml-4 pt-4">
-          {filteredTimelineIncidents.length === 0 ? (
-            <div className="py-12 text-center text-slate-400 italic flex flex-col items-center gap-4">
-              <Search className="w-10 h-10 opacity-20" />
-              <p>No se encontraron eventos en este periodo o categoría.</p>
-            </div>
-          ) : (
-            filteredTimelineIncidents.map((incident, idx) => (
-              <motion.div
-                key={incident.id}
-                initial={{ opacity: 0, x: -10 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="relative group"
-              >
-                {/* Timeline Dot */}
-                <div className={`absolute -left-[41px] top-1.5 w-5 h-5 rounded-full border-4 border-slate-900 z-10 transition-transform group-hover:scale-125 ${
-                  incident.type === 'ROBO' ? 'bg-red-500 shadow-lg shadow-red-500/20' : 
-                  incident.type === 'SOSPECHOSO' ? 'bg-orange-500 shadow-lg shadow-orange-500/20' : 
-                  incident.type === 'MARCAJE' ? 'bg-blue-500 shadow-lg shadow-blue-500/20' :
-                  'bg-slate-500 shadow-lg shadow-slate-500/20'
-                }`} />
+          <div className="relative pl-5 sm:pl-8 border-l border-slate-800/80 space-y-6 sm:space-y-8 ml-1.5 sm:ml-3 pt-2">
+            {filteredTimelineIncidents.length === 0 ? (
+              <div className="py-12 text-center text-slate-400 italic flex flex-col items-center gap-3">
+                <Search className="w-8 h-8 opacity-20" />
+                <p className="text-xs font-mono">No se encontraron eventos en este periodo o categoría.</p>
+              </div>
+            ) : (
+              filteredTimelineIncidents.map((incident) => (
+                <motion.div
+                  key={incident.id}
+                  initial={{ opacity: 0, x: -10 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  className="relative group"
+                >
+                  {/* Timeline Dot */}
+                  <div className={`absolute -left-[27px] sm:-left-[39px] top-1.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 sm:border-3 border-slate-950 z-10 transition-transform group-hover:scale-125 ${
+                    incident.type === 'ROBO' ? 'bg-red-500 shadow-md shadow-red-500/40' : 
+                    incident.type === 'SOSPECHOSO' ? 'bg-amber-500 shadow-md shadow-amber-500/40' : 
+                    incident.type === 'MARCAJE' ? 'bg-sky-500 shadow-md shadow-sky-500/40' :
+                    'bg-slate-500 shadow-md shadow-slate-500/40'
+                  }`} />
 
-                <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-3">
-                    <span className="text-xs font-black text-brand-primary font-mono bg-brand-primary/10 px-2 py-0.5 rounded border border-brand-primary/20">
-                      {new Date(incident.createdAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                    <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      {new Date(incident.createdAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}
-                    </span>
-                    <div className={`px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-tighter ${
-                      incident.status === 'RESOLVED' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'
-                    }`}>
-                      {incident.status || 'OPEN'}
-                    </div>
-                    {incident.isEdited && (
-                      <div className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-black uppercase tracking-tighter bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
-                        <Pencil className="w-3 h-3" /> Editado
-                      </div>
-                    )}
-                  </div>
-
-                  <div className={`p-6 rounded-2xl transition-all group-hover:shadow-xl group-hover:shadow-black/20 ${
-                    incident.type === 'ROBO' 
-                      ? 'bg-red-500/5 border-2 border-red-500/50 shadow-lg shadow-red-500/5' 
-                      : 'bg-slate-900 border border-slate-800 group-hover:border-slate-700'
-                  }`}>
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div>
-                        <h3 className="text-lg font-black text-white tracking-tighter leading-none mb-1 group-hover:text-brand-primary transition-colors flex items-center gap-2">
-                          {incident.type === 'ROBO' ? (
-                            <><ShieldAlert className="w-5 h-5 text-red-500" /> ROBO DETECTADO</>
-                          ) : incident.type === 'SOSPECHOSO' ? (
-                            <><AlertTriangle className="w-5 h-5 text-orange-500" /> ACTIVIDAD SOSPECHOSA</>
-                          ) : incident.type === 'MARCAJE' ? (
-                            <><MapPin className="w-5 h-5 text-blue-500" /> MARCAJE DETECTADO</>
-                          ) : (
-                            <><Info className="w-5 h-5 text-slate-500" /> REPORTE DE SEGURIDAD</>
-                          )}
-                        </h3>
-                        <p className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">#{incident.id.slice(0, 12)}</p>
-                      </div>
-                      <button 
-                        onClick={() => setSelectedIncident(incident)}
-                        className="text-xs font-black text-slate-400 hover:text-white uppercase tracking-widest bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700 transition-all"
-                      >
-                        Ver Detalles
-                      </button>
-                    </div>
-                    
-                    <p className="text-slate-400 text-sm leading-relaxed max-w-3xl">
-                      {incident.description}
-                    </p>
-
-                    <div className="mt-4 flex items-center gap-6 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-3.5 h-3.5" />
-                        <span>Sede: {incident.dealershipId || 'Central Coquimbo'}</span>
-                      </div>
-                      {incident.imageUrl && (
-                        <div className="flex items-center gap-2 text-brand-primary">
-                          <Sparkles className="w-3.5 h-3.5" />
-                          <span>Evidencia Adjunta</span>
-                        </div>
+                  <div className="flex flex-col gap-2.5">
+                    {/* Timestamp header */}
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-[11px] font-bold text-brand-primary font-mono bg-brand-primary/10 px-2 py-0.5 rounded border border-brand-primary/20">
+                        {new Date(incident.createdAt).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                      <span className="text-[11px] font-mono font-medium text-slate-400 uppercase">
+                        {new Date(incident.createdAt).toLocaleDateString('es-CL', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                        incident.status === 'RESOLVED' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20'
+                      }`}>
+                        {incident.status || 'OPEN'}
+                      </span>
+                      {incident.isEdited && (
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                          <Pencil className="w-2.5 h-2.5" /> Editado
+                        </span>
                       )}
                     </div>
+
+                    {/* Main Card */}
+                    <div className={`p-4 sm:p-5 rounded-2xl transition-all border ${
+                      incident.type === 'ROBO' 
+                        ? 'bg-red-950/15 border-red-500/30 shadow-lg shadow-red-950/20' 
+                        : 'bg-slate-950/80 border-slate-800/90 group-hover:border-slate-700'
+                    }`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
+                        <div className="min-w-0">
+                          <h3 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug group-hover:text-brand-primary transition-colors flex items-center gap-2">
+                            {incident.type === 'ROBO' ? (
+                              <><ShieldAlert className="w-4 h-4 text-red-400 shrink-0" /> Robo Detectado</>
+                            ) : incident.type === 'SOSPECHOSO' ? (
+                              <><AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" /> Actividad Sospechosa</>
+                            ) : incident.type === 'MARCAJE' ? (
+                              <><MapPin className="w-4 h-4 text-sky-400 shrink-0" /> Marcaje Detectado</>
+                            ) : (
+                              <><Info className="w-4 h-4 text-slate-400 shrink-0" /> Reporte de Seguridad</>
+                            )}
+                          </h3>
+                          <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider mt-0.5">
+                            #{incident.id.slice(0, 12)}
+                          </p>
+                        </div>
+                        <button 
+                          type="button"
+                          onClick={() => setSelectedIncident(incident)}
+                          className="self-start sm:self-auto text-[11px] font-mono font-bold text-slate-300 hover:text-white uppercase tracking-wider bg-slate-900 hover:bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-800 transition-all shrink-0"
+                        >
+                          Ver Detalles
+                        </button>
+                      </div>
+                      
+                      <p className="text-xs sm:text-sm text-slate-300 leading-relaxed break-words">
+                        {incident.description || 'Sin descripción adicional.'}
+                      </p>
+
+                      <div className="mt-3.5 pt-3 border-t border-slate-800/70 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
+                        <div className="flex items-center gap-1.5 truncate max-w-full sm:max-w-none">
+                          <Users className="w-3.5 h-3.5 shrink-0 text-slate-500" />
+                          <span className="truncate">Sede: <strong className="text-slate-200">{incident.dealershipId || 'Central Coquimbo'}</strong></span>
+                        </div>
+                        {incident.imageUrl && (
+                          <div className="flex items-center gap-1 text-brand-primary font-bold shrink-0">
+                            <Sparkles className="w-3.5 h-3.5" />
+                            <span>Evidencia Adjunta</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </motion.div>
-            ))
-          )}
-        </div>
-      </section>
-    )}
+                </motion.div>
+              ))
+            )}
+          </div>
+        </section>
+      )}
 
       {/* Incident Detail Modal */}
 
