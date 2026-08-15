@@ -17,6 +17,9 @@ import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 import { TabType } from '../lib/navigation';
 import { Route, Car, ShieldCheck, FileText, Share2, Copy } from 'lucide-react';
 import { formatTimeCL, formatDateCL, formatFullDateTimeCL, parseIncidentDate } from '../lib/dateUtils';
+import PlateVerificationBadge from './PlateVerificationBadge';
+import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
+import { StolenVehicleCheckResult } from '../services/stolenVehicleService';
 
 interface Incident {
   id: string;
@@ -82,6 +85,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
   const editFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Plate Verification in Modal State
+  const [modalPlateInput, setModalPlateInput] = useState('');
+  const [isUpdatingPlate, setIsUpdatingPlate] = useState(false);
 
   // Timeline specific filters
   const [timelineType, setTimelineType] = useState<string>('ALL');
@@ -376,6 +383,32 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
       setEditError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsSavingEdit(false);
+    }
+  };
+
+  const handleSavePlateToIncident = async (incidentId: string, result: StolenVehicleCheckResult) => {
+    setIsUpdatingPlate(true);
+    try {
+      const updateData: Record<string, any> = {
+        plate: result.plate,
+        plateFormatted: result.formattedPlate,
+        hasStolenReport: Boolean(result.hasStolenReport),
+        isEdited: true,
+        editedAt: serverTimestamp()
+      };
+      if (result.vehicleDetails?.brand) updateData.vehicleBrand = result.vehicleDetails.brand;
+      if (result.vehicleDetails?.model) updateData.vehicleModel = result.vehicleDetails.model;
+      if (result.vehicleDetails?.year) updateData.vehicleYear = result.vehicleDetails.year;
+      if (result.stolenDetails?.policeAgency) updateData.stolenPoliceAgency = result.stolenDetails.policeAgency;
+      if (result.stolenDetails?.reportNumber) updateData.stolenReportNumber = result.stolenDetails.reportNumber;
+      if (result.hasStolenReport) updateData.type = 'ROBO';
+
+      await updateDoc(doc(db, 'incidents', incidentId), updateData);
+      setSelectedIncident((prev: any) => prev ? { ...prev, ...updateData } : null);
+    } catch (err) {
+      console.error("Error updating plate in incident:", err);
+    } finally {
+      setIsUpdatingPlate(false);
     }
   };
 
@@ -826,6 +859,15 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed">
                       {incident.description}
                     </p>
+                    {((incident as any).plateFormatted || (incident as any).plate) && (
+                      <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
+                        <Car className="w-3.5 h-3.5 text-brand-primary" />
+                        <span className="font-bold text-white uppercase">{(incident as any).plateFormatted || (incident as any).plate}</span>
+                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                          {(incident as any).hasStolenReport ? 'ENCARGO ROBO' : 'SIN ENCARGO'}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </motion.div>
               ))}
@@ -1215,6 +1257,74 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           </span>
                         )}
                       </div>
+                    </div>
+
+                    {/* Ficha de Patente y Verificación Nacional AutoSeguro */}
+                    <div className="bg-slate-950/90 border-2 border-slate-800 p-5 rounded-3xl space-y-3 shadow-xl text-left">
+                      <div className="flex items-center justify-between border-b border-white/5 pb-2">
+                        <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                          <Car className="w-4 h-4 text-brand-primary" />
+                          Patente y Verificación Nacional (AutoSeguro)
+                        </span>
+                        {Boolean((selectedIncident as any).plateFormatted || (selectedIncident as any).plate) && (
+                          <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                            {(selectedIncident as any).hasStolenReport ? 'ENCARGO POR ROBO' : 'SIN ENCARGO'}
+                          </span>
+                        )}
+                      </div>
+
+                      {Boolean((selectedIncident as any).plateFormatted || (selectedIncident as any).plate) ? (
+                        <PlateVerificationBadge
+                          plate={(selectedIncident as any).plateFormatted || (selectedIncident as any).plate}
+                          autoCheck={true}
+                        />
+                      ) : (
+                        <div className="space-y-2 pt-1">
+                          <p className="text-[11px] text-slate-400 leading-relaxed">
+                            No se ingresó patente en el envío inicial. Ingrese la patente del vehículo para consultar en AutoSeguro y SEBV Carabineros:
+                          </p>
+                          <div className="flex gap-2">
+                            <input
+                              type="text"
+                              value={modalPlateInput}
+                              onChange={(e) => setModalPlateInput(e.target.value.toUpperCase())}
+                              placeholder="Ej: KHCP15 o GKLP42"
+                              maxLength={10}
+                              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white uppercase tracking-widest placeholder:text-slate-600 outline-none focus:border-brand-primary"
+                            />
+                            {modalPlateInput.trim().length >= 5 && (
+                              <button
+                                type="button"
+                                disabled={isUpdatingPlate}
+                                onClick={() => {
+                                  const validation = validateChileanPlate(modalPlateInput);
+                                  if (validation.isValid) {
+                                    handleSavePlateToIncident(selectedIncident.id, {
+                                      plate: validation.normalized,
+                                      formattedPlate: validation.formatted,
+                                      hasStolenReport: false,
+                                      status: 'CLEAN',
+                                      statusText: 'SIN ENCARGO POR ROBO REGISTRADO',
+                                      checkedAt: new Date().toISOString(),
+                                      source: 'AutoSeguro / Carabineros de Chile',
+                                    });
+                                  }
+                                }}
+                                className="px-3.5 py-2 bg-brand-primary hover:bg-orange-600 text-white font-mono text-xs font-bold rounded-xl transition uppercase active:scale-95"
+                              >
+                                {isUpdatingPlate ? 'Guardando...' : 'Asignar Patente'}
+                              </button>
+                            )}
+                          </div>
+                          {modalPlateInput.trim().length >= 5 && (
+                            <PlateVerificationBadge
+                              plate={modalPlateInput}
+                              autoCheck={true}
+                              onStatusResolved={(res) => handleSavePlateToIncident(selectedIncident.id, res)}
+                            />
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div className="bg-white/5 border border-white/5 p-6 rounded-3xl">
