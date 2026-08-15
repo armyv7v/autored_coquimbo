@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Navigation } from 'lucide-react';
+import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Navigation, Car, Search, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
 import { db, auth, storage } from '../lib/firebase';
@@ -11,6 +11,11 @@ import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
 import { safeUUID } from '../lib/uuid';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import PlateVerificationBadge from './PlateVerificationBadge';
+import { StolenVehicleCheckResult } from '../services/stolenVehicleService';
+import { normalizePlate, validateChileanPlate } from '../lib/chileanPlates';
+import { scanLicensePlateFromImage } from '../lib/ocrPlateScanner';
+import { sound } from '../lib/soundEngine';
 
 // Fix for default marker icons in Leaflet + React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -41,6 +46,9 @@ interface IncidentReportFormProps {
 export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFormProps) {
   const [type, setType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
   const [description, setDescription] = useState('');
+  const [plate, setPlate] = useState('');
+  const [stolenCheckResult, setStolenCheckResult] = useState<StolenVehicleCheckResult | null>(null);
+  const [scanningOcr, setScanningOcr] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<File | null>(null);
@@ -51,7 +59,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
       setImage(file);
@@ -60,6 +68,20 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
         setImagePreview(reader.result as string);
       };
       reader.readAsDataURL(file);
+
+      // Trigger automatic background OCR plate extraction
+      setScanningOcr(true);
+      try {
+        const ocr = await scanLicensePlateFromImage(file);
+        if (ocr.detectedPlate) {
+          setPlate(ocr.detectedPlate);
+          sound.playNodePulse(false);
+        }
+      } catch (ocrErr) {
+        console.warn('OCR error:', ocrErr);
+      } finally {
+        setScanningOcr(false);
+      }
     }
   };
 
@@ -70,6 +92,18 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
         setUsingGps(true);
       }, (err) => {
         console.error("GPS Error:", err);
+      });
+    }
+  };
+
+  const handleStatusResolved = (res: StolenVehicleCheckResult) => {
+    setStolenCheckResult(res);
+    if (res.hasStolenReport) {
+      setType('ROBO');
+      // Auto populate description if empty
+      setDescription((prev) => {
+        if (prev.trim()) return prev;
+        return `Vehículo con ENCARGO POR ROBO VIGENTE detectado: ${res.vehicleDetails?.brand || ''} ${res.vehicleDetails?.model || ''} (${res.formattedPlate}). Denuncia: ${res.stolenDetails?.reportNumber || 'S/N'}.`;
       });
     }
   };
@@ -90,10 +124,20 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
 
       const geohash = getGeohash(location[0], location[1]);
       const incidentId = safeUUID();
+      const cleanPlate = plate ? normalizePlate(plate) : '';
+
       const incidentData = {
         id: incidentId,
         type,
         description,
+        plate: cleanPlate || undefined,
+        plateFormatted: cleanPlate ? validateChileanPlate(cleanPlate).formatted : undefined,
+        hasStolenReport: Boolean(stolenCheckResult?.hasStolenReport),
+        vehicleBrand: stolenCheckResult?.vehicleDetails?.brand || undefined,
+        vehicleModel: stolenCheckResult?.vehicleDetails?.model || undefined,
+        vehicleYear: stolenCheckResult?.vehicleDetails?.year || undefined,
+        stolenPoliceAgency: stolenCheckResult?.stolenDetails?.policeAgency || undefined,
+        stolenReportNumber: stolenCheckResult?.stolenDetails?.reportNumber || undefined,
         reporterId: auth.currentUser.uid,
         dealershipId: profile?.dealershipId || 'UNKNOWN',
         location: {
@@ -130,6 +174,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const resetForm = () => {
     setType(null);
     setDescription('');
+    setPlate('');
+    setStolenCheckResult(null);
     setImage(null);
     setImagePreview(null);
     setLocation(COQUIMBO_CENTER);
@@ -171,7 +217,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     REPORTE DE INCIDENTE
                     <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">ALERTA</span>
                   </h2>
-                  <p className="text-xs text-red-300/80">Notificación inmediata a la red de concesionarias</p>
+                  <p className="text-xs text-red-300/80">Notificación inmediata y verificación de patente</p>
                 </div>
               </div>
               <button 
@@ -214,14 +260,56 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 </div>
               </div>
 
+              {/* Patente Vehicular & Verificación AutoSeguro */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block flex items-center gap-1.5">
+                    <Car className="w-4 h-4 text-brand-primary" />
+                    Patente del Vehículo (Consulta Nacional)
+                  </label>
+                  {scanningOcr && (
+                    <span className="text-[10px] font-mono text-sky-400 flex items-center gap-1 animate-pulse">
+                      <Sparkles className="w-3 h-3" /> Leyendo patente de foto...
+                    </span>
+                  )}
+                </div>
+
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={plate}
+                    onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                    placeholder="Ej: GKLP42 o AB1234 (Opcional)"
+                    maxLength={10}
+                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 px-4 text-sm font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition"
+                  />
+                  {plate && (
+                    <button
+                      type="button"
+                      onClick={() => { setPlate(''); setStolenCheckResult(null); }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  )}
+                </div>
+
+                {/* Badge de Verificación Automática en Base de Encargos */}
+                <PlateVerificationBadge
+                  plate={plate}
+                  onStatusResolved={handleStatusResolved}
+                  autoCheck={true}
+                />
+              </div>
+
               <div className="space-y-3">
                 <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block">
                   Descripción del Hecho
                 </label>
                 <div className="relative">
                   <textarea
-                    placeholder="Describe los hechos, características de los individuos o vehículos sospechosos..."
-                    className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-xs placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[90px]"
+                    placeholder="Describe los hechos, características de los individuos o dirección de fuga..."
+                    className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-xs placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[85px]"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
@@ -276,13 +364,13 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       }`}
                     >
                       <Camera className="w-4 h-4" />
-                      {imagePreview ? 'Foto Cargada' : 'Adjuntar Foto'}
+                      {imagePreview ? 'Foto Cargada' : 'Adjuntar / Tomar Foto'}
                     </button>
                   </div>
 
-                  <button 
-                    type="button" 
-                    onClick={() => setPickingLocation(true)}
+                  <button
+                    type="button"
+                    onClick={() => setPickingLocation(!pickingLocation)}
                     className={`w-full h-11 flex items-center justify-center gap-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition ${
                       usingGps 
                         ? 'bg-sky-500/15 border-sky-500/40 text-sky-400' 
@@ -290,83 +378,70 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     }`}
                   >
                     <MapPin className="w-4 h-4" />
-                    {usingGps ? 'Punto GPS OK' : 'Fijar Posición'}
+                    {usingGps ? 'GPS Fijado' : 'Fijar Ubicación'}
                   </button>
                 </div>
 
                 {imagePreview && (
-                  <div className="relative w-full h-28 rounded-xl overflow-hidden border border-slate-800">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-800 h-28 w-full bg-slate-900">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     <button 
                       type="button"
                       onClick={() => { setImage(null); setImagePreview(null); }}
-                      className="absolute top-2 right-2 bg-red-600 p-1.5 rounded-lg text-white shadow-md"
+                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-950/80 text-slate-400 hover:text-white border border-slate-700"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
+                  </div>
+                )}
+
+                {pickingLocation && (
+                  <div className="space-y-2 rounded-xl border border-slate-800 p-2.5 bg-slate-900/60">
+                    <div className="flex items-center justify-between text-xs font-mono text-slate-400">
+                      <span>Haz clic en el mapa para marcar el punto:</span>
+                      <button 
+                        type="button" 
+                        onClick={requestGps}
+                        className="text-brand-primary flex items-center gap-1 hover:underline font-bold"
+                      >
+                        <Navigation className="w-3 h-3" /> Mi GPS
+                      </button>
+                    </div>
+                    <div className="h-40 rounded-lg overflow-hidden border border-slate-800 relative z-0">
+                      <MapContainer center={location} zoom={14} className="h-full w-full">
+                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                        <MapPicker position={location} setPosition={setLocation} />
+                      </MapContainer>
+                    </div>
                   </div>
                 )}
               </div>
 
               {error && (
-                <div className="bg-red-950/30 border border-red-500/30 rounded-xl p-3 flex items-start gap-2.5 text-red-400 text-xs">
-                  <AlertTriangle className="w-4 h-4 shrink-0 text-red-500 mt-0.5" />
-                  <p className="font-medium leading-relaxed">{error}</p>
+                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
                 </div>
               )}
-            </form>
 
-            <footer className="border-t border-slate-800/80 bg-slate-950 p-4">
               <button
-                type="button"
-                onClick={handleSubmit}
+                type="submit"
                 disabled={loading || !type}
-                className="w-full bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-600 text-white h-12 rounded-xl font-bold text-xs uppercase tracking-wider shadow-lg shadow-red-900/30 flex items-center justify-center gap-2 transition active:scale-[0.99]"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-950 border border-red-400/40 disabled:opacity-50 transition active:scale-[0.98]"
               >
-                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                Transmitir Alerta a la Red
+                {loading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Transmitiendo Alerta a la Red...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Transmitir Reporte a la Red
+                  </>
+                )}
               </button>
-            </footer>
-
-            <AnimatePresence>
-              {pickingLocation && (
-                <motion.div 
-                  initial={{ y: "100%" }}
-                  animate={{ y: 0 }}
-                  exit={{ y: "100%" }}
-                  className="absolute inset-0 z-50 bg-slate-950 flex flex-col"
-                >
-                  <div className="p-4 flex items-center justify-between border-b border-slate-800">
-                    <h3 className="text-white font-bold text-xs uppercase tracking-wider font-mono">Ubicar en Mapa Táctico</h3>
-                    <button onClick={() => setPickingLocation(false)} className="p-1 text-slate-400 hover:text-white">
-                      <X className="w-5 h-5" />
-                    </button>
-                  </div>
-                  <div className="flex-1 relative">
-                    <MapContainer center={location} zoom={15} className="h-full w-full">
-                      <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
-                      <MapPicker position={location} setPosition={(pos) => { setLocation(pos); setUsingGps(true); }} />
-                    </MapContainer>
-                    <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] flex gap-3">
-                      <button 
-                        type="button"
-                        onClick={requestGps}
-                        className="bg-slate-900 border border-slate-700 text-white px-5 h-11 rounded-xl shadow-2xl font-bold text-xs uppercase tracking-wider flex items-center gap-1.5"
-                      >
-                        <Navigation className="w-3.5 h-3.5 text-sky-400" /> Mi GPS
-                      </button>
-                      <button 
-                        type="button"
-                        onClick={() => setPickingLocation(false)}
-                        className="bg-brand-primary text-white px-5 h-11 rounded-xl shadow-2xl font-bold text-xs uppercase tracking-wider"
-                      >
-                        Fijar Ubicación
-                      </button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+            </form>
           </motion.div>
         </motion.div>
       )}

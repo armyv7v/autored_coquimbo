@@ -6,6 +6,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { auth, db, storage } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { safeUUID } from '../lib/uuid';
+import PlateVerificationBadge from './PlateVerificationBadge';
 
 interface RoadTestFormProps {
   isOpen: boolean;
@@ -168,9 +169,9 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
             {/* Form Body (Scrollable) */}
             <div className="flex-1 min-h-0 space-y-4 overflow-y-auto p-5 text-left">
               {/* Patente Vehículo */}
-              <div>
-                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5">
-                  Patente del Vehículo (Opcional)
+              <div className="space-y-2">
+                <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
+                  Patente del Vehículo (Verificación Nacional)
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
@@ -180,10 +181,13 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                     type="text"
                     value={plate}
                     onChange={handlePlateChange}
-                    placeholder="Ej: AB-CD-12"
+                    placeholder="Ej: GKLP42 o AB1234"
+                    maxLength={10}
                     className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition"
                   />
                 </div>
+
+                <PlateVerificationBadge plate={plate} autoCheck={true} />
               </div>
 
               {/* Photo Capture Grid */}

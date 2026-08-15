@@ -701,6 +701,19 @@ export default function MapView() {
                               <img src={incident.imageUrl} alt="Evidencia" className="w-full h-full object-cover" />
                             </div>
                           )}
+
+                          {(incident as any).plateFormatted && (
+                            <div className={`p-2.5 rounded-xl border text-[11px] font-mono flex items-center justify-between ${(incident as any).hasStolenReport ? 'bg-red-950/80 border-red-500/80 text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-slate-900 border-slate-700 text-slate-200'}`}>
+                              <div className="flex items-center gap-1.5">
+                                <Car className="w-3.5 h-3.5 text-brand-primary" />
+                                <span className="font-black uppercase tracking-wider">{(incident as any).plateFormatted}</span>
+                              </div>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                                {(incident as any).hasStolenReport ? 'ENCARGO ROBO VIGENTE' : 'SIN ENCARGO'}
+                              </span>
+                            </div>
+                          )}
+
                           <p className="text-xs text-slate-300 leading-relaxed">{incident.description || 'Sin descripción.'}</p>
 
                           <div className="flex flex-col gap-1 text-[11px] font-mono text-slate-400 pt-2 border-t border-slate-800/60">
