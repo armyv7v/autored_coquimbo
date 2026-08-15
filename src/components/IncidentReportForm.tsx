@@ -125,19 +125,12 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
       const geohash = getGeohash(location[0], location[1]);
       const incidentId = safeUUID();
       const cleanPlate = plate ? normalizePlate(plate) : '';
+      const formattedPlate = cleanPlate ? validateChileanPlate(cleanPlate).formatted : '';
 
-      const incidentData = {
+      const incidentData: Record<string, any> = {
         id: incidentId,
         type,
-        description,
-        plate: cleanPlate || undefined,
-        plateFormatted: cleanPlate ? validateChileanPlate(cleanPlate).formatted : undefined,
-        hasStolenReport: Boolean(stolenCheckResult?.hasStolenReport),
-        vehicleBrand: stolenCheckResult?.vehicleDetails?.brand || undefined,
-        vehicleModel: stolenCheckResult?.vehicleDetails?.model || undefined,
-        vehicleYear: stolenCheckResult?.vehicleDetails?.year || undefined,
-        stolenPoliceAgency: stolenCheckResult?.stolenDetails?.policeAgency || undefined,
-        stolenReportNumber: stolenCheckResult?.stolenDetails?.reportNumber || undefined,
+        description: description || '',
         reporterId: auth.currentUser.uid,
         dealershipId: profile?.dealershipId || 'UNKNOWN',
         location: {
@@ -145,10 +138,38 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
           lng: location[1],
         },
         geohash,
-        imageUrl,
+        imageUrl: imageUrl || '',
         status: 'OPEN',
         createdAt: serverTimestamp(),
       };
+
+      if (cleanPlate) {
+        incidentData.plate = cleanPlate;
+        incidentData.plateFormatted = formattedPlate;
+        incidentData.hasStolenReport = Boolean(stolenCheckResult?.hasStolenReport);
+        if (stolenCheckResult?.vehicleDetails?.brand) {
+          incidentData.vehicleBrand = stolenCheckResult.vehicleDetails.brand;
+        }
+        if (stolenCheckResult?.vehicleDetails?.model) {
+          incidentData.vehicleModel = stolenCheckResult.vehicleDetails.model;
+        }
+        if (stolenCheckResult?.vehicleDetails?.year) {
+          incidentData.vehicleYear = stolenCheckResult.vehicleDetails.year;
+        }
+        if (stolenCheckResult?.stolenDetails?.policeAgency) {
+          incidentData.stolenPoliceAgency = stolenCheckResult.stolenDetails.policeAgency;
+        }
+        if (stolenCheckResult?.stolenDetails?.reportNumber) {
+          incidentData.stolenReportNumber = stolenCheckResult.stolenDetails.reportNumber;
+        }
+      }
+
+      // Ensure no undefined properties exist before sending to Firestore
+      Object.keys(incidentData).forEach((key) => {
+        if (incidentData[key] === undefined) {
+          delete incidentData[key];
+        }
+      });
 
       await setDoc(doc(collection(db, 'incidents'), incidentId), incidentData);
       resetForm();
