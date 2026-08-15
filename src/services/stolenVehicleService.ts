@@ -1,6 +1,6 @@
 /**
  * Chilean Stolen Vehicle Verification Service (AutoSeguro / Carabineros / PDI / AutosRobados)
- * Consults public national database records and live network registry for vehicle stolen reports.
+ * Consults public national database records, live network registry, and external API gateways.
  */
 
 import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
@@ -16,7 +16,7 @@ export interface StolenVehicleCheckResult {
   vehicleDetails?: {
     brand: string;
     model: string;
-    year: number;
+    year: number | string;
     color: string;
     vehicleType: string;
     vinMasked?: string;
@@ -188,20 +188,6 @@ const KNOWN_VEHICLE_DATABASE: Record<string, Partial<StolenVehicleCheckResult>> 
   },
 };
 
-// Procedural brand/model generator for any unlisted Chilean plate
-const SAMPLE_BRANDS = [
-  { brand: 'TOYOTA', models: ['RAV4 HYBRID', 'COROLLA CROSS', 'YARIS SEDAN', 'HILUX 4X4'] },
-  { brand: 'HYUNDAI', models: ['TUCSON', 'CRETA', 'ACCENT', 'SANTA FE'] },
-  { brand: 'KIA', models: ['SPORTAGE', 'SELTOS', 'SOLUTO', 'SORENTO'] },
-  { brand: 'CHEVROLET', models: ['TRACKER', 'ONIX TURBO', 'SAIL 1.5', 'SILVERADO'] },
-  { brand: 'NISSAN', models: ['KICKS', 'QASHQAI', 'VERSA', 'NAVARA 4X4'] },
-  { brand: 'MAZDA', models: ['CX-5', 'CX-30', 'MAZDA 3', 'BT-50'] },
-  { brand: 'PEUGEOT', models: ['2008', '3008', 'PARTNER', '208'] },
-  { brand: 'SUZUKI', models: ['SWIFT', 'VITARA', 'BALENO', 'S-CROSS'] },
-];
-
-const SAMPLE_COLORS = ['BLANCO', 'GRIS OSCURO', 'PLATEADO', 'NEGRO', 'AZUL METÁLICO', 'ROJO BURDEOS'];
-
 /**
  * Checks a vehicle license plate against the Chilean National Stolen Vehicle Registry (AutoSeguro + Firestore Live Sync).
  */
@@ -263,44 +249,7 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
   // Artificial short delay to simulate live secure query to AutoSeguro gateway
   await new Promise((resolve) => setTimeout(resolve, 350));
 
-  // Deterministic calculation for unlisted demo plates
-  const isSimulatedStolen = cleanPlate.endsWith('99') || cleanPlate.includes('ROB');
-
-  // Compute brand based on plate hash
-  const hash = cleanPlate.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
-  const brandGroup = SAMPLE_BRANDS[hash % SAMPLE_BRANDS.length];
-  const model = brandGroup.models[hash % brandGroup.models.length];
-  const color = SAMPLE_COLORS[hash % SAMPLE_COLORS.length];
-  const year = 2019 + (hash % 6); // 2019 to 2025
-
-  if (isSimulatedStolen) {
-    return {
-      plate: cleanPlate,
-      formattedPlate: validation.formatted,
-      hasStolenReport: true,
-      status: 'STOLEN',
-      statusText: 'ENCARGO POR ROBO VIGENTE (SEBV CARABINEROS)',
-      vehicleDetails: {
-        brand: brandGroup.brand,
-        model,
-        year,
-        color,
-        vehicleType: 'VEHÍCULO MOTORIZADO',
-        vinMasked: `VIN-${cleanPlate.slice(0, 4)}******`,
-      },
-      stolenDetails: {
-        reportDate: new Date(Date.now() - 24 * 3600 * 1000).toLocaleString('es-CL'),
-        policeAgency: 'CARABINEROS DE CHILE',
-        policeStation: 'Prefectura Coquimbo Nº 6',
-        commune: 'Coquimbo',
-        reportNumber: `ENC-${cleanPlate}-2026`,
-        riskLevel: 'CRÍTICO',
-      },
-      checkedAt,
-      source: 'AutoSeguro / Carabineros de Chile (SEBV)',
-    };
-  }
-
+  // If not listed in known stolen warrants, return verified clean status without fabricating a fake brand/model
   return {
     plate: cleanPlate,
     formattedPlate: validation.formatted,
@@ -308,10 +257,10 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     status: 'CLEAN',
     statusText: 'SIN ENCARGO POR ROBO REGISTRADO',
     vehicleDetails: {
-      brand: brandGroup.brand,
-      model,
-      year,
-      color,
+      brand: 'PADRÓN EN TRÁMITE',
+      model: 'VEHÍCULO PARTICULAR',
+      year: 'REGISTRADO',
+      color: 'POR CONFIRMAR',
       vehicleType: 'VEHÍCULO MOTORIZADO',
       vinMasked: `VIN-${cleanPlate.slice(0, 4)}******`,
     },
@@ -326,7 +275,7 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
 export async function setPlateStolenStatus(
   rawPlate: string,
   isStolen: boolean,
-  vehicleDetails?: { brand: string; model: string; year: number; color: string },
+  vehicleDetails?: { brand: string; model: string; year: number | string; color: string },
   stolenDetails?: { policeStation: string; reportNumber: string; commune: string }
 ): Promise<void> {
   const validation = validateChileanPlate(rawPlate);
@@ -340,11 +289,11 @@ export async function setPlateStolenStatus(
       hasStolenReport: isStolen,
       statusText: isStolen ? 'ENCARGO POR ROBO VIGENTE (REGISTRADO EN RED)' : 'SIN ENCARGO POR ROBO REGISTRADO',
       vehicleDetails: vehicleDetails || {
-        brand: 'NISSAN',
-        model: 'V16 SENTRA',
-        year: 2010,
-        color: 'NEGRO',
-        vehicleType: 'SEDÁN',
+        brand: 'VEHÍCULO REGISTRADO',
+        model: 'EN RED AUTORED',
+        year: 2024,
+        color: 'A CONFIRMAR',
+        vehicleType: 'VEHÍCULO MOTORIZADO',
       },
       stolenDetails: isStolen
         ? {
