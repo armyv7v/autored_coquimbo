@@ -1,6 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { sound } from '../lib/soundEngine';
-import { Volume2, VolumeX, Zap, ShieldAlert, Radio, Activity, Eye } from 'lucide-react';
 
 export interface WebNode {
   id: string;
@@ -22,13 +21,6 @@ interface WebRingPoint {
   vy: number;
   baseX: number;
   baseY: number;
-}
-
-interface WebStrand {
-  points: WebRingPoint[];
-  fromNodeId: string;
-  toNodeId: string;
-  tension: number;
 }
 
 interface FiberPulse {
@@ -61,7 +53,7 @@ interface MicroSpark {
   size: number;
 }
 
-const NODES: WebNode[] = [
+export const NODES: WebNode[] = [
   { id: 'core', name: 'Centro de Comando AutoRed', sector: 'Nodo Matriz', rx: 0.48, ry: 0.5, isCore: true, baseRadius: 28, status: 'ONLINE', latency: 4, dealersCount: 14 },
   { id: 'n1', name: 'Ruta 5 Norte', sector: 'Sector Norte', rx: 0.18, ry: 0.18, baseRadius: 6, status: 'ONLINE', latency: 8, dealersCount: 3 },
   { id: 'n2', name: 'Muelle Fiscal', sector: 'Zona Portuaria', rx: 0.42, ry: 0.14, baseRadius: 6, status: 'ONLINE', latency: 12, dealersCount: 2 },
@@ -82,6 +74,8 @@ interface InteractiveNetworkWebProps {
   className?: string;
   interactive?: boolean;
   pulseTriggerCount?: number;
+  stormActive?: boolean;
+  selectedNodeId?: string | null;
   onNodeSelect?: (node: WebNode) => void;
 }
 
@@ -89,6 +83,8 @@ export default function InteractiveNetworkWeb({
   className = '',
   interactive = true,
   pulseTriggerCount = 0,
+  stormActive = false,
+  selectedNodeId = null,
   onNodeSelect,
 }: InteractiveNetworkWebProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -104,25 +100,11 @@ export default function InteractiveNetworkWeb({
   });
   
   const hoverNodeRef = useRef<WebNode | null>(null);
-  const [hoveredNode, setHoveredNode] = useState<WebNode | null>(null);
-  const [isMuted, setIsMuted] = useState(sound.getIsMuted());
-  const [stormMode, setStormMode] = useState(false);
-  const stormModeRef = useRef(false);
-  stormModeRef.current = stormMode;
+  const stormActiveRef = useRef(stormActive);
+  stormActiveRef.current = stormActive;
 
-  const [telemetryHud, setTelemetryHud] = useState({
-    fps: 60,
-    pulsesCount: 0,
-    tensionIndex: '98.4%',
-    coords: 'LAT -29.953° | LNG -71.343°',
-  });
-
-  const radialStrandsRef = useRef<Map<string, WebRingPoint[]>>(new Map());
-  const ringStrandsRef = useRef<WebRingPoint[][]>([]);
-
-  const spawnPulse = useCallback((fromId: string, speed = 0.007 + Math.random() * 0.008, isHighEnergy = false) => {
-    const fromNode = NODES.find((n) => n.id === fromId);
-    const color = stormModeRef.current || isHighEnergy
+  const spawnPulse = useCallback((fromId: string, speed = 0.008 + Math.random() * 0.006, isHighEnergy = false, playAudio = false) => {
+    const color = stormActiveRef.current || isHighEnergy
       ? '#ef4444'
       : Math.random() > 0.4
       ? '#ff6b00'
@@ -133,14 +115,16 @@ export default function InteractiveNetworkWeb({
       fromId,
       toId: 'core',
       progress: 0,
-      speed: isHighEnergy ? 0.018 : speed,
+      speed: isHighEnergy ? 0.020 : speed,
       color,
       size: isHighEnergy ? 4.0 : 2.5,
       tailLength: isHighEnergy ? 0.28 : 0.18,
       isHighEnergy,
     });
 
-    sound.playNodePulse(isHighEnergy || stormModeRef.current);
+    if (playAudio) {
+      sound.playNodePulse(isHighEnergy || stormActiveRef.current);
+    }
   }, []);
 
   const spawnSparks = (x: number, y: number, count = 8, color = '#ff6b00') => {
@@ -160,18 +144,28 @@ export default function InteractiveNetworkWeb({
     }
   };
 
-  // Trigger burst from props
+  // External trigger burst
   const prevTriggerRef = useRef(pulseTriggerCount);
   useEffect(() => {
     if (pulseTriggerCount > prevTriggerRef.current) {
       const outerIds = NODES.filter((n) => !n.isCore).map((n) => n.id);
       outerIds.forEach((id, i) => {
-        setTimeout(() => spawnPulse(id, 0.018, true), i * 50);
+        setTimeout(() => spawnPulse(id, 0.020, true, i === 0), i * 45);
       });
       prevTriggerRef.current = pulseTriggerCount;
-      sound.playTacticalAlarm();
     }
   }, [pulseTriggerCount, spawnPulse]);
+
+  // Handle programmatic node selection from parent
+  useEffect(() => {
+    if (selectedNodeId) {
+      const target = NODES.find((n) => n.id === selectedNodeId);
+      if (target) {
+        spawnPulse(target.id, 0.022, true, true);
+        hoverNodeRef.current = target;
+      }
+    }
+  }, [selectedNodeId, spawnPulse]);
 
   // Main Canvas & WebGL-level Rendering Loop
   useEffect(() => {
@@ -184,30 +178,6 @@ export default function InteractiveNetworkWeb({
     let width = 0;
     let height = 0;
 
-    const initStrands = () => {
-      // Radial strand points
-      radialStrandsRef.current.clear();
-      const outerNodes = NODES.filter((n) => !n.isCore);
-      outerNodes.forEach((n) => {
-        const points: WebRingPoint[] = [];
-        const numSegments = 10;
-        for (let i = 0; i <= numSegments; i++) {
-          points.push({ x: 0, y: 0, vx: 0, vy: 0, baseX: 0, baseY: 0 });
-        }
-        radialStrandsRef.current.set(n.id, points);
-      });
-
-      // Concentric ring strand points
-      ringStrandsRef.current = RING_SCALES.map(() => {
-        const points: WebRingPoint[] = [];
-        const numPoints = outerNodes.length * 4;
-        for (let i = 0; i < numPoints; i++) {
-          points.push({ x: 0, y: 0, vx: 0, vy: 0, baseX: 0, baseY: 0 });
-        }
-        return points;
-      });
-    };
-
     const resize = () => {
       if (!canvas) return;
       const rect = canvas.getBoundingClientRect();
@@ -217,18 +187,17 @@ export default function InteractiveNetworkWeb({
       canvas.width = width * dpr;
       canvas.height = height * dpr;
       ctx.scale(dpr, dpr);
-      initStrands();
     };
 
     resize();
     window.addEventListener('resize', resize);
 
-    // Auto organic pulse generator
+    // Auto organic pulse generator (Silent background ambiance)
     const interval = setInterval(() => {
       const outerNodes = NODES.filter((n) => !n.isCore);
       const randNode = outerNodes[Math.floor(Math.random() * outerNodes.length)];
-      spawnPulse(randNode.id);
-    }, 750);
+      spawnPulse(randNode.id, 0.007, false, false);
+    }, 1100);
 
     let time = 0;
     let lastPluckTime = 0;
@@ -241,14 +210,14 @@ export default function InteractiveNetworkWeb({
       ctx.save();
       ctx.translate(cx, cy);
 
-      const isStorm = stormModeRef.current;
+      const isStorm = stormActiveRef.current;
       const primaryColor = isStorm ? '#ef4444' : '#ff6b00';
       const secondaryColor = isStorm ? '#dc2626' : '#0ea5e9';
 
       // 1. Radiant Aura & Plasma Core Glow
       const aura = ctx.createRadialGradient(0, 0, 4, 0, 0, 75);
-      aura.addColorStop(0, isStorm ? 'rgba(239, 68, 68, 0.65)' : `rgba(255, 107, 0, ${0.45 + glowIntensity * 0.4})`);
-      aura.addColorStop(0.4, isStorm ? 'rgba(220, 38, 38, 0.25)' : 'rgba(14, 165, 233, 0.2)');
+      aura.addColorStop(0, isStorm ? 'rgba(239, 68, 68, 0.7)' : `rgba(255, 107, 0, ${0.45 + glowIntensity * 0.4})`);
+      aura.addColorStop(0.4, isStorm ? 'rgba(220, 38, 38, 0.3)' : 'rgba(14, 165, 233, 0.2)');
       aura.addColorStop(1, 'transparent');
       ctx.beginPath();
       ctx.arc(0, 0, 75, 0, Math.PI * 2);
@@ -260,11 +229,11 @@ export default function InteractiveNetworkWeb({
         const w = (sw / 2) * scale;
         const h = (sh / 2) * scale;
         ctx.beginPath();
-        ctx.moveTo(0, -h - 5 * scale); // Crest
-        ctx.quadraticCurveTo(w * 0.5, -h - 7 * scale, w, -h + 7 * scale); // Top right shoulder
-        ctx.quadraticCurveTo(w * 1.15, h * 0.35, 0, h + 9 * scale); // Bottom tip
-        ctx.quadraticCurveTo(-w * 1.15, h * 0.35, -w, -h + 7 * scale); // Left shoulder
-        ctx.quadraticCurveTo(-w * 0.5, -h - 7 * scale, 0, -h - 5 * scale); // Back to crest
+        ctx.moveTo(0, -h - 5 * scale);
+        ctx.quadraticCurveTo(w * 0.5, -h - 7 * scale, w, -h + 7 * scale);
+        ctx.quadraticCurveTo(w * 1.15, h * 0.35, 0, h + 9 * scale);
+        ctx.quadraticCurveTo(-w * 1.15, h * 0.35, -w, -h + 7 * scale);
+        ctx.quadraticCurveTo(-w * 0.5, -h - 7 * scale, 0, -h - 5 * scale);
         ctx.closePath();
       };
 
@@ -279,7 +248,7 @@ export default function InteractiveNetworkWeb({
       ctx.stroke();
       ctx.restore();
 
-      // 3. Outer Cyber Shield Contour (Dark glass fill + neon edge)
+      // 3. Outer Cyber Shield Contour
       createShieldPath(1.0);
       ctx.fillStyle = 'rgba(2, 6, 18, 0.92)';
       ctx.fill();
@@ -355,13 +324,11 @@ export default function InteractiveNetworkWeb({
 
       const corePos = nodePosMap.get('core')!;
       const outerNodes = NODES.filter((n) => !n.isCore);
-      const isStorm = stormModeRef.current;
+      const isStorm = stormActiveRef.current;
 
       // 1. ORGANIC SPRING-MASS SPIDER WEB RINGS
       RING_SCALES.forEach((scale, ringIdx) => {
         ctx.beginPath();
-        const numPoints = outerNodes.length;
-
         outerNodes.forEach((n, idx) => {
           const np = nodePosMap.get(n.id)!;
           const rx = corePos.x + (np.x - corePos.x) * scale;
@@ -383,16 +350,16 @@ export default function InteractiveNetworkWeb({
           let deformedX = sagX;
           let deformedY = sagY;
 
-          if (distToMid < 75) {
-            const pushFactor = (1 - distToMid / 75) * 22;
+          if (distToMid < 70) {
+            const pushFactor = (1 - distToMid / 70) * 20;
             const pushAngle = Math.atan2(sagY - mouse.y, sagX - mouse.x);
             deformedX += Math.cos(pushAngle) * pushFactor;
             deformedY += Math.sin(pushAngle) * pushFactor;
 
-            // Trigger acoustic harmonic pluck if cursor is swift
-            if (mouse.speed > 8 && Date.now() - lastPluckTime > 90) {
+            // Trigger harmonic pluck ONLY on high-velocity mouse crossing
+            if (mouse.speed > 12 && Date.now() - lastPluckTime > 140) {
               const freq = PENTATONIC_FREQS[ringIdx % PENTATONIC_FREQS.length];
-              sound.playWebPluck(freq, 1.2);
+              sound.playWebPluck(freq, 1.1);
               spawnSparks(mouse.x, mouse.y, 4, isStorm ? '#ef4444' : '#ff6b00');
               lastPluckTime = Date.now();
             }
@@ -404,9 +371,9 @@ export default function InteractiveNetworkWeb({
 
         ctx.closePath();
         ctx.strokeStyle = isStorm
-          ? `rgba(239, 68, 68, ${0.18 + scale * 0.15})`
+          ? `rgba(239, 68, 68, ${0.22 + scale * 0.15})`
           : `rgba(248, 250, 252, ${0.10 + scale * 0.08})`;
-        ctx.lineWidth = isStorm ? 1.0 : 0.75;
+        ctx.lineWidth = isStorm ? 1.1 : 0.75;
         ctx.stroke();
       });
 
@@ -414,10 +381,9 @@ export default function InteractiveNetworkWeb({
       outerNodes.forEach((n, idx) => {
         const np = nodePosMap.get(n.id)!;
 
-        // Line gradient from orange/red to cyan/white
         const lineGrad = ctx.createLinearGradient(corePos.x, corePos.y, np.x, np.y);
         if (isStorm) {
-          lineGrad.addColorStop(0, 'rgba(239, 68, 68, 0.75)');
+          lineGrad.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
           lineGrad.addColorStop(0.5, 'rgba(244, 63, 94, 0.45)');
           lineGrad.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
         } else {
@@ -426,22 +392,20 @@ export default function InteractiveNetworkWeb({
           lineGrad.addColorStop(1, 'rgba(248, 250, 252, 0.2)');
         }
 
-        // Check if mouse touches radial strand
         const midRx = (corePos.x + np.x) / 2;
         const midRy = (corePos.y + np.y) / 2;
         const distToRadial = Math.hypot(mouse.x - midRx, mouse.y - midRy);
         let pullX = midRx;
         let pullY = midRy;
 
-        if (distToRadial < 80) {
-          const pull = (1 - distToRadial / 80) * 18;
+        if (distToRadial < 75) {
           pullX += (mouse.x - midRx) * 0.2;
           pullY += (mouse.y - midRy) * 0.2;
 
-          if (mouse.speed > 10 && Date.now() - lastPluckTime > 100) {
+          if (mouse.speed > 14 && Date.now() - lastPluckTime > 140) {
             const freq = PENTATONIC_FREQS[idx % PENTATONIC_FREQS.length];
-            sound.playWebPluck(freq, 1.4);
-            spawnSparks(mouse.x, mouse.y, 6, isStorm ? '#ef4444' : '#0ea5e9');
+            sound.playWebPluck(freq, 1.2);
+            spawnSparks(mouse.x, mouse.y, 5, isStorm ? '#ef4444' : '#0ea5e9');
             lastPluckTime = Date.now();
           }
         }
@@ -454,7 +418,7 @@ export default function InteractiveNetworkWeb({
         ctx.stroke();
       });
 
-      // 3. SECONDARY NEURAL INTERCONNECTS (Mesh of Light)
+      // 3. SECONDARY NEURAL INTERCONNECTS
       for (let i = 0; i < outerNodes.length; i++) {
         for (let j = i + 1; j < outerNodes.length; j++) {
           const n1 = nodePosMap.get(outerNodes[i].id)!;
@@ -473,7 +437,7 @@ export default function InteractiveNetworkWeb({
         }
       }
 
-      // 4. CORE SHOCKWAVES & IMPACT PULSES
+      // 4. CORE SHOCKWAVES
       let recentCoreHitIntensity = 0;
       shockwavesRef.current.forEach((sw, idx) => {
         sw.radius += 3.2;
@@ -493,7 +457,7 @@ export default function InteractiveNetworkWeb({
         }
       });
 
-      // 5. RENDER FIBER OPTIC DATA PACKET PULSES
+      // 5. FIBER OPTIC PULSES
       const activePulses: FiberPulse[] = [];
       pulsesRef.current.forEach((p) => {
         p.progress += p.speed;
@@ -521,7 +485,6 @@ export default function InteractiveNetworkWeb({
           ctx.lineWidth = p.size;
           ctx.stroke();
 
-          // Glowing Comet Head
           ctx.beginPath();
           ctx.arc(headX, headY, p.size * 0.9, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
@@ -530,14 +493,12 @@ export default function InteractiveNetworkWeb({
           ctx.fill();
           ctx.shadowBlur = 0;
 
-          // Trail micro sparks
-          if (Math.random() > 0.6) {
+          if (Math.random() > 0.7) {
             spawnSparks(headX, headY, 1, p.color);
           }
 
           activePulses.push(p);
         } else if (pTo && p.toId === 'core') {
-          // Impact in central core!
           shockwavesRef.current.push({
             radius: 18,
             maxRadius: 110,
@@ -545,12 +506,14 @@ export default function InteractiveNetworkWeb({
             color: p.color,
           });
           spawnSparks(corePos.x, corePos.y, p.isHighEnergy ? 16 : 8, p.color);
-          sound.playCoreImpact(p.isHighEnergy ? 1.5 : 1.0);
+          if (p.isHighEnergy) {
+            sound.playCoreImpact(1.4);
+          }
         }
       });
       pulsesRef.current = activePulses;
 
-      // 6. RENDER MICRO SPARKS
+      // 6. MICRO SPARKS
       const activeSparks: MicroSpark[] = [];
       sparksRef.current.forEach((sp) => {
         sp.x += sp.vx;
@@ -571,24 +534,21 @@ export default function InteractiveNetworkWeb({
       });
       sparksRef.current = activeSparks;
 
-      // 7. RENDER CYBER SHIELD CORE & PERIPHERAL NODES
+      // 7. NODES
       nodePosMap.forEach(({ x, y, node }) => {
-        const isHovered = hoverNodeRef.current?.id === node.id;
+        const isHovered = hoverNodeRef.current?.id === node.id || selectedNodeId === node.id;
 
         if (node.isCore) {
           drawCyberShield(x, y, time, recentCoreHitIntensity);
         } else {
-          // Peripheral Node
           const r = isHovered ? 8 : node.baseRadius;
           const nodeColor = isStorm ? '#ef4444' : isHovered ? '#ff6b00' : '#0ea5e9';
 
-          // Outer halo ring
           ctx.beginPath();
           ctx.arc(x, y, r + 5, 0, Math.PI * 2);
-          ctx.fillStyle = isHovered ? 'rgba(255, 107, 0, 0.35)' : 'rgba(14, 165, 233, 0.15)';
+          ctx.fillStyle = isHovered ? 'rgba(255, 107, 0, 0.4)' : 'rgba(14, 165, 233, 0.15)';
           ctx.fill();
 
-          // Inner solid photon node
           ctx.beginPath();
           ctx.arc(x, y, r, 0, Math.PI * 2);
           ctx.fillStyle = nodeColor;
@@ -597,13 +557,11 @@ export default function InteractiveNetworkWeb({
           ctx.fill();
           ctx.shadowBlur = 0;
 
-          // Node center spark
           ctx.beginPath();
           ctx.arc(x, y, 2.5, 0, Math.PI * 2);
           ctx.fillStyle = '#ffffff';
           ctx.fill();
 
-          // Node Label
           if (isHovered) {
             ctx.font = 'bold 12px Inter, sans-serif';
             ctx.fillStyle = '#ffffff';
@@ -616,7 +574,7 @@ export default function InteractiveNetworkWeb({
         }
       });
 
-      // 8. CUSTOM MAGNETIC HUD RETICLE OVER CURSOR
+      // 8. HUD CURSOR RETICLE
       if (mouse.x > 0 && mouse.y > 0) {
         ctx.save();
         ctx.translate(mouse.x, mouse.y);
@@ -640,7 +598,7 @@ export default function InteractiveNetworkWeb({
       clearInterval(interval);
       window.removeEventListener('resize', resize);
     };
-  }, [spawnPulse]);
+  }, [spawnPulse, selectedNodeId]);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!interactive || !canvasRef.current) return;
@@ -663,14 +621,12 @@ export default function InteractiveNetworkWeb({
     });
 
     hoverNodeRef.current = found;
-    setHoveredNode(found);
   };
 
   const handleMouseLeave = () => {
     mousePosRef.current.x = -1000;
     mousePosRef.current.y = -1000;
     hoverNodeRef.current = null;
-    setHoveredNode(null);
   };
 
   const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
@@ -688,13 +644,11 @@ export default function InteractiveNetworkWeb({
       if (Math.hypot(mx - px, my - py) < 35) {
         clickedNode = n;
         if (!n.isCore) {
-          spawnPulse(n.id, 0.022, true);
-          spawnPulse(n.id, 0.014, false);
+          spawnPulse(n.id, 0.022, true, true);
           spawnSparks(px, py, 12, '#ff6b00');
         } else {
-          // Core clicked! Trigger all nodes
           NODES.filter((item) => !item.isCore).forEach((item, i) => {
-            setTimeout(() => spawnPulse(item.id, 0.016, true), i * 45);
+            setTimeout(() => spawnPulse(item.id, 0.016, true, i === 0), i * 45);
           });
           sound.playCoreImpact(1.6);
         }
@@ -706,19 +660,6 @@ export default function InteractiveNetworkWeb({
     }
   };
 
-  const toggleSound = () => {
-    const muted = sound.toggleMute();
-    setIsMuted(muted);
-  };
-
-  const triggerStormMode = () => {
-    setStormMode((prev) => !prev);
-    sound.playTacticalAlarm();
-    NODES.filter((n) => !n.isCore).forEach((n, i) => {
-      setTimeout(() => spawnPulse(n.id, 0.025, true), i * 40);
-    });
-  };
-
   return (
     <div className={`relative overflow-hidden ${className}`}>
       <canvas
@@ -728,73 +669,6 @@ export default function InteractiveNetworkWeb({
         onClick={handleClick}
         className={`w-full h-full block ${interactive ? 'cursor-crosshair' : ''}`}
       />
-
-      {/* Floating HUD Telemetry & Quick Action Bar */}
-      <div className="absolute top-5 right-5 z-20 flex items-center gap-2.5">
-        <button
-          type="button"
-          onClick={triggerStormMode}
-          className={`px-3 py-1.5 rounded-full text-xs font-mono font-bold flex items-center gap-1.5 backdrop-blur-md border transition-all ${
-            stormMode
-              ? 'bg-red-600 text-white border-red-400 shadow-[0_0_20px_rgba(239,68,68,0.8)] animate-pulse'
-              : 'bg-slate-900/80 text-slate-300 border-slate-700/80 hover:border-red-500/60 hover:text-red-400'
-          }`}
-          title="Simulación de Tormenta de Alertas"
-        >
-          <ShieldAlert className="w-3.5 h-3.5 text-red-400" />
-          <span className="hidden sm:inline">{stormMode ? 'TORMENTA ACTIVA' : 'SIMULAR ALERTA MÁXIMA'}</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={toggleSound}
-          className="p-2 rounded-full bg-slate-900/80 text-slate-300 border border-slate-700/80 hover:border-brand-primary/60 hover:text-brand-primary backdrop-blur-md transition"
-          title={isMuted ? 'Activar Audio Táctico' : 'Silenciar Audio'}
-        >
-          {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-brand-primary animate-pulse" />}
-        </button>
-      </div>
-
-      {/* Live Node Telemetry Card on Hover */}
-      {hoveredNode && (
-        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 pointer-events-none w-11/12 max-w-md bg-slate-950/95 border-2 border-brand-primary/80 text-white p-4 rounded-2xl shadow-[0_0_40px_rgba(255,107,0,0.35)] backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150">
-          <div className="flex items-center justify-between border-b border-brand-primary/30 pb-2 mb-2.5">
-            <div className="flex items-center gap-2">
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-              <span className="text-xs font-mono font-black uppercase text-brand-primary tracking-wider">
-                {hoveredNode.isCore ? 'ESCUDO CENTRAL CIBERNÉTICO' : hoveredNode.sector}
-              </span>
-            </div>
-            <span className="text-[10px] font-mono bg-slate-900 px-2 py-0.5 rounded border border-slate-800 text-emerald-400">
-              {hoveredNode.latency}ms ping
-            </span>
-          </div>
-
-          <h4 className="font-display font-black text-sm text-white mb-1">
-            {hoveredNode.name}
-          </h4>
-          <p className="text-xs text-slate-300 leading-relaxed mb-3">
-            {hoveredNode.isCore
-              ? 'Centro neurálgico que consolida la telemetría, transmisiones de alerta y coordinación en vivo de la red.'
-              : `Punto de enlace activo con ${hoveredNode.dealersCount} automotoras sincronizadas. Haz clic para disparar pulsos de telemetría.`}
-          </p>
-
-          <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-slate-400 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
-            <div>
-              <span className="block text-[9px] uppercase text-slate-500">Estado</span>
-              <span className="font-bold text-emerald-400">EN LÍNEA</span>
-            </div>
-            <div>
-              <span className="block text-[9px] uppercase text-slate-500">Tráfico</span>
-              <span className="font-bold text-white">42.8 kbps</span>
-            </div>
-            <div>
-              <span className="block text-[9px] uppercase text-slate-500">Acción</span>
-              <span className="font-bold text-brand-primary">PULSAR</span>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

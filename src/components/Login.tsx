@@ -16,12 +16,15 @@ import {
   Activity,
   Sparkles,
   Radio,
-  Wifi,
+  Volume2,
+  VolumeX,
   ShieldCheck,
   ChevronRight,
+  Siren,
+  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
-import InteractiveNetworkWeb, { WebNode } from './InteractiveNetworkWeb';
+import InteractiveNetworkWeb, { NODES, WebNode } from './InteractiveNetworkWeb';
 import Footer from './Footer';
 import { sound } from '../lib/soundEngine';
 
@@ -33,17 +36,6 @@ const normalizeRut = (value: string) =>
     .replace(/\s/g, '')
     .replace(/-/g, '')
     .toUpperCase();
-
-const networkNodes = [
-  { id: 'n1', name: 'Ruta 5 Norte', ping: '8ms', status: 'ONLINE', role: 'Control Perimetral' },
-  { id: 'n2', name: 'Muelle Fiscal', ping: '12ms', status: 'ONLINE', role: 'Enlace Puerto' },
-  { id: 'n3', name: 'Zona Puerto / Altamira', ping: '11ms', status: 'ONLINE', role: 'Vigilancia Red' },
-  { id: 'n4', name: 'Peaje Ruta 43', ping: '15ms', status: 'ONLINE', role: 'Filtro Acceso' },
-  { id: 'n5', name: 'Centro Coquimbo', ping: '7ms', status: 'ONLINE', role: 'Patrullaje Urbano' },
-  { id: 'n6', name: 'Patio Automotriz Norte', ping: '9ms', status: 'ONLINE', role: 'Custodia Parque' },
-  { id: 'n7', name: 'Patio Automotriz Sur', ping: '10ms', status: 'ONLINE', role: 'Custodia Stock' },
-  { id: 'n8', name: 'Acceso Panul', ping: '14ms', status: 'ONLINE', role: 'Control Sur' },
-];
 
 const capabilityCards = [
   {
@@ -61,13 +53,13 @@ const capabilityCards = [
   {
     num: '03',
     title: 'Prueba en Ruta Segura',
-    desc: 'Registro fotográfico guiado antes de cada Test Drive para blindar contra sustituciones o fraudes.',
+    desc: 'Registro fotográfico guiado antes de cada Test Drive para blindar contra fraudes o sustitución.',
     color: 'from-amber-500/20 to-transparent border-amber-500/40',
   },
   {
     num: '04',
     title: 'Validación por RUT',
-    desc: 'Acceso corporativo exclusivo y verificado por representante legal para mantener la red blindada.',
+    desc: 'Acceso corporativo validado por representante legal para mantener la red 100% blindada.',
     color: 'from-sky-500/20 to-transparent border-sky-500/40',
   },
 ];
@@ -85,7 +77,11 @@ export default function Login() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [alertPulseCount, setAlertPulseCount] = useState(0);
-  const [selectedNodeInfo, setSelectedNodeInfo] = useState<WebNode | null>(null);
+  
+  // Interactive Living Organism States
+  const [stormMode, setStormMode] = useState(false);
+  const [isMuted, setIsMuted] = useState(sound.getIsMuted());
+  const [selectedNode, setSelectedNode] = useState<WebNode | null>(null);
 
   const rutKey = useMemo(() => normalizeRut(rut), [rut]);
   const requestReady = Boolean(dealershipName.trim() && rutKey.length >= 8 && contactName.trim() && phone.trim() && address.trim() && email.trim());
@@ -97,7 +93,32 @@ export default function Login() {
 
   const handleTriggerNetworkAlert = () => {
     setAlertPulseCount((prev) => prev + 1);
-    sound.playTacticalAlarm();
+    sound.playNodePulse(true);
+  };
+
+  const handleToggleStormAlert = () => {
+    if (stormMode) {
+      setStormMode(false);
+      sound.stopPoliceSiren();
+    } else {
+      setStormMode(true);
+      setAlertPulseCount((prev) => prev + 1);
+      sound.playPoliceSiren(4.0);
+      
+      setTimeout(() => {
+        setStormMode(false);
+      }, 4500);
+    }
+  };
+
+  const handleToggleSound = () => {
+    const muted = sound.toggleMute();
+    setIsMuted(muted);
+  };
+
+  const handleSelectNode = (node: WebNode) => {
+    setSelectedNode(node);
+    setAlertPulseCount((prev) => prev + 1);
   };
 
   const handleDemoLogin = async (demoEmail: string, role: 'ADMIN' | 'SECURITY' = 'ADMIN') => {
@@ -225,51 +246,83 @@ export default function Login() {
   return (
     <main className="auth-noise min-h-dvh bg-[#02050c] text-white relative overflow-hidden flex flex-col justify-between selection:bg-brand-primary selection:text-white">
       {/* Fullscreen Immersive Organism Spider Web Background */}
-      <div className="fixed inset-0 z-0 opacity-90">
+      <div className="fixed inset-0 z-0 opacity-90 pointer-events-auto">
         <InteractiveNetworkWeb
           className="w-full h-full"
           pulseTriggerCount={alertPulseCount}
+          stormActive={stormMode}
+          selectedNodeId={selectedNode?.id || null}
           interactive={true}
-          onNodeSelect={(node) => setSelectedNodeInfo(node)}
+          onNodeSelect={(node) => setSelectedNode(node)}
         />
         {/* Spatial Vignette & Cyber Grid Overlay */}
         <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(2,5,12,0.85)_100%)]" />
         <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
       </div>
 
-      {/* Main Experience Layout */}
-      <section className="relative z-10 min-h-dvh grid xl:grid-cols-[1.18fr_0.82fr]">
-        {/* Left Column: Spatial Narrative & Real-time Digital Organism Deck */}
-        <aside className="hidden xl:flex flex-col justify-between p-12 2xl:p-16 border-r border-white/10 backdrop-blur-[3px]">
-          <BrandHeader />
+      {/* Floating Tactical Action Deck (Always Clickable) */}
+      <header className="relative z-30 flex items-center justify-between p-4 sm:p-6 max-w-7xl mx-auto w-full pointer-events-auto">
+        <BrandHeader />
 
-          {/* Spatial Headline & Live Cyber Narrative */}
-          <div className="max-w-4xl my-auto py-8">
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-brand-primary/50 bg-gradient-to-r from-brand-primary/20 via-brand-primary/10 to-transparent text-brand-primary text-xs font-mono font-bold uppercase tracking-[0.25em] mb-6 backdrop-blur-xl shadow-[0_0_25px_rgba(255,107,0,0.25)]">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={handleToggleStormAlert}
+            className={`px-3 sm:px-4 py-2 rounded-full text-xs font-mono font-bold flex items-center gap-2 backdrop-blur-xl border transition-all active:scale-95 shadow-xl ${
+              stormMode
+                ? 'bg-red-600 text-white border-red-300 shadow-[0_0_30px_rgba(239,68,68,0.9)] animate-pulse'
+                : 'bg-slate-900/90 text-red-300 border-red-500/40 hover:bg-red-500/20 hover:border-red-400 hover:text-white'
+            }`}
+            title="Simular Alerta Máxima con Sirena Policial y Sobrecarga"
+          >
+            <Siren className={`w-4 h-4 text-red-400 ${stormMode ? 'animate-spin' : ''}`} />
+            <span className="font-black uppercase tracking-wider">
+              {stormMode ? 'SIRENA ACTIVA' : 'SIMULAR ALERTA MÁXIMA'}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleToggleSound}
+            className="p-2.5 rounded-full bg-slate-900/90 text-slate-300 border border-slate-700/80 hover:border-brand-primary/60 hover:text-brand-primary backdrop-blur-xl transition active:scale-95 shadow-lg"
+            title={isMuted ? 'Activar Audio Táctico' : 'Silenciar Audio'}
+          >
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-brand-primary animate-pulse" />}
+          </button>
+        </div>
+      </header>
+
+      {/* Main Experience Layout */}
+      <section className="relative z-10 flex-1 grid xl:grid-cols-[1.18fr_0.82fr] pointer-events-none">
+        {/* Left Column: Spatial Narrative & Interactive Node Deck */}
+        <aside className="hidden xl:flex flex-col justify-between p-10 2xl:p-14 border-r border-white/10 pointer-events-auto">
+          {/* Spatial Headline */}
+          <div className="max-w-4xl my-auto py-4">
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-brand-primary/50 bg-gradient-to-r from-brand-primary/20 via-brand-primary/10 to-transparent text-brand-primary text-xs font-mono font-bold uppercase tracking-[0.25em] mb-5 backdrop-blur-xl shadow-[0_0_25px_rgba(255,107,0,0.25)]">
               <span className="w-2 h-2 rounded-full bg-brand-primary animate-ping" />
               Organismo Digital en Red • Coquimbo
             </div>
 
-            <h1 className="font-display max-w-4xl text-5xl 2xl:text-7xl font-black tracking-[-.06em] leading-[0.92] text-balance">
+            <h1 className="font-display max-w-4xl text-4xl 2xl:text-6xl font-black tracking-[-.06em] leading-[0.94] text-balance">
               La telaraña privada que <span className="bg-gradient-to-r from-brand-primary via-orange-400 to-amber-300 bg-clip-text text-transparent">siente y transmite</span> antes del impacto.
             </h1>
 
-            <p className="mt-7 max-w-2xl text-base 2xl:text-lg leading-8 text-slate-300 font-normal">
-              Cada nodo representa una automotora, punto de control o vigilante en patio. Al detectarse un movimiento sospechoso o intento de robo, la red propaga pulsos de energía e imágenes en tiempo real directamente al centro de custodia.
+            <p className="mt-5 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-300 font-normal">
+              Cada nodo representa una automotora, punto de control o vigilante en patio. Al detectarse un hecho sospechoso, la red propaga pulsos de datos e imágenes en tiempo real directamente al centro de custodia.
             </p>
 
             {/* Interactive Capability Capsules */}
-            <div className="grid grid-cols-2 gap-3.5 mt-8 max-w-2xl">
+            <div className="grid grid-cols-2 gap-3 mt-6 max-w-2xl">
               {capabilityCards.map((card) => (
                 <div
                   key={card.num}
-                  className={`p-3.5 rounded-2xl border bg-slate-950/70 backdrop-blur-xl transition hover:border-brand-primary/60 hover:bg-slate-900/80 group ${card.color}`}
+                  className={`p-3 rounded-2xl border bg-slate-950/70 backdrop-blur-xl transition hover:border-brand-primary/60 hover:bg-slate-900/80 group ${card.color}`}
                 >
-                  <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-mono font-black text-brand-primary">{card.num}</span>
-                    <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest">ACTIVO</span>
+                    <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">ACTIVO</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white mb-1 group-hover:text-brand-primary transition">
+                  <h4 className="text-xs font-bold text-white mb-0.5 group-hover:text-brand-primary transition">
                     {card.title}
                   </h4>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -280,25 +333,37 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Bottom Telemetry & Simulation Deck */}
+          {/* Interactive Node Deck (Punto 4: Telemetría e Interacción en Vivo) */}
           <div className="grid grid-cols-[1.1fr_0.9fr] gap-4 items-end">
-            <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950/80 shadow-2xl">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-2">
+            <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950/85 shadow-2xl">
+              <div className="flex items-center justify-between mb-2.5">
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                  Nodos Interconectados ({networkNodes.length})
+                  Nodos en Red (Clic para Pulsar)
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
-                  LATENCIA &lt; 15ms
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                  EN LÍNEA
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                {networkNodes.slice(0, 6).map((node) => (
-                  <div key={node.id} className="flex items-center justify-between p-2 rounded-xl bg-slate-900/60 border border-slate-800/80 text-slate-300">
-                    <span className="truncate text-[11px] font-medium">{node.name}</span>
-                    <span className="text-[10px] font-mono text-emerald-400 font-bold ml-1">{node.ping}</span>
-                  </div>
-                ))}
+                {NODES.filter((n) => !n.isCore).slice(0, 8).map((node) => {
+                  const isSelected = selectedNode?.id === node.id;
+                  return (
+                    <button
+                      key={node.id}
+                      type="button"
+                      onClick={() => handleSelectNode(node)}
+                      className={`flex items-center justify-between p-2 rounded-xl border text-left transition active:scale-95 ${
+                        isSelected
+                          ? 'bg-brand-primary/20 border-brand-primary text-white shadow-[0_0_15px_rgba(255,107,0,0.4)]'
+                          : 'bg-slate-900/70 border-slate-800/80 text-slate-300 hover:border-slate-700 hover:text-white'
+                      }`}
+                    >
+                      <span className="truncate text-[11px] font-semibold">{node.name}</span>
+                      <span className="text-[10px] font-mono text-emerald-400 font-bold ml-1">{node.latency}ms</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
 
@@ -306,12 +371,14 @@ export default function Login() {
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-brand-primary flex items-center gap-1.5">
                   <Radio className="w-3.5 h-3.5 animate-pulse" />
-                  Simulación de Pulsos
+                  Transmisión Táctica
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">Web Física</span>
+                <span className="text-[10px] font-mono text-slate-400">Puntada Óptica</span>
               </div>
-              <p className="text-xs text-slate-300 leading-relaxed mb-3.5">
-                Interactuá con la telaraña estirando sus fibras o transmití una onda expansiva de emergencia a toda la red.
+              <p className="text-xs text-slate-300 leading-relaxed mb-3">
+                {selectedNode
+                  ? `Nodo ${selectedNode.name} seleccionado. Transmite ráfagas de telemetría directamente al núcleo.`
+                  : 'Estirá los hilos de la telaraña con el mouse o dispará una ráfaga general de telemetría.'}
               </p>
               <button
                 type="button"
@@ -319,33 +386,20 @@ export default function Login() {
                 className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-primary to-orange-600 hover:from-orange-500 hover:to-orange-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/30 active:scale-95 transition"
               >
                 <Zap className="w-4 h-4 text-white" />
-                Disparar Alerta en Red
+                {selectedNode ? `Pulsar ${selectedNode.name}` : 'Disparar Ráfaga a la Red'}
               </button>
             </div>
           </div>
         </aside>
 
-        {/* Right Column: Interactive Portal / Authentication & Registration */}
-        <div className="flex items-center justify-center p-5 sm:p-8 lg:p-12 z-10">
+        {/* Right Column: Portal Cards / Authentication & Registration */}
+        <div className="flex items-center justify-center p-5 sm:p-8 lg:p-10 pointer-events-auto">
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-[500px] rounded-[2.2rem] border-2 border-white/15 bg-slate-950/85 backdrop-blur-2xl p-6 sm:p-9 shadow-[0_0_60px_rgba(0,0,0,0.85)]"
+            className="w-full max-w-[480px] rounded-[2.2rem] border-2 border-white/15 bg-slate-950/90 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(0,0,0,0.85)]"
           >
-            {/* Mobile Header with Quick Pulse Simulation */}
-            <div className="xl:hidden mb-6 flex items-center justify-between">
-              <BrandHeader compact />
-              <button
-                type="button"
-                onClick={handleTriggerNetworkAlert}
-                className="flex items-center gap-1.5 rounded-full border border-brand-primary/50 bg-brand-primary/15 px-3 py-1.5 text-xs font-mono font-bold text-brand-primary active:scale-95 transition"
-              >
-                <Zap className="w-3.5 h-3.5" />
-                Alerta
-              </button>
-            </div>
-
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
                 <div className="mb-3.5 inline-flex rounded-2xl bg-gradient-to-br from-brand-primary to-orange-600 p-3 shadow-lg shadow-brand-primary/30">
@@ -584,6 +638,74 @@ export default function Login() {
         </div>
       </section>
 
+      {/* Floating Node Telemetry Hologram (Interactive Point 4) */}
+      <AnimatePresence>
+        {selectedNode && (
+          <motion.div
+            initial={{ opacity: 0, y: 30, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 30, scale: 0.95 }}
+            className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-slate-950/95 border-2 border-brand-primary/80 text-white p-4 rounded-3xl shadow-[0_0_50px_rgba(255,107,0,0.4)] backdrop-blur-2xl pointer-events-auto"
+          >
+            <div className="flex items-center justify-between border-b border-brand-primary/30 pb-2 mb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <span className="text-xs font-mono font-black uppercase text-brand-primary tracking-wider">
+                  TELEMETRÍA EN VIVO • {selectedNode.sector}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedNode(null)}
+                className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center justify-between mb-2">
+              <h4 className="font-display font-black text-base text-white">
+                {selectedNode.name}
+              </h4>
+              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                {selectedNode.latency}ms Ping
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-300 leading-relaxed mb-3">
+              Punto de enlace activo con {selectedNode.dealersCount} automotoras sincronizadas. Al pulsar, dispara un paquete de datos óptico hacia el Escudo Central.
+            </p>
+
+            <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-slate-400 bg-slate-900/80 p-2.5 rounded-2xl border border-slate-800 mb-3">
+              <div>
+                <span className="block text-[9px] uppercase text-slate-500">Estado</span>
+                <span className="font-bold text-emerald-400">EN LÍNEA</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase text-slate-500">Sedes</span>
+                <span className="font-bold text-white">{selectedNode.dealersCount} Patios</span>
+              </div>
+              <div>
+                <span className="block text-[9px] uppercase text-slate-500">Encriptación</span>
+                <span className="font-bold text-sky-400">AES-256</span>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => {
+                setAlertPulseCount((prev) => prev + 1);
+                sound.playNodePulse(true);
+              }}
+              className="w-full py-2.5 rounded-xl bg-brand-primary hover:bg-orange-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/30 active:scale-95 transition"
+            >
+              <Zap className="w-4 h-4" />
+              Transmitir Pulso Óptico al Centro
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <Footer />
     </main>
   );
@@ -591,8 +713,8 @@ export default function Login() {
 
 function BrandHeader({ compact = false }: { compact?: boolean }) {
   return (
-    <div className="flex items-center gap-4">
-      <div className={`${compact ? 'h-11 w-14' : 'h-12 w-16'} brand-node-badge relative rounded-2xl border border-brand-primary/40 bg-slate-950/80 shadow-lg shadow-brand-primary/20`}>
+    <div className="flex items-center gap-3 sm:gap-4">
+      <div className={`${compact ? 'h-10 w-12' : 'h-11 w-14 sm:h-12 sm:w-16'} brand-node-badge relative rounded-2xl border border-brand-primary/40 bg-slate-950/80 shadow-lg shadow-brand-primary/20 shrink-0`}>
         <span className="absolute left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-brand-primary shadow-[0_0_18px_rgba(255,107,0,.8)]" />
         <span className="absolute right-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white/90" />
         <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-brand-primary to-white/70" />
@@ -600,8 +722,12 @@ function BrandHeader({ compact = false }: { compact?: boolean }) {
         <span className="absolute left-1/2 bottom-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white/60" />
       </div>
       <div>
-        <p className={`${compact ? 'text-lg' : 'text-xl'} font-black tracking-[-.04em] text-white`}>AutoRed <span className="text-brand-primary">Coquimbo</span></p>
-        <p className="text-[11px] uppercase tracking-[.32em] text-slate-400 font-mono font-bold">Red Privada Automotora</p>
+        <p className={`${compact ? 'text-base' : 'text-lg sm:text-xl'} font-black tracking-[-.04em] text-white leading-tight`}>
+          AutoRed <span className="text-brand-primary">Coquimbo</span>
+        </p>
+        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-400 font-mono font-bold">
+          Red Privada Automotora
+        </p>
       </div>
     </div>
   );
