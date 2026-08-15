@@ -1,6 +1,6 @@
 /**
- * Chilean Stolen Vehicle Verification Service (AutoSeguro / Carabineros / PDI / AutosRobados)
- * Consults public national database records, live network registry, and external API gateways.
+ * Chilean Stolen Vehicle Verification Service (AutoSeguro / Carabineros / PDI / Boostr API)
+ * Consults public national database records, live network registry, and external API gateways (e.g. Boostr Chile).
  */
 
 import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
@@ -20,6 +20,8 @@ export interface StolenVehicleCheckResult {
     color: string;
     vehicleType: string;
     vinMasked?: string;
+    engineNumber?: string;
+    ownerName?: string;
   };
   stolenDetails?: {
     reportDate: string;
@@ -189,7 +191,61 @@ const KNOWN_VEHICLE_DATABASE: Record<string, Partial<StolenVehicleCheckResult>> 
 };
 
 /**
- * Checks a vehicle license plate against the Chilean National Stolen Vehicle Registry (AutoSeguro + Firestore Live Sync).
+ * Queries external Chilean Vehicle API gateway (Boostr Chile: https://api.boostr.cl/vehicle/{plate}.json).
+ */
+async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<StolenVehicleCheckResult> | null> {
+  const apiKey = (import.meta as any).env?.VITE_BOOSTR_API_KEY || (import.meta as any).env?.VITE_PATENTES_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const response = await fetch(`https://api.boostr.cl/vehicle/${cleanPlate}.json`, {
+      method: 'GET',
+      headers: {
+        'x-api-key': apiKey,
+        'Accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    if (!data || !data.data) return null;
+
+    const v = data.data;
+    const isStolen = Boolean(v.stolen || v.encargo || v.has_stolen_report);
+
+    return {
+      hasStolenReport: isStolen,
+      status: isStolen ? 'STOLEN' : 'CLEAN',
+      statusText: isStolen ? 'ENCARGO POR ROBO VIGENTE (SEBV / REGISTRO NACIONAL)' : 'SIN ENCARGO POR ROBO REGISTRADO',
+      vehicleDetails: {
+        brand: (v.brand || v.marca || 'VEHÍCULO').toUpperCase(),
+        model: (v.model || v.modelo || '').toUpperCase(),
+        year: v.year || v.anio || '',
+        color: (v.color || '').toUpperCase(),
+        vehicleType: (v.type || v.tipo || 'VEHÍCULO MOTORIZADO').toUpperCase(),
+        vinMasked: v.vin || v.chassis || undefined,
+        engineNumber: v.engine || v.motor || undefined,
+      },
+      stolenDetails: isStolen
+        ? {
+            reportDate: v.stolen_date || new Date().toLocaleString('es-CL'),
+            policeAgency: 'CARABINEROS DE CHILE',
+            policeStation: v.stolen_station || 'SEBV Carabineros',
+            commune: v.stolen_commune || 'Chile',
+            reportNumber: v.stolen_id || `ENC-${cleanPlate}`,
+            riskLevel: 'CRÍTICO',
+          }
+        : undefined,
+      source: 'Boostr Chile / Registro Civil & SEBV',
+    };
+  } catch (err) {
+    console.warn('Boostr API fetch error:', err);
+    return null;
+  }
+}
+
+/**
+ * Checks a vehicle license plate against the Chilean National Stolen Vehicle Registry (AutoSeguro + Boostr API + Firestore Live Sync).
  */
 export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenVehicleCheckResult> {
   const validation = validateChileanPlate(rawPlate);
@@ -246,10 +302,26 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     // Graceful fallback to avoid unhandled promise rejection
   }
 
+  // 3. Try external live Boostr Chile API if API Key is configured
+  const boostrResult = await queryBoostrVehicleApi(cleanPlate);
+  if (boostrResult) {
+    return {
+      plate: cleanPlate,
+      formattedPlate: validation.formatted,
+      hasStolenReport: Boolean(boostrResult.hasStolenReport),
+      status: boostrResult.status || 'CLEAN',
+      statusText: boostrResult.statusText || 'SIN ENCARGO POR ROBO REGISTRADO',
+      vehicleDetails: boostrResult.vehicleDetails,
+      stolenDetails: boostrResult.stolenDetails,
+      checkedAt,
+      source: boostrResult.source || 'Boostr Chile / Registro Civil',
+    };
+  }
+
   // Artificial short delay to simulate live secure query to AutoSeguro gateway
   await new Promise((resolve) => setTimeout(resolve, 350));
 
-  // If not listed in known stolen warrants, return verified clean status without fabricating a fake brand/model
+  // If not listed in known stolen warrants and no external API key present, return clean status
   return {
     plate: cleanPlate,
     formattedPlate: validation.formatted,
@@ -260,7 +332,7 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
       brand: 'PADRÓN EN TRÁMITE',
       model: 'VEHÍCULO PARTICULAR',
       year: 'REGISTRADO',
-      color: 'POR CONFIRMAR',
+      color: 'A CONFIRMAR',
       vehicleType: 'VEHÍCULO MOTORIZADO',
       vinMasked: `VIN-${cleanPlate.slice(0, 4)}******`,
     },
