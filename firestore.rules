@@ -34,7 +34,7 @@ service cloud.firestore {
 
     // --- Public access requests ---
     match /accessRequests/{rutKey} {
-allow create: if request.resource.data.keys().hasAll([
+      allow create: if request.resource.data.keys().hasAll([
           'dealershipName',
           'rut',
           'rutKey',
@@ -81,6 +81,18 @@ allow create: if request.resource.data.keys().hasAll([
     match /alerts/{alertId} {
       allow get, list: if isSignedIn();
       allow create: if isSignedIn();
+    }
+
+    // --- Road Tests ---
+    match /roadTests/{roadTestId} {
+      allow get, list, create, update: if isSignedIn();
+    }
+
+    // --- Stolen Vehicles Registry (AutoSeguro / AutoRed) ---
+    match /stolenVehiclesRegistry/{plate} {
+      allow get, list: if true;
+      allow create, update: if isSignedIn();
+      allow delete: if isAdmin();
     }
   }
 }
