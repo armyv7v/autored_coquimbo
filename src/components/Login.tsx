@@ -41,7 +41,7 @@ const capabilityCards = [
   {
     num: '01',
     title: 'Disuasión Colectiva',
-    desc: 'Un reporte en tu patio activa alertas perimetrales inmediatas en todas las automotoras de la red.',
+    desc: 'Un reporte en su patio activa alertas perimetrales inmediatas en todas las automotoras de la red.',
     color: 'from-orange-500/20 to-transparent border-brand-primary/40',
   },
   {
@@ -154,7 +154,7 @@ export default function Login() {
       }
     } catch (err: any) {
       console.error('Demo login error:', err);
-      setError('Error en acceso demo: ' + (err.message || String(err)));
+      setError('Error en acceso de prueba: ' + (err.message || String(err)));
     } finally {
       setLoading(false);
     }
@@ -162,20 +162,20 @@ export default function Login() {
 
   const handleResetPassword = async () => {
     if (!email) {
-      setError('Ingresa tu correo para recuperar contraseña.');
+      setError('Ingrese su correo electrónico para restablecer la contraseña.');
       return;
     }
     setLoading(true);
     resetFeedback();
     try {
       await sendPasswordResetEmail(auth, email);
-      setMessage('Te enviamos un correo con instrucciones para restablecer tu clave.');
+      setMessage('Se ha enviado un correo con instrucciones para restablecer su contraseña.');
     } catch (err: any) {
       console.error('Reset error:', err);
       setError(
         err.code === 'auth/user-not-found'
           ? 'No existe una cuenta registrada con este correo.'
-          : 'No pudimos enviar el correo de recuperación. Intenta nuevamente.'
+          : 'No se pudo enviar el correo de recuperación. Intente nuevamente.'
       );
     } finally {
       setLoading(false);
@@ -193,11 +193,11 @@ export default function Login() {
     } catch (err: any) {
       console.error('Login error:', err);
       if (err.code === 'auth/invalid-credential' || err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
-        setError('Credenciales inválidas. Verifica tu correo y contraseña.');
+        setError('Credenciales inválidas. Verifique su correo electrónico y contraseña.');
       } else if (err.code === 'auth/too-many-requests') {
-        setError('Demasiados intentos fallidos. Intenta más tarde.');
+        setError('Demasiados intentos fallidos. Por favor intente más tarde.');
       } else {
-        setError('Error al iniciar sesión. Intenta nuevamente.');
+        setError('Error al iniciar sesión. Intente nuevamente.');
       }
     } finally {
       setLoading(false);
@@ -211,7 +211,7 @@ export default function Login() {
 
     if (rutKey.length < 8) {
       setLoading(false);
-      setError('Ingresa un RUT válido de la automotora.');
+      setError('Ingrese un RUT válido de la automotora.');
       return;
     }
 
@@ -236,7 +236,7 @@ export default function Login() {
       setError(
         err.code === 'permission-denied'
           ? 'Ya existe una solicitud para este RUT o faltan datos obligatorios.'
-          : 'No pudimos enviar la solicitud. Intenta nuevamente.'
+          : 'No se pudo enviar la solicitud. Intente nuevamente.'
       );
     } finally {
       setLoading(false);
@@ -304,7 +304,7 @@ export default function Login() {
             </div>
 
             <h1 className="font-display max-w-4xl text-4xl 2xl:text-6xl font-black tracking-[-.06em] leading-[0.94] text-balance">
-              La telaraña privada que <span className="bg-gradient-to-r from-brand-primary via-orange-400 to-amber-300 bg-clip-text text-transparent">siente y transmite</span> antes del impacto.
+              La red privada que <span className="bg-gradient-to-r from-brand-primary via-orange-400 to-amber-300 bg-clip-text text-transparent">detecta y transmite</span> antes del impacto.
             </h1>
 
             <p className="mt-5 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-300 font-normal">
@@ -339,7 +339,7 @@ export default function Login() {
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                  Nodos en Red (Clic para Pulsar)
+                  Nodos en Red (Seleccione para inspeccionar)
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
                   EN LÍNEA
@@ -373,12 +373,12 @@ export default function Login() {
                   <Radio className="w-3.5 h-3.5 animate-pulse" />
                   Transmisión Táctica
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">Puntada Óptica</span>
+                <span className="text-[10px] font-mono text-slate-400">Enlace Óptico</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
                 {selectedNode
-                  ? `Nodo ${selectedNode.name} seleccionado. Transmite ráfagas de telemetría directamente al núcleo.`
-                  : 'Estirá los hilos de la telaraña con el mouse o dispará una ráfaga general de telemetría.'}
+                  ? `Nodo ${selectedNode.name} seleccionado. Transmite ráfagas de telemetría directamente al núcleo de seguridad.`
+                  : 'Desplace el cursor sobre los filamentos o transmita una ráfaga general de telemetría a la red.'}
               </p>
               <button
                 type="button"
@@ -386,7 +386,7 @@ export default function Login() {
                 className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-primary to-orange-600 hover:from-orange-500 hover:to-orange-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/30 active:scale-95 transition"
               >
                 <Zap className="w-4 h-4 text-white" />
-                {selectedNode ? `Pulsar ${selectedNode.name}` : 'Disparar Ráfaga a la Red'}
+                {selectedNode ? `Transmitir a ${selectedNode.name}` : 'Transmitir Ráfaga a la Red'}
               </button>
             </div>
           </div>
@@ -413,9 +413,9 @@ export default function Login() {
                 </h2>
                 <p className="mt-1.5 text-xs sm:text-sm leading-relaxed text-slate-400">
                   {mode === 'intro' && 'Plataforma privada de seguridad, telemetría y coordinación para automotoras de la Región de Coquimbo.'}
-                  {mode === 'request' && 'Ingresa los datos de tu automotora y representante legal para validar tu concesión.'}
-                  {mode === 'sent' && 'Tu solicitud está en proceso de validación. Te contactaremos vía correo y WhatsApp.'}
-                  {mode === 'login' && 'Ingresa con las credenciales asignadas por el Centro de Comando.'}
+                  {mode === 'request' && 'Ingrese los datos de su automotora y representante legal para validar su incorporación.'}
+                  {mode === 'sent' && 'Su solicitud está en proceso de validación. Nos comunicaremos vía correo y WhatsApp.'}
+                  {mode === 'login' && 'Ingrese con las credenciales asignadas por el Centro de Comando.'}
                 </p>
               </div>
 
@@ -483,7 +483,7 @@ export default function Login() {
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-brand-primary flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
-                        Acceso Rápido de Prueba
+                        Acceso de Demostración
                       </span>
                       <span className="text-[10px] font-mono text-slate-400">1-Tap Login</span>
                     </div>
@@ -493,21 +493,21 @@ export default function Login() {
                         onClick={() => handleDemoLogin('admin@autored.cl', 'ADMIN')}
                         className="py-2.5 px-3 rounded-xl bg-brand-primary/20 hover:bg-brand-primary/30 border border-brand-primary/40 text-brand-primary font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
                       >
-                        Entrar como Admin
+                        Acceso Administrador
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('seguridad@autored.cl', 'SECURITY')}
                         className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
                       >
-                        Entrar Operador
+                        Acceso Operador
                       </button>
                     </div>
                   </div>
 
                   <div className="p-3 rounded-xl border border-sky-400/20 bg-sky-400/8 flex items-center gap-2.5 text-xs text-slate-300">
                     <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
-                    <span>Red encriptada y monitoreada 24/7 en toda la conurbación La Serena - Coquimbo.</span>
+                    <span>Red encriptada y monitoreada las 24 horas en la conurbación La Serena - Coquimbo.</span>
                   </div>
                 </motion.div>
               )}
@@ -524,7 +524,7 @@ export default function Login() {
                     <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto animate-bounce" />
                     <h3 className="text-lg font-black text-white uppercase tracking-tight">Solicitud Enviada con Éxito</h3>
                     <p className="text-xs leading-relaxed text-emerald-100 font-medium">
-                      Su <strong className="text-white">"Solicitud de ingreso"</strong> a la RED de Automotoras fue enviada. El administrador validará el RUT comercial y habilitará las credenciales.
+                      Su <strong className="text-white">"Solicitud de ingreso"</strong> a la Red de Automotoras fue enviada. El equipo administrador validará el RUT comercial y habilitará sus credenciales de acceso.
                     </p>
                   </div>
                   <button
@@ -550,7 +550,7 @@ export default function Login() {
                     <>
                       <div className="rounded-2xl border border-red-500/40 bg-red-500/15 p-3.5 text-xs leading-relaxed text-red-100 shadow-lg">
                         <strong className="block text-xs font-black uppercase tracking-[.28em] text-red-300 mb-1">IMPORTANTE</strong>
-                        Ingresar datos reales de Automotora y Representante Legal para blindar la red contra intrusiones.
+                        Ingresar datos reales de la Automotora y Representante Legal para blindar la red contra intrusiones.
                       </div>
 
                       <Field icon={<Building2 />} label="Nombre Automotora">
@@ -562,7 +562,7 @@ export default function Login() {
                       <Field icon={<User />} label="Representante Legal / Dueño">
                         <input value={contactName} onChange={(e) => setContactName(e.target.value)} required className="auth-input" placeholder="Nombre completo representante" />
                       </Field>
-                      <Field icon={<Phone />} label="Teléfono WhatsApp">
+                      <Field icon={<Phone />} label="Teléfono de Contacto">
                         <input value={phone} onChange={(e) => setPhone(e.target.value)} required className="auth-input" placeholder="+56 9 1234 5678" />
                       </Field>
                       <Field icon={<Building2 />} label="Dirección Sede Principal">
@@ -628,7 +628,7 @@ export default function Login() {
                     </div>
                   ) : (
                     <p className="pt-2 text-xs leading-5 text-slate-400">
-                      Si ya tienes credenciales activas, vuelve al acceso e inicia sesión normalmente.
+                      Si ya cuenta con credenciales activas, regrese al panel de acceso e inicie sesión normalmente.
                     </p>
                   )}
                 </motion.form>
@@ -673,7 +673,7 @@ export default function Login() {
             </div>
 
             <p className="text-xs text-slate-300 leading-relaxed mb-3">
-              Punto de enlace activo con {selectedNode.dealersCount} automotoras sincronizadas. Al pulsar, dispara un paquete de datos óptico hacia el Escudo Central.
+              Punto de enlace activo con {selectedNode.dealersCount} automotoras sincronizadas. Al pulsar, transmite un paquete de datos óptico hacia el Escudo Central.
             </p>
 
             <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-slate-400 bg-slate-900/80 p-2.5 rounded-2xl border border-slate-800 mb-3">
