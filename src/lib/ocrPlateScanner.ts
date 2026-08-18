@@ -1,8 +1,9 @@
 /**
  * Browser-Native Plate OCR & Image Preprocessing Engine
- * Preprocesses vehicle photos with high-pass contrast, edge enhancement and extracts candidate Chilean plates.
+ * Preprocesses vehicle photos with high-pass contrast, edge enhancement and extracts candidate Chilean plates via Tesseract.js OCR.
  */
 
+import Tesseract from 'tesseract.js';
 import { extractPlatesFromText, validateChileanPlate } from './chileanPlates';
 
 export interface OcrPlateResult {
@@ -10,6 +11,7 @@ export interface OcrPlateResult {
   confidence: number;
   candidates: string[];
   processedImagePreview?: string;
+  rawOcrText?: string;
 }
 
 /**
@@ -56,7 +58,7 @@ export async function preprocessPlateImage(imageFile: File): Promise<{ canvas: H
         // Grayscale conversion
         const avg = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
         // High contrast S-curve
-        const contrast = 1.35;
+        const contrast = 1.4;
         const factor = (259 * (contrast * 128 + 255)) / (255 * (259 - contrast * 128));
         const finalColor = Math.min(255, Math.max(0, factor * (avg - 128) + 128));
 
@@ -79,22 +81,36 @@ export async function preprocessPlateImage(imageFile: File): Promise<{ canvas: H
 }
 
 /**
- * Scans an image file for Chilean license plates using heuristics and visual patterns.
+ * Scans an image file for Chilean license plates using Tesseract OCR + heuristics.
  */
 export async function scanLicensePlateFromImage(imageFile: File): Promise<OcrPlateResult> {
   try {
-    const { dataUrl } = await preprocessPlateImage(imageFile);
+    const { canvas, dataUrl } = await preprocessPlateImage(imageFile);
 
-    // Filename pattern matching fallback
+    // 1. Run in-browser Tesseract OCR
+    const tesseractResult = await Tesseract.recognize(canvas, 'eng', {
+      logger: () => {},
+    });
+
+    const rawText = tesseractResult.data.text || '';
+    const cleanText = rawText.toUpperCase();
+    
+    // 2. Extract candidate plates from OCR text
+    const ocrCandidatePlates = extractPlatesFromText(cleanText);
+
+    // 3. Fallback check from filename (e.g. "foto_BJZG35.jpg")
     const fileName = imageFile.name.toUpperCase();
-    const candidatePlates = extractPlatesFromText(fileName);
+    const fileNameCandidates = extractPlatesFromText(fileName);
 
-    if (candidatePlates.length > 0) {
+    const allCandidates = Array.from(new Set([...ocrCandidatePlates, ...fileNameCandidates]));
+
+    if (allCandidates.length > 0) {
       return {
-        detectedPlate: candidatePlates[0],
-        confidence: 0.92,
-        candidates: candidatePlates,
+        detectedPlate: allCandidates[0],
+        confidence: tesseractResult.data.confidence ? tesseractResult.data.confidence / 100 : 0.85,
+        candidates: allCandidates,
         processedImagePreview: dataUrl,
+        rawOcrText: rawText.trim(),
       };
     }
 
@@ -103,9 +119,10 @@ export async function scanLicensePlateFromImage(imageFile: File): Promise<OcrPla
       confidence: 0,
       candidates: [],
       processedImagePreview: dataUrl,
+      rawOcrText: rawText.trim(),
     };
   } catch (err) {
-    console.warn('Plate OCR scanning warning:', err);
+    console.warn('Plate OCR scanning error:', err);
     return {
       detectedPlate: null,
       confidence: 0,
