@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
-import { doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { doc, getDoc, serverTimestamp, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
 import {
   ArrowLeft,
@@ -41,25 +41,25 @@ const capabilityCards = [
   {
     num: '01',
     title: 'Disuasión Colectiva',
-    desc: 'Un reporte en su patio activa alertas perimetrales inmediatas en todas las automotoras de la red.',
+    desc: 'Un reporte alerta a toda la red al instante.',
     color: 'from-slate-500/20 to-transparent border-slate-600',
   },
   {
     num: '02',
-    title: 'Telemetría y Pánico 10s',
-    desc: 'Botón de pánico con GPS automático, transmisión instantánea y pulso de sonar en mapa satelital.',
+    title: 'Botón de Pánico GPS',
+    desc: 'Pánico 10s con ubicación en vivo.',
     color: 'from-red-500/20 to-transparent border-red-500/40',
   },
   {
     num: '03',
     title: 'Prueba en Ruta Segura',
-    desc: 'Registro fotográfico guiado antes de cada Test Drive para blindar contra fraudes o sustitución.',
+    desc: 'Registro fotográfico de cada test drive.',
     color: 'from-amber-500/20 to-transparent border-amber-500/40',
   },
   {
     num: '04',
     title: 'Validación por RUT',
-    desc: 'Acceso corporativo validado por representante legal para mantener la red 100% blindada.',
+    desc: 'Acceso corporativo verificado.',
     color: 'from-sky-500/20 to-transparent border-sky-500/40',
   },
 ];
@@ -82,6 +82,24 @@ export default function Login() {
   const [stormMode, setStormMode] = useState(false);
   const [isMuted, setIsMuted] = useState(sound.getIsMuted());
   const [selectedNode, setSelectedNode] = useState<WebNode | null>(null);
+  const [networkDealers, setNetworkDealers] = useState<{ name: string; node?: WebNode }[]>(
+    () => NODES.filter((n) => !n.isCore).map((node) => ({ name: node.name, node }))
+  );
+
+  // Live dealership names once Firestore allows public reads; static nodes until then
+  React.useEffect(() => {
+    let active = true;
+    getDocs(collection(db, 'dealerships'))
+      .then((snap) => {
+        if (!active || snap.empty) return;
+        const rows = snap.docs
+          .map((d) => ({ name: ((d.data() as any).name as string) || d.id }))
+          .filter((r) => r.name);
+        if (rows.length) setNetworkDealers(rows);
+      })
+      .catch(() => { /* dealership reads require auth; keep static network nodes */ });
+    return () => { active = false; };
+  }, []);
 
   const rutKey = useMemo(() => normalizeRut(rut), [rut]);
   const requestReady = Boolean(dealershipName.trim() && rutKey.length >= 8 && contactName.trim() && phone.trim() && address.trim() && email.trim());
@@ -298,17 +316,12 @@ export default function Login() {
         <aside className="hidden xl:flex flex-col justify-between p-10 2xl:p-14 border-r border-slate-300/70 pointer-events-auto">
           {/* Spatial Headline */}
           <div className="max-w-4xl my-auto py-4">
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-300 bg-white/70 text-slate-600 text-xs font-mono font-bold uppercase tracking-[0.25em] mb-5 backdrop-blur-xl shadow-sm">
-              <span className="w-2 h-2 rounded-full bg-slate-700 animate-ping" />
-              Organismo Digital en Red • Coquimbo
-            </div>
-
-            <h1 className="font-display max-w-4xl text-4xl 2xl:text-6xl font-black tracking-[-.06em] leading-[0.94] text-balance text-slate-900">
-              La red privada que <span className="bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400 bg-clip-text text-transparent">detecta y transmite</span> antes del impacto.
+            <h1 className="font-display max-w-4xl text-3xl 2xl:text-5xl font-black tracking-[-.05em] leading-[1.02] text-balance text-slate-900">
+              La Única <span className="bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400 bg-clip-text text-transparent uppercase">Red de Seguridad para Automotoras</span> en Chile
             </h1>
 
-            <p className="mt-5 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-600 font-normal">
-              Cada nodo representa una automotora, punto de control o vigilante en patio. Al detectarse un hecho sospechoso, la red propaga pulsos de datos e imágenes en tiempo real directamente al centro de custodia.
+            <p className="mt-4 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-600 font-normal">
+              Alertas instantáneas, botón de pánico con GPS y telemetría en tiempo real para automotoras de la Región de Coquimbo.
             </p>
 
             {/* Interactive Capability Capsules */}
@@ -339,29 +352,41 @@ export default function Login() {
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-emerald-400" />
-                  Nodos en Red (Seleccione para inspeccionar)
+                  Automotoras en la Red{networkDealers.some((d) => d.node) ? ' (Seleccione para inspeccionar)' : ''}
                 </span>
                 <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
-                  EN LÍNEA
+                  {networkDealers.length} EN LÍNEA
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {NODES.filter((n) => !n.isCore).slice(0, 8).map((node) => {
-                  const isSelected = selectedNode?.id === node.id;
-                  return (
+              <div className="grid grid-cols-2 gap-2 text-xs content-start max-h-44 overflow-y-auto pr-1 custom-scrollbar">
+                {networkDealers.map((dealer) => {
+                  const isSelected = dealer.node && selectedNode?.id === dealer.node.id;
+                  const inner = (
+                    <>
+                      <span className="truncate text-[11px] font-semibold">{dealer.name}</span>
+                      {dealer.node && <span className="text-[10px] font-mono text-emerald-400 font-bold ml-1">{dealer.node.latency}ms</span>}
+                    </>
+                  );
+                  return dealer.node ? (
                     <button
-                      key={node.id}
+                      key={dealer.node.id}
                       type="button"
-                      onClick={() => handleSelectNode(node)}
+                      onClick={() => handleSelectNode(dealer.node!)}
                       className={`flex items-center justify-between p-2 rounded-xl border text-left transition active:scale-95 ${
                         isSelected
                           ? 'bg-slate-500/10 border-slate-600 text-white shadow-[0_0_15px_rgba(148,163,184,0.2)]'
                           : 'bg-slate-900/70 border-slate-800/80 text-slate-300 hover:border-slate-700 hover:text-white'
                       }`}
                     >
-                      <span className="truncate text-[11px] font-semibold">{node.name}</span>
-                      <span className="text-[10px] font-mono text-emerald-400 font-bold ml-1">{node.latency}ms</span>
+                      {inner}
                     </button>
+                  ) : (
+                    <div
+                      key={dealer.name}
+                      className="flex items-center justify-between p-2 rounded-xl border bg-slate-900/70 border-slate-800/80 text-slate-300"
+                    >
+                      {inner}
+                    </div>
                   );
                 })}
               </div>
@@ -714,19 +739,14 @@ export default function Login() {
 function BrandHeader({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-3 sm:gap-4">
-      <div className={`${compact ? 'h-10 w-12' : 'h-11 w-14 sm:h-12 sm:w-16'} brand-node-badge relative rounded-2xl border border-slate-700 bg-slate-950 shadow-lg shadow-black/25 shrink-0`}>
-        <span className="absolute left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-slate-600 shadow-[0_0_12px_rgba(148,163,184,0.35)]" />
-        <span className="absolute right-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white/90" />
-        <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-slate-500 to-white/70" />
-        <span className="absolute left-1/2 top-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-slate-600/40" />
-        <span className="absolute left-1/2 bottom-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white/60" />
-      </div>
-      <div>
-        <p className={`${compact ? 'text-base' : 'text-lg sm:text-xl'} font-black tracking-[-.04em] text-slate-900 leading-tight`}>
-          AutoRed <span className="text-slate-500">Coquimbo</span>
-        </p>
-        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-500 font-mono font-bold">
-          Red Privada Automotora
+      <img
+        src="/branding/logo-alerta-dealers.svg"
+        alt="Alerta Dealers"
+        className={`${compact ? 'h-10' : 'h-12 sm:h-14'} w-auto shrink-0`}
+      />
+      <div className={`${compact ? '' : 'hidden sm:block'} border-l border-slate-300 pl-3 sm:pl-4`}>
+        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-500 font-mono font-bold leading-tight">
+          Red Privada<br />Automotora
         </p>
       </div>
     </div>
