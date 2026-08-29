@@ -179,12 +179,12 @@ export default function AdminDashboard() {
             <div className="bg-slate-700 p-2 rounded-xl shadow-lg shadow-black/20">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Panel de Administración</h1>
+            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Panel de Administración</h1>
           </div>
-          <p className="text-slate-400 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
+          <p className="text-slate-500 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
         </div>
 
-        <nav className="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800">
+        <nav className="flex bg-slate-900 p-1 rounded-2xl border border-slate-800">
           <button 
             onClick={() => setActiveTab('STATS')}
             className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}

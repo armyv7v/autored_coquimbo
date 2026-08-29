@@ -69,7 +69,7 @@ function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainL
   }, []);
 
   return (
-    <div className="flex flex-col h-screen bg-slate-950 tactical-bg text-slate-100 overflow-hidden relative">
+    <div className="flex flex-col h-screen bg-slate-100 tactical-bg-light text-slate-900 overflow-hidden relative">
       <div className="relative z-10 flex flex-col h-full overflow-hidden">
         <Navbar activeTab={activeTab} setActiveTab={setActiveTab} onTriggerAlert={onTriggerAlert} />
         <main className="flex-1 overflow-hidden relative">

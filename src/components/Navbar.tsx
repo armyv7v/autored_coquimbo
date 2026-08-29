@@ -33,7 +33,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
   const visibleItems = NAV_ITEMS.filter((item) => !item.adminOnly || profile?.role === 'ADMIN');
 
   return (
-    <header className="sticky top-0 z-50 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/80 shadow-lg shadow-black/40">
+    <header className="sticky top-0 z-50 bg-slate-950 backdrop-blur-xl border-b border-slate-800 shadow-lg shadow-black/20">
       {/* Primary Top Header */}
       <div className="px-4 md:px-8 h-[64px] min-h-[64px] flex items-center justify-between gap-3">
         {/* Left: User Profile Badge & Telemetry */}

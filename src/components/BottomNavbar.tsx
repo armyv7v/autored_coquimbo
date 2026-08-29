@@ -22,7 +22,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
   };
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-slate-950/95 backdrop-blur-2xl border-t border-white/10 px-2 py-2 flex items-end justify-around shadow-2xl shadow-black select-none">
+    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-slate-950 backdrop-blur-2xl border-t border-white/10 px-2 py-2 flex items-end justify-around shadow-2xl shadow-black/30 select-none">
       {NAV_ITEMS.filter((item) => !item.adminOnly || profile?.role === 'ADMIN').map((item) => {
         const Icon = item.icon;
 

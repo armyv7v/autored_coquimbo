@@ -449,7 +449,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-3.5 bg-slate-900/70 border border-slate-800 rounded-xl flex items-center justify-between text-slate-400"
+            className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-slate-400"
           >
             <div className="flex items-center gap-3">
               <BellOff className="w-4 h-4 shrink-0" />
@@ -464,7 +464,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-950/10 border-red-500/15' : 'bg-slate-900/80 border-slate-800'}`}
+          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-950 border-red-500/25' : 'bg-slate-900 border-slate-800'}`}
         >
           <div className="flex items-center gap-3.5">
             <div className="relative flex items-center justify-center">
@@ -500,11 +500,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-display text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-slate-300" />
+                <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                  <Activity className="w-4 h-4 text-slate-500" />
                   ACCIONES OPERATIVAS
                 </h2>
-                <p className="text-xs text-slate-400">Módulos tácticos de gestión y seguridad en patio</p>
+                <p className="text-xs text-slate-500">Módulos tácticos de gestión y seguridad en patio</p>
               </div>
               <button
                 type="button"
@@ -648,7 +648,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Info className="w-5 h-5 text-slate-300" />
+              <Info className="w-5 h-5 text-slate-500" />
               Feed de Inteligencia Local
             </h2>
             <div className="flex items-center gap-4">
@@ -687,7 +687,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   const element = document.getElementById('timeline');
                   element?.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="text-xs text-slate-400 hover:text-white transition-all uppercase font-bold tracking-widest"
+                className="text-xs text-slate-500 hover:text-slate-800 transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
               </button>
@@ -703,7 +703,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 exit={{ height: 0, opacity: 0 }}
                 className="overflow-hidden mb-6"
               >
-                <div className="bg-slate-900/50 border border-slate-800 rounded-2xl p-5 space-y-6">
+                <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     {/* Type Filter */}
                     <div>
@@ -810,7 +810,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               {loading ? (
                 <div className="p-8 text-center text-slate-400 italic">Analizando reportes...</div>
               ) : filteredIncidents.length === 0 ? (
-                <div className="p-12 text-center bg-slate-900/50 border border-slate-800 border-dashed rounded-3xl text-slate-400">
+                <div className="p-12 text-center bg-slate-900 border border-slate-800 border-dashed rounded-3xl text-slate-400">
                     <ShieldAlert className="w-12 h-12 mx-auto mb-4 opacity-10" />
                     <p>Sin incidentes que coincidan con los filtros</p>
                 </div>
@@ -822,8 +822,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   exit={{ opacity: 0, scale: 0.9 }}
                   onClick={() => setSelectedIncident(incident)}
                   className={`p-5 rounded-2xl flex gap-4 transition-all cursor-pointer group relative overflow-hidden ${
-                    incident.type === 'ROBO' 
-                      ? 'bg-red-500/5 border-2 border-red-500/50 shadow-lg shadow-red-500/5' 
+                    incident.type === 'ROBO'
+                      ? 'bg-red-950 border-2 border-red-500/40 shadow-lg shadow-red-950/20'
                       : 'bg-slate-900 border border-slate-800 hover:bg-slate-800/80'
                   }`}
                 >
@@ -910,7 +910,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 </button>
             </div>
 
-            <div className="bg-slate-500/10 border border-slate-600 rounded-3xl p-6 relative overflow-hidden group">
+            <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
                    <Sparkles className="w-12 h-12 text-slate-300" />
                 </div>
@@ -936,7 +936,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
       {/* Chronological Timeline Section */}
       {activeTab === 'HISTORIAL' && (
-        <section className="bg-slate-900/90 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 scroll-mt-24 overflow-hidden" id="timeline">
+        <section className="bg-slate-900 border border-slate-800/80 rounded-2xl sm:rounded-3xl p-4 sm:p-6 md:p-8 space-y-6 sm:space-y-8 scroll-mt-24 overflow-hidden" id="timeline">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
             <div className="space-y-1">
               <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5 tracking-tight">
