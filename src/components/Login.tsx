@@ -42,28 +42,28 @@ const capabilityCards = [
     num: '01',
     title: 'Disuasión Colectiva',
     desc: 'Un reporte alerta a toda la red al instante.',
-    color: 'from-slate-500/25 to-transparent border-slate-600',
+    color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Siren,
   },
   {
     num: '02',
     title: 'Botón de Pánico GPS',
     desc: 'Pánico 10s con ubicación en vivo.',
-    color: 'from-red-500/25 to-transparent border-red-500/40',
+    color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Zap,
   },
   {
     num: '03',
     title: 'Prueba en Ruta Segura',
     desc: 'Registro fotográfico de cada test drive.',
-    color: 'from-amber-500/25 to-transparent border-amber-500/40',
+    color: 'from-[#FF4D00]/15 to-transparent border-[#FF4D00]/45',
     icon: Activity,
   },
   {
     num: '04',
     title: 'Validación por RUT',
     desc: 'Acceso corporativo verificado.',
-    color: 'from-sky-500/25 to-transparent border-sky-500/40',
+    color: 'from-[#112A4D]/40 to-transparent border-[#112A4D]',
     icon: ShieldCheck,
   },
 ];
@@ -332,7 +332,7 @@ export default function Login() {
           {/* Spatial Headline */}
           <div className="max-w-4xl my-auto py-4">
             <h1 className="font-display max-w-4xl text-3xl 2xl:text-5xl font-black tracking-[-.05em] leading-[1.02] text-balance text-slate-900">
-              La Única <span className="bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400 bg-clip-text text-transparent uppercase">Red de Seguridad para Automotoras</span> en Chile
+              La Única <span className="bg-gradient-to-r from-[#E20B17] via-[#FF4D00] to-[#E20B17] bg-clip-text text-transparent uppercase">Red de Seguridad para Automotoras</span> en Chile
             </h1>
 
             <p className="mt-4 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-600 font-normal">
@@ -412,10 +412,10 @@ export default function Login() {
             <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950 shadow-2xl shadow-black/25">
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-emerald-400" />
+                  <Activity className="w-3.5 h-3.5 text-[#00E676]" />
                   Automotoras en la Red{networkDealers.some((d) => d.node) ? ' (Seleccione para inspeccionar)' : ''}
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold">
+                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30 font-bold">
                   {networkDealers.length} EN LÍNEA
                 </span>
               </div>
@@ -425,7 +425,7 @@ export default function Login() {
                   const inner = (
                     <>
                       <span className="truncate text-[11px] font-semibold">{dealer.name}</span>
-                      {dealer.node && <span className="text-[10px] font-mono text-emerald-400 font-bold ml-1">{dealer.node.latency}ms</span>}
+                      {dealer.node && <span className="text-[10px] font-mono text-[#00E676] font-bold ml-1">{dealer.node.latency}ms</span>}
                     </>
                   );
                   return dealer.node ? (
@@ -469,7 +469,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={handleTriggerNetworkAlert}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-600 hover:to-slate-500 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-black/25 active:scale-95 transition"
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] hover:from-[#f1121c] hover:to-[#d50a16] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
               >
                 <Zap className="w-4 h-4 text-white" />
                 {selectedNode ? `Transmitir a ${selectedNode.name}` : 'Transmitir Ráfaga a la Red'}
@@ -488,8 +488,8 @@ export default function Login() {
           >
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
-                <div className="mb-3.5 inline-flex rounded-2xl bg-gradient-to-br from-slate-600 to-slate-500 p-3 shadow-lg shadow-black/25">
-                  <ShieldAlert className="h-6 w-6 text-white" />
+                <div className="mb-3.5 inline-flex rounded-2xl bg-white/5 border border-white/10 p-2.5 overflow-hidden">
+                  <img src="/branding/icono-alerta-dealers.svg" alt="Alerta Dealers" className="h-9 w-9 object-contain" />
                 </div>
                 <h2 className="font-display text-2xl sm:text-3xl font-black tracking-[-.04em] text-white">
                   {mode === 'intro' && 'Acceso a la Red AutoRed'}
@@ -537,7 +537,7 @@ export default function Login() {
                         setMode('login');
                         sound.playNodePulse(false);
                       }}
-                      className="group rounded-2xl bg-gradient-to-r from-slate-600 to-slate-500 p-4 text-left font-black text-white shadow-xl shadow-black/25 hover:from-slate-600 hover:to-slate-500 active:scale-[.98] transition border border-slate-600/40"
+                      className="group rounded-2xl bg-gradient-to-br from-[#E20B17] to-[#a50811] p-4 text-left font-black text-white shadow-lg shadow-[#E20B17]/25 hover:from-[#f1121c] hover:to-[#c00914] active:scale-[.98] transition border border-[#E20B17]"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Lock className="w-5 h-5 text-white/90" />
@@ -565,9 +565,9 @@ export default function Login() {
                   </div>
 
                   {/* Acceso Rápido de Prueba 1-Tap */}
-                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-700 space-y-3">
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-[#E20B17]/40 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#FF4D00] flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
                         Acceso de Demostración
                       </span>
@@ -577,7 +577,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('admin@autored.cl', 'ADMIN')}
-                        className="py-2.5 px-3 rounded-xl bg-slate-500/10 hover:bg-slate-500/10 border border-slate-600 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
+                        className="py-2.5 px-3 rounded-xl bg-transparent hover:bg-[#E20B17]/10 border border-[#E20B17]/60 text-red-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
                       >
                         Acceso Administrador
                       </button>
@@ -607,7 +607,7 @@ export default function Login() {
                   className="space-y-5"
                 >
                   <div className="rounded-3xl border border-emerald-400/30 bg-emerald-500/10 p-6 text-center space-y-3">
-                    <CheckCircle2 className="h-12 w-12 text-emerald-400 mx-auto animate-bounce" />
+                    <CheckCircle2 className="h-12 w-12 text-[#00E676] mx-auto animate-bounce" />
                     <h3 className="text-lg font-black text-white uppercase tracking-tight">Solicitud Enviada con Éxito</h3>
                     <p className="text-xs leading-relaxed text-emerald-100 font-medium">
                       Su <strong className="text-white">"Solicitud de ingreso"</strong> a la Red de Automotoras fue enviada. El equipo administrador validará el RUT comercial y habilitará sus credenciales de acceso.
@@ -690,7 +690,7 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={loading || (mode === 'request' && !requestReady)}
-                    className="w-full rounded-2xl bg-gradient-to-r from-slate-600 to-slate-500 py-3.5 font-black text-white shadow-xl shadow-black/25 hover:from-slate-600 hover:to-slate-500 active:scale-[.98] disabled:opacity-60 transition"
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#E20B17] to-[#c00914] py-3.5 font-black text-white shadow-lg shadow-[#E20B17]/25 hover:from-[#f1121c] hover:to-[#d50a16] active:scale-[.98] disabled:opacity-60 transition"
                   >
                     {loading ? 'Procesando...' : mode === 'request' ? 'Enviar Solicitud de Ingreso' : 'Iniciar Sesión'}
                   </button>
@@ -735,7 +735,7 @@ export default function Login() {
           >
             <div className="flex items-center justify-between border-b border-slate-600 pb-2 mb-2.5">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+                <div className="w-2.5 h-2.5 rounded-full bg-[#00E676] animate-ping" />
                 <span className="text-xs font-mono font-black uppercase text-slate-300 tracking-wider">
                   TELEMETRÍA EN VIVO • {selectedNode.sector}
                 </span>
@@ -753,7 +753,7 @@ export default function Login() {
               <h4 className="font-display font-black text-base text-white">
                 {selectedNode.name}
               </h4>
-              <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+              <span className="text-xs font-mono font-bold text-[#00E676] bg-[#00E676]/15 px-2.5 py-0.5 rounded-full border border-[#00E676]/30">
                 {selectedNode.latency}ms Ping
               </span>
             </div>
@@ -765,7 +765,7 @@ export default function Login() {
             <div className="grid grid-cols-3 gap-2 text-[11px] font-mono text-slate-400 bg-slate-900/80 p-2.5 rounded-2xl border border-slate-800 mb-3">
               <div>
                 <span className="block text-[9px] uppercase text-slate-500">Estado</span>
-                <span className="font-bold text-emerald-400">EN LÍNEA</span>
+                <span className="font-bold text-[#00E676]">EN LÍNEA</span>
               </div>
               <div>
                 <span className="block text-[9px] uppercase text-slate-500">Sedes</span>
@@ -807,7 +807,7 @@ function BrandHeader({ compact = false }: { compact?: boolean }) {
       />
       <div className={`${compact ? '' : 'hidden sm:block'} border-l border-slate-300 pl-3 sm:pl-4`}>
         <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-500 font-mono font-bold leading-tight">
-          Red Privada<br />Automotora
+          Red Privada<br />entre Automotoras
         </p>
       </div>
     </div>
@@ -830,7 +830,7 @@ function Feedback({ tone, children }: { tone: 'error' | 'success'; children: Rea
   const classes =
     tone === 'error'
       ? 'border-red-400/30 bg-red-400/10 text-red-100'
-      : 'border-emerald-400/30 bg-emerald-400/10 text-emerald-100';
+      : 'border-emerald-400/30 bg-[#00E676]/10 text-emerald-100';
 
   return (
     <div className={`flex gap-2 rounded-2xl border p-3 text-xs leading-5 ${classes}`}>

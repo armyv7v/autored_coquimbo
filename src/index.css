@@ -3,13 +3,18 @@
 @theme {
   --color-brand-primary: #FF5A1F;
   --color-brand-secondary: #0F172A;
-  --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  --color-brand-red: #E20B17;
+  --color-brand-orange: #FF4D00;
+  --color-brand-navy: #0B1324;
+  --color-brand-navy-2: #112A4D;
+  --color-brand-green: #00E676;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 }
 
 :root {
   background-color: #f1f5f9;
   color: #0f172a;
-  font-family: "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
@@ -30,7 +35,7 @@ body {
 }
 
 .font-display {
-  font-family: "Rajdhani", "Outfit", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Orbitron", "Montserrat", ui-sans-serif, system-ui, sans-serif;
 }
 
 .tabular-nums {
