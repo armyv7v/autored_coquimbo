@@ -89,6 +89,17 @@ export default function Login() {
   const [networkDealers, setNetworkDealers] = useState<{ name: string; node?: WebNode }[]>(
     () => NODES.filter((n) => !n.isCore).map((node) => ({ name: node.name, node }))
   );
+  const [activeCapability, setActiveCapability] = useState(0);
+  const [capPaused, setCapPaused] = useState(false);
+
+  React.useEffect(() => {
+    if (capPaused) return;
+    const t = setInterval(
+      () => setActiveCapability((p) => (p + 1) % capabilityCards.length),
+      5500
+    );
+    return () => clearInterval(t);
+  }, [capPaused]);
 
   // Live dealership names once Firestore allows public reads; static nodes until then
   React.useEffect(() => {
@@ -328,36 +339,70 @@ export default function Login() {
               Alertas instantáneas, botón de pánico con GPS y telemetría en tiempo real para automotoras de la Región de Coquimbo.
             </p>
 
-            {/* Capability Carousel: large capsules, slow infinite marquee (pauses on hover) */}
-            <div className="relative mt-6 max-w-3xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)]">
-              <div className="marquee-track flex gap-4 w-max py-1">
-                {[...capabilityCards, ...capabilityCards].map((card, i) => {
-                  const Icon = card.icon;
-                  return (
-                    <div
-                      key={`${card.num}-${i}`}
-                      className={`relative w-[300px] sm:w-[380px] shrink-0 overflow-hidden rounded-2xl border bg-slate-950 p-5 sm:p-6 group transition-colors hover:border-slate-400 ${card.color}`}
-                    >
-                      <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-70 pointer-events-none`} />
-                      <div className="relative">
-                        <div className="flex items-center justify-between mb-4">
-                          <span className="text-3xl font-mono font-black text-white/90 tracking-tighter">{card.num}</span>
-                          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest border border-slate-700 rounded-full px-2.5 py-1 flex items-center gap-1.5">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                            Activo
+            {/* Capability Carousel: one large card at a time, auto-advancing with progress bar */}
+            <div
+              className="relative mt-6 max-w-3xl"
+              onMouseEnter={() => setCapPaused(true)}
+              onMouseLeave={() => setCapPaused(false)}
+            >
+              <div className="relative overflow-hidden rounded-3xl border bg-slate-950 shadow-2xl shadow-black/25 min-h-[190px] sm:min-h-[210px]">
+                <AnimatePresence mode="wait">
+                  {(() => {
+                    const card = capabilityCards[activeCapability];
+                    const Icon = card.icon;
+                    return (
+                      <motion.div
+                        key={activeCapability}
+                        initial={{ opacity: 0, x: 60, scale: 0.985 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: -60, scale: 0.985 }}
+                        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
+                        className={`absolute inset-0 p-6 sm:p-8 flex flex-col justify-between ${card.color}`}
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${card.color} pointer-events-none`} />
+                        <div className="relative flex items-start justify-between">
+                          <span className="text-5xl sm:text-6xl font-mono font-black text-white/15 tracking-tighter leading-none select-none">
+                            {card.num}
                           </span>
-                        </div>
-                        <div className="flex items-center gap-3 mb-2.5">
-                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-100">
-                            <Icon className="w-5 h-5" />
+                          <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-slate-100">
+                            <Icon className="w-7 h-7" />
                           </div>
-                          <h4 className="text-lg sm:text-xl font-black text-white tracking-tight">{card.title}</h4>
                         </div>
-                        <p className="text-sm text-slate-300 leading-relaxed">{card.desc}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                        <div className="relative">
+                          <h4 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
+                            {card.title}
+                          </h4>
+                          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                            {card.desc}
+                          </p>
+                        </div>
+                      </motion.div>
+                    );
+                  })()}
+                </AnimatePresence>
+              </div>
+
+              {/* Progress indicators */}
+              <div className="flex items-center gap-2 mt-3.5">
+                {capabilityCards.map((card, i) => (
+                  <button
+                    key={card.num}
+                    type="button"
+                    onClick={() => setActiveCapability(i)}
+                    aria-label={`Ver ${card.title}`}
+                    className="relative h-1.5 flex-1 max-w-16 rounded-full bg-slate-300/70 overflow-hidden transition-colors hover:bg-slate-400/80"
+                  >
+                    {i === activeCapability && (
+                      <motion.span
+                        key={`fill-${activeCapability}-${capPaused}`}
+                        className="absolute inset-y-0 left-0 bg-slate-900 rounded-full"
+                        initial={{ width: capPaused ? '100%' : '0%' }}
+                        animate={{ width: '100%' }}
+                        transition={{ duration: capPaused ? 0.2 : 5.5, ease: 'linear' }}
+                      />
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
