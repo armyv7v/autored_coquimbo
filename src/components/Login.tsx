@@ -291,7 +291,7 @@ export default function Login() {
       </div>
 
       {/* Floating Tactical Action Deck (Always Clickable) */}
-      <header className="relative z-30 flex items-center justify-between p-4 sm:p-6 max-w-7xl mx-auto w-full pointer-events-auto">
+      <header className={accessOpen ? 'hidden' : 'relative z-30 flex items-center justify-between p-4 sm:p-6 max-w-7xl mx-auto w-full pointer-events-auto'}>
         <BrandHeader />
 
         <div className="flex items-center gap-2 sm:gap-3">
@@ -470,22 +470,18 @@ export default function Login() {
         </aside>
 
         {/* Right Column: Portal Cards / Authentication & Registration */}
-        <div className={`${accessOpen ? 'flex' : 'hidden xl:flex'} items-center justify-center p-5 sm:p-8 lg:p-10 pointer-events-auto`}>
-          {accessOpen && (
-            <div
-              className="fixed inset-0 z-[90] bg-slate-950/45 backdrop-blur-sm xl:hidden"
-              onClick={closeAccess}
-            />
-          )}
+        <div
+          onClick={accessOpen ? closeAccess : undefined}
+          className={accessOpen
+            ? 'fixed inset-0 z-[110] flex items-start justify-center overflow-y-auto bg-slate-950/45 backdrop-blur-sm p-4 pt-10 pointer-events-auto'
+            : 'hidden xl:flex items-center justify-center p-5 sm:p-8 lg:p-10 pointer-events-auto'}
+        >
           <motion.div
+            onClick={(e) => e.stopPropagation()}
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className={`w-full max-w-[480px] rounded-[2.2rem] border-2 border-slate-800 bg-slate-950 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_25px_60px_-12px_rgba(15,23,42,0.35)] ${
-              accessOpen
-                ? 'fixed z-[100] inset-x-4 top-6 mx-auto max-h-[88dvh] overflow-y-auto custom-scrollbar xl:static xl:inset-auto xl:z-auto xl:max-h-none xl:overflow-visible'
-                : ''
-            }`}
+            className="w-full max-w-[480px] rounded-[2.2rem] border-2 border-slate-800 bg-slate-950 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_25px_60px_-12px_rgba(15,23,42,0.35)]"
           >
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
