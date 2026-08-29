@@ -16,8 +16,6 @@ import {
   Activity,
   Sparkles,
   Radio,
-  Volume2,
-  VolumeX,
   ShieldCheck,
   ChevronRight,
   Siren,
@@ -87,8 +85,7 @@ export default function Login() {
   const [alertPulseCount, setAlertPulseCount] = useState(0);
   
   // Interactive Living Organism States
-  const [stormMode, setStormMode] = useState(false);
-  const [isMuted, setIsMuted] = useState(sound.getIsMuted());
+  const [accessOpen, setAccessOpen] = useState(false);
   const [selectedNode, setSelectedNode] = useState<WebNode | null>(null);
   const [networkDealers, setNetworkDealers] = useState<{ name: string; node?: WebNode }[]>(
     () => NODES.filter((n) => !n.isCore).map((node) => ({ name: node.name, node }))
@@ -121,14 +118,14 @@ export default function Login() {
   }, []);
 
   React.useEffect(() => {
-    if (mode !== 'intro' && window.innerWidth < 1280) {
+    if (accessOpen && window.innerWidth < 1280) {
       document.body.style.overflow = 'hidden';
       window.scrollTo({ top: 0 });
     } else {
       document.body.style.overflow = '';
     }
     return () => { document.body.style.overflow = ''; };
-  }, [mode]);
+  }, [accessOpen]);
 
   const rutKey = useMemo(() => normalizeRut(rut), [rut]);
   const requestReady = Boolean(dealershipName.trim() && rutKey.length >= 8 && contactName.trim() && phone.trim() && address.trim() && email.trim());
@@ -143,29 +140,15 @@ export default function Login() {
     sound.playNodePulse(true);
   };
 
-  const handleToggleStormAlert = () => {
-    if (stormMode) {
-      setStormMode(false);
-      sound.stopPoliceSiren();
-    } else {
-      setStormMode(true);
-      setAlertPulseCount((prev) => prev + 1);
-      sound.playPoliceSiren(4.0);
-      
-      setTimeout(() => {
-        setStormMode(false);
-      }, 4500);
-    }
-  };
-
-  const handleToggleSound = () => {
-    const muted = sound.toggleMute();
-    setIsMuted(muted);
-  };
-
   const handleSelectNode = (node: WebNode) => {
     setSelectedNode(node);
     setAlertPulseCount((prev) => prev + 1);
+  };
+
+  const closeAccess = () => {
+    setAccessOpen(false);
+    setMode('intro');
+    resetFeedback();
   };
 
   const handleDemoLogin = async (demoEmail: string, role: 'ADMIN' | 'SECURITY' = 'ADMIN') => {
@@ -297,7 +280,7 @@ export default function Login() {
         <InteractiveNetworkWeb
           className="w-full h-full"
           pulseTriggerCount={alertPulseCount}
-          stormActive={stormMode}
+          stormActive={false}
           selectedNodeId={selectedNode?.id || null}
           interactive={true}
           onNodeSelect={(node) => setSelectedNode(node)}
@@ -314,36 +297,11 @@ export default function Login() {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => { setMode('login'); resetFeedback(); }}
+            onClick={() => setAccessOpen(true)}
             className="xl:hidden px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
           >
             <Lock className="w-3.5 h-3.5" />
-            Iniciar Sesión
-          </button>
-
-          <button
-            type="button"
-            onClick={handleToggleStormAlert}
-            className={`px-3 sm:px-4 py-2 rounded-full text-xs font-mono font-bold flex items-center gap-2 backdrop-blur-xl border transition-all active:scale-95 shadow-xl ${
-              stormMode
-                ? 'bg-red-600 text-white border-red-300 shadow-[0_0_30px_rgba(239,68,68,0.9)] animate-pulse'
-                : 'bg-slate-950 text-red-300 border-red-500/40 hover:bg-slate-900 hover:border-red-400 hover:text-white'
-            }`}
-            title="Simular Alerta Máxima con Sirena Policial y Sobrecarga"
-          >
-            <Siren className={`w-4 h-4 text-red-400 ${stormMode ? 'animate-spin' : ''}`} />
-            <span className="font-black uppercase tracking-wider">
-              {stormMode ? 'SIRENA ACTIVA' : 'SIMULAR ALERTA MÁXIMA'}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleToggleSound}
-            className="p-2.5 rounded-full bg-slate-950 text-slate-300 border border-slate-700 hover:border-slate-600 hover:text-slate-300 backdrop-blur-xl transition active:scale-95 shadow-lg"
-            title={isMuted ? 'Activar Audio Táctico' : 'Silenciar Audio'}
-          >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-slate-300" />}
+            Acceso a la Red
           </button>
         </div>
       </header>
@@ -512,11 +470,11 @@ export default function Login() {
         </aside>
 
         {/* Right Column: Portal Cards / Authentication & Registration */}
-        <div className="flex items-center justify-center p-5 sm:p-8 lg:p-10 pointer-events-auto">
-          {mode !== 'intro' && (
+        <div className={`${accessOpen ? 'flex' : 'hidden xl:flex'} items-center justify-center p-5 sm:p-8 lg:p-10 pointer-events-auto`}>
+          {accessOpen && (
             <div
               className="fixed inset-0 z-[90] bg-slate-950/45 backdrop-blur-sm xl:hidden"
-              onClick={() => { setMode('intro'); resetFeedback(); }}
+              onClick={closeAccess}
             />
           )}
           <motion.div
@@ -524,7 +482,7 @@ export default function Login() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className={`w-full max-w-[480px] rounded-[2.2rem] border-2 border-slate-800 bg-slate-950 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_25px_60px_-12px_rgba(15,23,42,0.35)] ${
-              mode !== 'intro'
+              accessOpen
                 ? 'fixed z-[100] inset-x-4 top-6 mx-auto max-h-[88dvh] overflow-y-auto custom-scrollbar xl:static xl:inset-auto xl:z-auto xl:max-h-none xl:overflow-visible'
                 : ''
             }`}
@@ -552,6 +510,7 @@ export default function Login() {
                 <button
                   type="button"
                   onClick={() => {
+                    setAccessOpen(false);
                     setMode('intro');
                     resetFeedback();
                     sound.playNodePulse(false);
