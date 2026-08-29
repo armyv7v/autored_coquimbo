@@ -332,7 +332,7 @@ export default function Login() {
       {/* Main Experience Layout */}
       <section className="relative z-10 flex-1 grid xl:grid-cols-[1.18fr_0.82fr] pointer-events-none">
         {/* Left Column: Spatial Narrative & Interactive Node Deck */}
-        <aside className="hidden xl:flex flex-col justify-between p-10 2xl:p-14 border-r border-slate-300/70 pointer-events-auto">
+        <aside className="flex flex-col justify-between p-5 sm:p-8 xl:p-10 2xl:p-14 border-b xl:border-b-0 xl:border-r border-slate-300/70 pointer-events-auto">
           {/* Spatial Headline */}
           <div className="max-w-4xl my-auto py-4">
             <h1 className="font-display max-w-4xl text-3xl 2xl:text-5xl font-black tracking-[-.05em] leading-[1.02] text-balance text-slate-900">
@@ -422,7 +422,7 @@ export default function Login() {
           </div>
 
           {/* Interactive Node Deck (Punto 4: Telemetría e Interacción en Vivo) */}
-          <div className="grid grid-cols-[1.1fr_0.9fr] gap-4 items-end">
+          <div className="grid grid-cols-1 xl:grid-cols-[1.1fr_0.9fr] gap-4 items-end">
             <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950 shadow-2xl shadow-black/25">
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
