@@ -815,7 +815,7 @@ function BrandHeader({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-3 sm:gap-4">
       <img
-        src="/branding/logo-alerta-dealers.svg"
+        src="/branding/logo-alerta-dealers.png"
         alt="Alerta Dealers"
         className={`${compact ? 'h-10' : 'h-12 sm:h-14'} w-auto shrink-0`}
       />

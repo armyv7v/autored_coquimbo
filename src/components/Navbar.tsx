@@ -55,7 +55,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
         {/* Center: Brand Logo */}
         <NavLink to="/" className="flex items-center gap-2.5 group">
           <img
-            src="/branding/logo-alerta-dealers-oscuro.svg"
+            src="/branding/logo-alerta-dealers.png"
             alt="Alerta Dealers"
             className="h-8 sm:h-9 w-auto"
           />
