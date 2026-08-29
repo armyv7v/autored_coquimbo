@@ -217,6 +217,20 @@ body {
   animation-delay: 700ms;
 }
 
+@keyframes marquee {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-50%, 0, 0); }
+}
+
+.marquee-track {
+  animation: marquee 42s linear infinite;
+  will-change: transform;
+}
+
+.marquee-track:hover {
+  animation-play-state: paused;
+}
+
 @keyframes network-drift {
   0%, 100% { transform: translate3d(0, 0, 0) rotate(0deg); opacity: 0.58; }
   50% { transform: translate3d(12px, -18px, 0) rotate(8deg); opacity: 0.86; }
@@ -245,6 +259,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .network-orb,
   .alert-pulse,
+  .marquee-track,
   .network-mark .network-web,
   .network-mark .network-core,
   .cinematic-network-mark,

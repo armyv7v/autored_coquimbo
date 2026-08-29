@@ -42,25 +42,29 @@ const capabilityCards = [
     num: '01',
     title: 'Disuasión Colectiva',
     desc: 'Un reporte alerta a toda la red al instante.',
-    color: 'from-slate-500/20 to-transparent border-slate-600',
+    color: 'from-slate-500/25 to-transparent border-slate-600',
+    icon: Siren,
   },
   {
     num: '02',
     title: 'Botón de Pánico GPS',
     desc: 'Pánico 10s con ubicación en vivo.',
-    color: 'from-red-500/20 to-transparent border-red-500/40',
+    color: 'from-red-500/25 to-transparent border-red-500/40',
+    icon: Zap,
   },
   {
     num: '03',
     title: 'Prueba en Ruta Segura',
     desc: 'Registro fotográfico de cada test drive.',
-    color: 'from-amber-500/20 to-transparent border-amber-500/40',
+    color: 'from-amber-500/25 to-transparent border-amber-500/40',
+    icon: Activity,
   },
   {
     num: '04',
     title: 'Validación por RUT',
     desc: 'Acceso corporativo verificado.',
-    color: 'from-sky-500/20 to-transparent border-sky-500/40',
+    color: 'from-sky-500/25 to-transparent border-sky-500/40',
+    icon: ShieldCheck,
   },
 ];
 
@@ -324,25 +328,37 @@ export default function Login() {
               Alertas instantáneas, botón de pánico con GPS y telemetría en tiempo real para automotoras de la Región de Coquimbo.
             </p>
 
-            {/* Interactive Capability Capsules */}
-            <div className="grid grid-cols-2 gap-3 mt-6 max-w-2xl">
-              {capabilityCards.map((card) => (
-                <div
-                  key={card.num}
-                  className={`p-3 rounded-2xl border bg-slate-950 backdrop-blur-xl transition hover:border-slate-400 hover:bg-slate-900 group ${card.color}`}
-                >
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono font-black text-slate-300">{card.num}</span>
-                    <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">ACTIVO</span>
-                  </div>
-                  <h4 className="text-xs font-bold text-white mb-0.5 group-hover:text-slate-300 transition">
-                    {card.title}
-                  </h4>
-                  <p className="text-[11px] text-slate-400 leading-relaxed">
-                    {card.desc}
-                  </p>
-                </div>
-              ))}
+            {/* Capability Carousel: large capsules, slow infinite marquee (pauses on hover) */}
+            <div className="relative mt-6 max-w-3xl overflow-hidden [mask-image:linear-gradient(to_right,transparent,#000_6%,#000_94%,transparent)]">
+              <div className="marquee-track flex gap-4 w-max py-1">
+                {[...capabilityCards, ...capabilityCards].map((card, i) => {
+                  const Icon = card.icon;
+                  return (
+                    <div
+                      key={`${card.num}-${i}`}
+                      className={`relative w-[300px] sm:w-[380px] shrink-0 overflow-hidden rounded-2xl border bg-slate-950 p-5 sm:p-6 group transition-colors hover:border-slate-400 ${card.color}`}
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-70 pointer-events-none`} />
+                      <div className="relative">
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-3xl font-mono font-black text-white/90 tracking-tighter">{card.num}</span>
+                          <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest border border-slate-700 rounded-full px-2.5 py-1 flex items-center gap-1.5">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                            Activo
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 mb-2.5">
+                          <div className="p-2.5 rounded-xl bg-white/5 border border-white/10 text-slate-100">
+                            <Icon className="w-5 h-5" />
+                          </div>
+                          <h4 className="text-lg sm:text-xl font-black text-white tracking-tight">{card.title}</h4>
+                        </div>
+                        <p className="text-sm text-slate-300 leading-relaxed">{card.desc}</p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
