@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 360" width="1200" height="360">
+<defs><filter id="shadow"><feGaussianBlur stdDeviation="3"/></filter></defs>
+<g transform="translate(20 20)">
+ <path d="M150 12 L260 62 L244 210 Q224 286 150 320 Q76 286 56 210 L40 62 Z" fill="#0b1324" stroke="#0b1324" stroke-width="12"/>
+ <path d="M150 12 L260 62 L244 210" fill="none" stroke="#e20b17" stroke-width="14"/>
+ <path d="M150 12 L40 62 L56 210" fill="none" stroke="#e20b17" stroke-width="14"/>
+ <path d="M150 34 Q105 18 78 62" fill="none" stroke="#0b1324" stroke-width="10"/>
+ <path d="M150 34 Q195 18 222 62" fill="none" stroke="#0b1324" stroke-width="10"/>
+ <path d="M150 18 Q150 -8 150 -2" stroke="#e20b17" stroke-width="10"/>
+ <path d="M150 78 L92 230 L150 270 L208 230 Z" fill="#0b1324" stroke="#0b1324" stroke-width="9"/>
+ <path d="M150 78 L115 230 L150 205 L185 230 Z" fill="#0b1324" stroke="#0b1324" stroke-width="8"/>
+ <path d="M112 174 H188 M104 207 H196" stroke="#0b1324" stroke-width="8"/>
+ <path d="M94 232 L150 270 L206 232" fill="none" stroke="#0b1324" stroke-width="8"/>
+ <path d="M103 130 L150 112 L197 130" fill="none" stroke="#e20b17" stroke-width="10"/>
+</g>
+<g transform="translate(315 72)">
+ <text x="0" y="145" font-family="Orbitron, Rajdhani, Arial Black, sans-serif" font-size="132" font-weight="900" letter-spacing="4" fill="#0b1324" stroke="#0b1324" stroke-width="10" paint-order="stroke">ALERTA</text>
+ <text x="172" y="220" font-family="Orbitron, Rajdhani, Arial Black, sans-serif" font-size="64" font-weight="900" letter-spacing="16" fill="#e20b17">DEALERS</text>
+ <path d="M8 245 H220 M360 245 H650" stroke="#0b1324" stroke-width="10" stroke-linecap="round"/>
+</g>
+</svg>
