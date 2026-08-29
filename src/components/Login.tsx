@@ -120,6 +120,16 @@ export default function Login() {
     return () => { active = false; };
   }, []);
 
+  React.useEffect(() => {
+    if (mode !== 'intro' && window.innerWidth < 1280) {
+      document.body.style.overflow = 'hidden';
+      window.scrollTo({ top: 0 });
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => { document.body.style.overflow = ''; };
+  }, [mode]);
+
   const rutKey = useMemo(() => normalizeRut(rut), [rut]);
   const requestReady = Boolean(dealershipName.trim() && rutKey.length >= 8 && contactName.trim() && phone.trim() && address.trim() && email.trim());
 
@@ -302,6 +312,15 @@ export default function Login() {
         <BrandHeader />
 
         <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            type="button"
+            onClick={() => { setMode('login'); resetFeedback(); }}
+            className="xl:hidden px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
+          >
+            <Lock className="w-3.5 h-3.5" />
+            Iniciar Sesión
+          </button>
+
           <button
             type="button"
             onClick={handleToggleStormAlert}
@@ -494,11 +513,21 @@ export default function Login() {
 
         {/* Right Column: Portal Cards / Authentication & Registration */}
         <div className="flex items-center justify-center p-5 sm:p-8 lg:p-10 pointer-events-auto">
+          {mode !== 'intro' && (
+            <div
+              className="fixed inset-0 z-[90] bg-slate-950/45 backdrop-blur-sm xl:hidden"
+              onClick={() => { setMode('intro'); resetFeedback(); }}
+            />
+          )}
           <motion.div
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-[480px] rounded-[2.2rem] border-2 border-slate-800 bg-slate-950 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_25px_60px_-12px_rgba(15,23,42,0.35)]"
+            className={`w-full max-w-[480px] rounded-[2.2rem] border-2 border-slate-800 bg-slate-950 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_25px_60px_-12px_rgba(15,23,42,0.35)] ${
+              mode !== 'intro'
+                ? 'fixed z-[100] inset-x-4 top-6 mx-auto max-h-[88dvh] overflow-y-auto custom-scrollbar xl:static xl:inset-auto xl:z-auto xl:max-h-none xl:overflow-visible'
+                : ''
+            }`}
           >
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
