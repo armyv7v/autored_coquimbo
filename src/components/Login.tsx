@@ -244,7 +244,7 @@ export default function Login() {
   };
 
   return (
-    <main className="auth-noise min-h-dvh bg-[#02050c] text-white relative overflow-hidden flex flex-col justify-between selection:bg-slate-700 selection:text-white">
+    <main className="auth-noise min-h-dvh bg-slate-100 text-slate-900 relative overflow-hidden flex flex-col justify-between selection:bg-slate-700 selection:text-white">
       {/* Fullscreen Immersive Organism Spider Web Background */}
       <div className="fixed inset-0 z-0 opacity-90 pointer-events-auto">
         <InteractiveNetworkWeb
@@ -256,8 +256,8 @@ export default function Login() {
           onNodeSelect={(node) => setSelectedNode(node)}
         />
         {/* Spatial Vignette & Cyber Grid Overlay */}
-        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_25%,rgba(2,5,12,0.85)_100%)]" />
-        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
+        <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(ellipse_at_center,transparent_30%,rgba(241,245,249,0.9)_100%)]" />
+        <div className="absolute inset-0 pointer-events-none bg-[linear-gradient(to_right,rgba(15,23,42,0.035)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.035)_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)]" />
       </div>
 
       {/* Floating Tactical Action Deck (Always Clickable) */}
@@ -271,7 +271,7 @@ export default function Login() {
             className={`px-3 sm:px-4 py-2 rounded-full text-xs font-mono font-bold flex items-center gap-2 backdrop-blur-xl border transition-all active:scale-95 shadow-xl ${
               stormMode
                 ? 'bg-red-600 text-white border-red-300 shadow-[0_0_30px_rgba(239,68,68,0.9)] animate-pulse'
-                : 'bg-slate-900/90 text-red-300 border-red-500/40 hover:bg-red-500/20 hover:border-red-400 hover:text-white'
+                : 'bg-slate-950 text-red-300 border-red-500/40 hover:bg-slate-900 hover:border-red-400 hover:text-white'
             }`}
             title="Simular Alerta Máxima con Sirena Policial y Sobrecarga"
           >
@@ -284,7 +284,7 @@ export default function Login() {
           <button
             type="button"
             onClick={handleToggleSound}
-            className="p-2.5 rounded-full bg-slate-900/90 text-slate-300 border border-slate-700/80 hover:border-slate-600 hover:text-slate-300 backdrop-blur-xl transition active:scale-95 shadow-lg"
+            className="p-2.5 rounded-full bg-slate-950 text-slate-300 border border-slate-700 hover:border-slate-600 hover:text-slate-300 backdrop-blur-xl transition active:scale-95 shadow-lg"
             title={isMuted ? 'Activar Audio Táctico' : 'Silenciar Audio'}
           >
             {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-slate-300" />}
@@ -295,19 +295,19 @@ export default function Login() {
       {/* Main Experience Layout */}
       <section className="relative z-10 flex-1 grid xl:grid-cols-[1.18fr_0.82fr] pointer-events-none">
         {/* Left Column: Spatial Narrative & Interactive Node Deck */}
-        <aside className="hidden xl:flex flex-col justify-between p-10 2xl:p-14 border-r border-white/10 pointer-events-auto">
+        <aside className="hidden xl:flex flex-col justify-between p-10 2xl:p-14 border-r border-slate-300/70 pointer-events-auto">
           {/* Spatial Headline */}
           <div className="max-w-4xl my-auto py-4">
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-600 bg-gradient-to-r from-slate-600/20 via-slate-500/10 to-transparent text-slate-300 text-xs font-mono font-bold uppercase tracking-[0.25em] mb-5 backdrop-blur-xl shadow-[0_0_25px_rgba(148,163,184,0.2)]">
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-300 bg-white/70 text-slate-600 text-xs font-mono font-bold uppercase tracking-[0.25em] mb-5 backdrop-blur-xl shadow-sm">
               <span className="w-2 h-2 rounded-full bg-slate-700 animate-ping" />
               Organismo Digital en Red • Coquimbo
             </div>
 
-            <h1 className="font-display max-w-4xl text-4xl 2xl:text-6xl font-black tracking-[-.06em] leading-[0.94] text-balance">
-              La red privada que <span className="bg-gradient-to-r from-slate-600 via-slate-400 to-slate-300 bg-clip-text text-transparent">detecta y transmite</span> antes del impacto.
+            <h1 className="font-display max-w-4xl text-4xl 2xl:text-6xl font-black tracking-[-.06em] leading-[0.94] text-balance text-slate-900">
+              La red privada que <span className="bg-gradient-to-r from-slate-900 via-slate-600 to-slate-400 bg-clip-text text-transparent">detecta y transmite</span> antes del impacto.
             </h1>
 
-            <p className="mt-5 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-300 font-normal">
+            <p className="mt-5 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-600 font-normal">
               Cada nodo representa una automotora, punto de control o vigilante en patio. Al detectarse un hecho sospechoso, la red propaga pulsos de datos e imágenes en tiempo real directamente al centro de custodia.
             </p>
 
@@ -316,7 +316,7 @@ export default function Login() {
               {capabilityCards.map((card) => (
                 <div
                   key={card.num}
-                  className={`p-3 rounded-2xl border bg-slate-950/70 backdrop-blur-xl transition hover:border-slate-600 hover:bg-slate-900/80 group ${card.color}`}
+                  className={`p-3 rounded-2xl border bg-slate-950 backdrop-blur-xl transition hover:border-slate-400 hover:bg-slate-900 group ${card.color}`}
                 >
                   <div className="flex items-center justify-between mb-1">
                     <span className="text-xs font-mono font-black text-slate-300">{card.num}</span>
@@ -335,7 +335,7 @@ export default function Login() {
 
           {/* Interactive Node Deck (Punto 4: Telemetría e Interacción en Vivo) */}
           <div className="grid grid-cols-[1.1fr_0.9fr] gap-4 items-end">
-            <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950/85 shadow-2xl">
+            <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950 shadow-2xl shadow-black/25">
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
                   <Activity className="w-3.5 h-3.5 text-emerald-400" />
@@ -367,7 +367,7 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-slate-600 p-4 backdrop-blur-2xl bg-gradient-to-br from-slate-900/40 via-slate-950/90 to-slate-950 shadow-[0_0_30px_rgba(148,163,184,0.2)]">
+            <div className="rounded-2xl border-2 border-slate-600 p-4 backdrop-blur-2xl bg-slate-950 shadow-2xl shadow-black/25">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                   <Radio className="w-3.5 h-3.5" />
@@ -398,7 +398,7 @@ export default function Login() {
             initial={{ opacity: 0, scale: 0.96, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="w-full max-w-[480px] rounded-[2.2rem] border-2 border-white/15 bg-slate-950/90 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_0_60px_rgba(0,0,0,0.85)]"
+            className="w-full max-w-[480px] rounded-[2.2rem] border-2 border-slate-800 bg-slate-950 backdrop-blur-2xl p-6 sm:p-8 shadow-[0_25px_60px_-12px_rgba(15,23,42,0.35)]"
           >
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
@@ -479,7 +479,7 @@ export default function Login() {
                   </div>
 
                   {/* Acceso Rápido de Prueba 1-Tap */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-600 space-y-3">
+                  <div className="p-4 rounded-2xl bg-slate-900 border border-slate-700 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
@@ -645,7 +645,7 @@ export default function Login() {
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-slate-950/95 border-2 border-slate-600 text-white p-4 rounded-3xl shadow-[0_0_50px_rgba(148,163,184,0.2)] backdrop-blur-2xl pointer-events-auto"
+            className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-slate-950 border-2 border-slate-700 text-white p-4 rounded-3xl shadow-[0_25px_60px_-12px_rgba(15,23,42,0.45)] backdrop-blur-2xl pointer-events-auto"
           >
             <div className="flex items-center justify-between border-b border-slate-600 pb-2 mb-2.5">
               <div className="flex items-center gap-2">
@@ -714,18 +714,18 @@ export default function Login() {
 function BrandHeader({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-3 sm:gap-4">
-      <div className={`${compact ? 'h-10 w-12' : 'h-11 w-14 sm:h-12 sm:w-16'} brand-node-badge relative rounded-2xl border border-slate-600 bg-slate-950/80 shadow-lg shadow-black/25 shrink-0`}>
-        <span className="absolute left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-slate-700 shadow-[0_0_18px_rgba(148,163,184,0.2)]" />
+      <div className={`${compact ? 'h-10 w-12' : 'h-11 w-14 sm:h-12 sm:w-16'} brand-node-badge relative rounded-2xl border border-slate-700 bg-slate-950 shadow-lg shadow-black/25 shrink-0`}>
+        <span className="absolute left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-slate-600 shadow-[0_0_12px_rgba(148,163,184,0.35)]" />
         <span className="absolute right-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white/90" />
-        <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-slate-600 to-white/70" />
-        <span className="absolute left-1/2 top-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-slate-500/10" />
+        <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-slate-500 to-white/70" />
+        <span className="absolute left-1/2 top-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-slate-600/40" />
         <span className="absolute left-1/2 bottom-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white/60" />
       </div>
       <div>
-        <p className={`${compact ? 'text-base' : 'text-lg sm:text-xl'} font-black tracking-[-.04em] text-white leading-tight`}>
-          AutoRed <span className="text-slate-300">Coquimbo</span>
+        <p className={`${compact ? 'text-base' : 'text-lg sm:text-xl'} font-black tracking-[-.04em] text-slate-900 leading-tight`}>
+          AutoRed <span className="text-slate-500">Coquimbo</span>
         </p>
-        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-400 font-mono font-bold">
+        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-500 font-mono font-bold">
           Red Privada Automotora
         </p>
       </div>

@@ -273,8 +273,8 @@ export default function InteractiveNetworkWeb({
       ctx.lineTo(0, dSize);
       ctx.lineTo(-dSize, 0);
       ctx.closePath();
-      ctx.fillStyle = '#ffffff';
-      ctx.shadowColor = '#ffffff';
+      ctx.fillStyle = '#0f172a';
+      ctx.shadowColor = 'rgba(15, 23, 42, 0.6)';
       ctx.shadowBlur = 16;
       ctx.fill();
       ctx.shadowBlur = 0;
@@ -285,7 +285,7 @@ export default function InteractiveNetworkWeb({
       ctx.moveTo(0, dSize + 5); ctx.lineTo(0, sh * 0.42);
       ctx.moveTo(-dSize - 5, 0); ctx.lineTo(-sw * 0.36, 0);
       ctx.moveTo(dSize + 5, 0); ctx.lineTo(sw * 0.36, 0);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+      ctx.strokeStyle = 'rgba(15, 23, 42, 0.45)';
       ctx.lineWidth = 1.4;
       ctx.stroke();
 
@@ -372,7 +372,7 @@ export default function InteractiveNetworkWeb({
         ctx.closePath();
         ctx.strokeStyle = isStorm
           ? `rgba(239, 68, 68, ${0.22 + scale * 0.15})`
-          : `rgba(248, 250, 252, ${0.10 + scale * 0.08})`;
+          : `rgba(71, 85, 105, ${0.14 + scale * 0.1})`;
         ctx.lineWidth = isStorm ? 1.1 : 0.75;
         ctx.stroke();
       });
@@ -385,11 +385,11 @@ export default function InteractiveNetworkWeb({
         if (isStorm) {
           lineGrad.addColorStop(0, 'rgba(239, 68, 68, 0.8)');
           lineGrad.addColorStop(0.5, 'rgba(244, 63, 94, 0.45)');
-          lineGrad.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
+          lineGrad.addColorStop(1, 'rgba(71, 85, 105, 0.3)');
         } else {
           lineGrad.addColorStop(0, 'rgba(148,163,184,0.2)');
           lineGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.35)');
-          lineGrad.addColorStop(1, 'rgba(248, 250, 252, 0.2)');
+          lineGrad.addColorStop(1, 'rgba(71, 85, 105, 0.25)');
         }
 
         const midRx = (corePos.x + np.x) / 2;
@@ -564,9 +564,9 @@ export default function InteractiveNetworkWeb({
 
           if (isHovered) {
             ctx.font = 'bold 12px Inter, sans-serif';
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#0f172a';
             ctx.textAlign = 'center';
-            ctx.shadowColor = 'rgba(0,0,0,0.8)';
+            ctx.shadowColor = 'rgba(255,255,255,0.9)';
             ctx.shadowBlur = 6;
             ctx.fillText(node.name, x, y - 16);
             ctx.shadowBlur = 0;
