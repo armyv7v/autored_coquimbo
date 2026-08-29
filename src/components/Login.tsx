@@ -44,6 +44,7 @@ const capabilityCards = [
     desc: 'Un reporte alerta a toda la red al instante.',
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Siren,
+    img: 'https://images.unsplash.com/photo-1718447772276-a79e984ee1a7?w=1536&h=368&fit=crop&q=80&auto=format',
   },
   {
     num: '02',
@@ -51,6 +52,7 @@ const capabilityCards = [
     desc: 'Pánico 10s con ubicación en vivo.',
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Zap,
+    img: 'https://images.unsplash.com/photo-1761897526071-5e29319b4751?w=1536&h=368&fit=crop&q=80&auto=format',
   },
   {
     num: '03',
@@ -58,6 +60,7 @@ const capabilityCards = [
     desc: 'Registro fotográfico de cada test drive.',
     color: 'from-[#FF4D00]/15 to-transparent border-[#FF4D00]/45',
     icon: Activity,
+    img: 'https://images.unsplash.com/photo-1648075082196-a3b311df1874?w=1536&h=368&fit=crop&q=80&auto=format',
   },
   {
     num: '04',
@@ -65,6 +68,7 @@ const capabilityCards = [
     desc: 'Acceso corporativo verificado.',
     color: 'from-[#112A4D]/40 to-transparent border-[#112A4D]',
     icon: ShieldCheck,
+    img: 'https://images.unsplash.com/photo-1510851896000-498520af2236?w=1536&h=368&fit=crop&q=80&auto=format',
   },
 ];
 
@@ -359,6 +363,16 @@ export default function Login() {
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
                         className={`absolute inset-0 p-5 sm:p-7 flex flex-col justify-between ${card.color}`}
                       >
+                        <motion.img
+                          src={card.img}
+                          alt=""
+                          loading={activeCapability === 0 ? 'eager' : 'lazy'}
+                          className="absolute inset-0 w-full h-full object-cover opacity-30 brightness-110"
+                          initial={{ scale: 1 }}
+                          animate={{ scale: 1.07 }}
+                          transition={{ duration: 6.5, ease: 'linear' }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0b1220]/95 via-[#0b1220]/70 to-[#0b1220]/20 pointer-events-none" />
                         <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 pointer-events-none`} />
                         <div className="relative flex items-start justify-between">
                           <span className="text-4xl sm:text-5xl font-mono font-black text-white/15 tracking-tighter leading-none select-none">
