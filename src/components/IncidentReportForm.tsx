@@ -221,7 +221,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border-2 border-red-500/90 bg-slate-950 shadow-[0_0_50px_rgba(239,68,68,0.4)] overflow-hidden"
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-red-500/40 bg-slate-950 shadow-[0_0_30px_rgba(239,68,68,0.12)] overflow-hidden"
           >
             {/* Mobile Sheet Drag Handle */}
             <div className="flex sm:hidden justify-center pt-3 pb-1">
@@ -285,7 +285,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block flex items-center gap-1.5">
-                    <Car className="w-4 h-4 text-brand-primary" />
+                    <Car className="w-4 h-4 text-slate-300" />
                     Patente del Vehículo (Consulta Nacional)
                   </label>
                   {scanningOcr && (
@@ -302,7 +302,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     onChange={(e) => setPlate(e.target.value.toUpperCase())}
                     placeholder="Ej: GKLP42 o AB1234 (Opcional)"
                     maxLength={10}
-                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 px-4 text-sm font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none transition"
+                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 px-4 text-sm font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-slate-600 focus:ring-1 focus:ring-slate-500 outline-none transition"
                   />
                   {plate && (
                     <button
@@ -423,7 +423,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       <button 
                         type="button" 
                         onClick={requestGps}
-                        className="text-brand-primary flex items-center gap-1 hover:underline font-bold"
+                        className="text-slate-300 flex items-center gap-1 hover:underline font-bold"
                       >
                         <Navigation className="w-3 h-3" /> Mi GPS
                       </button>

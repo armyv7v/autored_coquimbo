@@ -449,13 +449,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <motion.div 
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-3.5 bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-between text-amber-400"
+            className="p-3.5 bg-slate-900/70 border border-slate-800 rounded-xl flex items-center justify-between text-slate-400"
           >
             <div className="flex items-center gap-3">
               <BellOff className="w-4 h-4 shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
-                <p className="text-xs text-amber-300/80">Habilitá las notificaciones del navegador para recibir telemetría y alertas críticas en tiempo real.</p>
+                <p className="text-xs text-slate-500">Habilitá las notificaciones del navegador para recibir telemetría y alertas críticas en tiempo real.</p>
               </div>
             </div>
           </motion.div>
@@ -464,19 +464,19 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-950/20 border-red-500/30' : 'bg-slate-900/80 border-slate-800'}`}
+          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-950/10 border-red-500/15' : 'bg-slate-900/80 border-slate-800'}`}
         >
           <div className="flex items-center gap-3.5">
             <div className="relative flex items-center justify-center">
-              <span className={`w-3 h-3 rounded-full ${openIncidentsCount > 0 ? 'bg-red-500 animate-ping' : 'bg-emerald-500'}`} />
-              <span className={`absolute w-2 h-2 rounded-full ${openIncidentsCount > 0 ? 'bg-red-400' : 'bg-emerald-400'}`} />
+              <span className={`w-3 h-3 rounded-full ${openIncidentsCount > 0 ? 'bg-red-500/70' : 'bg-emerald-500/80'}`} />
+              <span className={`absolute w-2 h-2 rounded-full ${openIncidentsCount > 0 ? 'bg-red-400/80' : 'bg-emerald-400/80'}`} />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
                   Estado Operativo de la Red
                 </h2>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${openIncidentsCount > 0 ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20'}`}>
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
                   {openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
                 </span>
               </div>
@@ -486,7 +486,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="flex items-center gap-6">
             <div className="text-right">
               <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
-              <p className={`text-xl font-bold tabular-nums ${openIncidentsCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
+              <p className={`text-xl font-bold tabular-nums ${openIncidentsCount > 0 ? 'text-red-300/90' : 'text-emerald-300/90'}`}>
                 {openIncidentsCount}
               </p>
             </div>
@@ -501,7 +501,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-display text-xl font-bold tracking-tight text-white flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-brand-primary" />
+                  <Activity className="w-4 h-4 text-slate-300" />
                   ACCIONES OPERATIVAS
                 </h2>
                 <p className="text-xs text-slate-400">Módulos tácticos de gestión y seguridad en patio</p>
@@ -509,9 +509,9 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               <button
                 type="button"
                 onClick={() => setIsDigestOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-brand-primary/40 hover:border-brand-primary text-slate-200 hover:text-white font-mono text-xs font-bold uppercase transition active:scale-95 shadow-[0_0_15px_rgba(255,107,0,0.15)] hover:shadow-[0_0_20px_rgba(255,107,0,0.35)]"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-600 hover:border-slate-600 text-slate-200 hover:text-white font-mono text-xs font-bold uppercase transition active:scale-95 shadow-[0_0_15px_rgba(148,163,184,0.15)] hover:shadow-[0_0_20px_rgba(148,163,184,0.2)]"
               >
-                <FileText className="w-4 h-4 text-brand-primary" />
+                <FileText className="w-4 h-4 text-slate-300" />
                 <span className="hidden sm:inline">Minuta Ejecutiva</span>
                 <span className="sm:hidden">Minuta</span>
               </button>
@@ -616,10 +616,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             {[
-              { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-red-400', bg: 'bg-red-500/10 border-red-500/20' },
-              { label: 'Incidentes Registrados', value: incidents.length, icon: ShieldAlert, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20' },
-              { label: 'Nodos en Red', value: dealerships.length, icon: Users, color: 'text-sky-400', bg: 'bg-sky-500/10 border-sky-500/20' },
-              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '100%', icon: TrendingUp, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20' }
+              { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Incidentes Registrados', value: incidents.length, icon: ShieldAlert, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Nodos en Red', value: dealerships.length, icon: Users, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '100%', icon: TrendingUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
             ].map((stat, idx) => (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -648,7 +648,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between px-2">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <Info className="w-5 h-5 text-brand-primary" />
+              <Info className="w-5 h-5 text-slate-300" />
               Feed de Inteligencia Local
             </h2>
             <div className="flex items-center gap-4">
@@ -661,12 +661,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </button>
               <button 
                 onClick={() => setShowFilters(!showFilters)}
-                className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all uppercase font-bold tracking-widest ${showFilters ? 'bg-brand-primary border-brand-primary text-white shadow-lg shadow-brand-primary/20' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`}
+                className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all uppercase font-bold tracking-widest ${showFilters ? 'bg-slate-700 border-slate-600 text-white shadow-lg shadow-black/25' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`}
               >
                 <Filter className="w-3.5 h-3.5" />
                 Filtros
                 {(typeFilter.length < 3 || statusFilter.length < 3 || dealershipFilter.length > 0 || dateRange.start || dateRange.end) && (
-                  <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+                  <span className="w-2 h-2 rounded-full bg-slate-500" />
                 )}
               </button>
               <button 
@@ -715,7 +715,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           <button
                             key={type}
                             onClick={() => toggleTempType(type)}
-                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${tempTypeFilter.includes(type) ? 'bg-brand-primary/20 border-brand-primary/40 text-brand-primary' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-bold border transition-all ${tempTypeFilter.includes(type) ? 'bg-slate-500/10 border-slate-600 text-slate-300' : 'bg-slate-800/50 border-slate-700 text-slate-400'}`}
                           >
                             {type}
                           </button>
@@ -770,14 +770,14 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           type="date"
                           value={tempDateRange.start}
                           onChange={(e) => setTempDateRange(prev => ({ ...prev, start: e.target.value }))}
-                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-brand-primary outline-none flex-1"
+                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-slate-500 outline-none flex-1"
                         />
                         <span className="text-slate-400">-</span>
                         <input 
                           type="date"
                           value={tempDateRange.end}
                           onChange={(e) => setTempDateRange(prev => ({ ...prev, end: e.target.value }))}
-                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-brand-primary outline-none flex-1"
+                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-slate-500 outline-none flex-1"
                         />
                       </div>
                     </div>
@@ -794,7 +794,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     <button 
                       onClick={applyFilters}
                       disabled={!hasPendingChanges}
-                      className={`text-xs font-black py-2.5 px-6 rounded-xl transition-all uppercase tracking-[0.15em] shadow-lg flex items-center gap-2 ${hasPendingChanges ? 'bg-brand-primary hover:bg-brand-primary/90 text-white shadow-brand-primary/20 cursor-pointer' : 'bg-slate-800 text-slate-400 cursor-not-allowed opacity-50'}`}
+                      className={`text-xs font-black py-2.5 px-6 rounded-xl transition-all uppercase tracking-[0.15em] shadow-lg flex items-center gap-2 ${hasPendingChanges ? 'bg-slate-700 hover:bg-slate-600 text-white shadow-black/25 cursor-pointer' : 'bg-slate-800 text-slate-400 cursor-not-allowed opacity-50'}`}
                     >
                       <Sparkles className="w-3.5 h-3.5" />
                       {hasPendingChanges ? 'Aplicar Cambios' : 'Filtros Aplicados'}
@@ -839,7 +839,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
                         {incident.isEdited && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-brand-primary bg-brand-primary/10 border border-brand-primary/20 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-300 bg-slate-500/10 border border-slate-600 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
                             <Pencil className="w-3 h-3" /> Editado
                           </span>
                         )}
@@ -861,7 +861,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     </p>
                     {((incident as any).plateFormatted || (incident as any).plate) && (
                       <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
-                        <Car className="w-3.5 h-3.5 text-brand-primary" />
+                        <Car className="w-3.5 h-3.5 text-slate-300" />
                         <span className="font-bold text-white uppercase">{(incident as any).plateFormatted || (incident as any).plate}</span>
                         <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300'}`}>
                           {(incident as any).hasStolenReport ? 'ENCARGO ROBO' : 'SIN ENCARGO'}
@@ -910,11 +910,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 </button>
             </div>
 
-            <div className="bg-brand-primary/5 border border-brand-primary/20 rounded-3xl p-6 relative overflow-hidden group">
+            <div className="bg-slate-500/10 border border-slate-600 rounded-3xl p-6 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                   <Sparkles className="w-12 h-12 text-brand-primary" />
+                   <Sparkles className="w-12 h-12 text-slate-300" />
                 </div>
-                <h3 className="font-bold text-brand-primary mb-2 flex items-center gap-2 text-sm uppercase tracking-wider">
+                <h3 className="font-bold text-slate-300 mb-2 flex items-center gap-2 text-sm uppercase tracking-wider">
                     <TrendingUp className="w-4 h-4" />
                     Tip de Seguridad IA
                 </h3>
@@ -940,7 +940,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
             <div className="space-y-1">
               <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5 tracking-tight">
-                <History className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primary shrink-0" />
+                <History className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300 shrink-0" />
                 Cronología de Eventos
               </h2>
               <p className="text-slate-400 text-[11px] sm:text-xs font-mono uppercase tracking-wider">
@@ -958,7 +958,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     onClick={() => setTimelineType(type)}
                     className={`px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold tracking-wider uppercase whitespace-nowrap transition-all ${
                       timelineType === type 
-                        ? 'bg-brand-primary text-white shadow-md shadow-brand-primary/25' 
+                        ? 'bg-slate-700 text-white shadow-md shadow-black/25' 
                         : 'text-slate-400 hover:text-slate-200'
                     }`}
                   >
@@ -1022,7 +1022,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   <div className="flex flex-col gap-2.5">
                     {/* Timestamp header */}
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-[11px] font-bold text-brand-primary font-mono bg-brand-primary/10 px-2 py-0.5 rounded border border-brand-primary/20">
+                      <span className="text-[11px] font-bold text-slate-300 font-mono bg-slate-500/10 px-2 py-0.5 rounded border border-slate-600">
                         {formatTimeCL(incident.createdAt || (incident as any).clientTimestamp)}
                       </span>
                       <span className="text-[11px] font-mono font-medium text-slate-400 uppercase">
@@ -1034,7 +1034,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         {incident.status || 'OPEN'}
                       </span>
                       {incident.isEdited && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-brand-primary/10 text-brand-primary border border-brand-primary/20">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-slate-500/10 text-slate-300 border border-slate-600">
                           <Pencil className="w-2.5 h-2.5" /> Editado
                         </span>
                       )}
@@ -1048,7 +1048,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     }`}>
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-2.5">
                         <div className="min-w-0">
-                          <h3 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug group-hover:text-brand-primary transition-colors flex items-center gap-2">
+                          <h3 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug group-hover:text-slate-300 transition-colors flex items-center gap-2">
                             {incident.type === 'ROBO' ? (
                               <><ShieldAlert className="w-4 h-4 text-red-400 shrink-0" /> Robo Detectado</>
                             ) : incident.type === 'SOSPECHOSO' ? (
@@ -1082,7 +1082,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           <span className="truncate">Sede: <strong className="text-slate-200">{incident.dealershipId || 'Central Coquimbo'}</strong></span>
                         </div>
                         {incident.imageUrl && (
-                          <div className="flex items-center gap-1 text-brand-primary font-bold shrink-0">
+                          <div className="flex items-center gap-1 text-slate-300 font-bold shrink-0">
                             <Sparkles className="w-3.5 h-3.5" />
                             <span>Evidencia Adjunta</span>
                           </div>
@@ -1119,12 +1119,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               {isEditing ? (
                 <div className="p-8 space-y-6 flex-1 min-h-0 overflow-y-auto custom-scrollbar">
                   <div className="flex items-center gap-4">
-                    <div className="bg-brand-primary p-2.5 rounded-2xl shadow-lg shadow-brand-primary/40 rotate-3 animate-pulse">
+                    <div className="bg-slate-700 p-2.5 rounded-2xl shadow-lg shadow-black/25 rotate-3">
                       <Camera className="w-6 h-6 text-white" />
                     </div>
                     <div>
                       <h3 className="text-xl font-black text-white tracking-tight uppercase">Editar Evento</h3>
-                      <p className="text-brand-primary/85 text-[11px] font-bold uppercase tracking-[0.2em]">Actualizar detalles e imágenes del evento</p>
+                      <p className="text-slate-300 text-[11px] font-bold uppercase tracking-[0.2em]">Actualizar detalles e imágenes del evento</p>
                     </div>
                   </div>
 
@@ -1134,7 +1134,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <textarea
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
-                        className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-sm focus:outline-none focus:border-brand-primary focus:bg-white/[0.07] transition-all min-h-[120px]"
+                        className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-sm focus:outline-none focus:border-slate-600 focus:bg-white/[0.07] transition-all min-h-[120px]"
                         placeholder="Describe lo ocurrido..."
                       />
                     </div>
@@ -1177,7 +1177,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     )}
 
                     {editError && (
-                      <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs animate-pulse">
+                      <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs">
                         <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
                         <div>
                           <p className="font-bold uppercase tracking-wider mb-1">Error al guardar cambios</p>
@@ -1200,7 +1200,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       type="button"
                       onClick={handleSaveEdit}
                       disabled={isSavingEdit || !editDescription.trim()}
-                      className="flex-1 h-14 bg-brand-primary hover:bg-opacity-90 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-brand-primary/20 flex items-center justify-center gap-2 transition-all active:scale-95"
+                      className="flex-1 h-14 bg-slate-700 hover:bg-opacity-90 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-black/25 flex items-center justify-center gap-2 transition-all active:scale-95"
                     >
                       {isSavingEdit ? (
                         <Loader2 className="w-4 h-4 animate-spin text-white/50" />
@@ -1250,9 +1250,9 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         {selectedIncident.type}
                       </h2>
                       <div className="flex items-center gap-3">
-                        <p className="text-brand-primary text-xs font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
+                        <p className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
                         {selectedIncident.isEdited && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase bg-brand-primary/10 text-brand-primary border border-brand-primary/20 px-2 py-0.5 rounded-md animate-pulse">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase bg-slate-500/10 text-slate-300 border border-slate-600 px-2 py-0.5 rounded-md">
                             <Pencil className="w-3 h-3" /> Editado / Actualizado
                           </span>
                         )}
@@ -1263,11 +1263,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     <div className="bg-slate-950/90 border-2 border-slate-800 p-5 rounded-3xl space-y-3 shadow-xl text-left">
                       <div className="flex items-center justify-between border-b border-white/5 pb-2">
                         <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                          <Car className="w-4 h-4 text-brand-primary" />
+                          <Car className="w-4 h-4 text-slate-300" />
                           Patente y Verificación Nacional (AutoSeguro)
                         </span>
                         {Boolean((selectedIncident as any).plateFormatted || (selectedIncident as any).plate) && (
-                          <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                          <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
                             {(selectedIncident as any).hasStolenReport ? 'ENCARGO POR ROBO' : 'SIN ENCARGO'}
                           </span>
                         )}
@@ -1290,7 +1290,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                               onChange={(e) => setModalPlateInput(e.target.value.toUpperCase())}
                               placeholder="Ej: KHCP15 o GKLP42"
                               maxLength={10}
-                              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white uppercase tracking-widest placeholder:text-slate-600 outline-none focus:border-brand-primary"
+                              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white uppercase tracking-widest placeholder:text-slate-600 outline-none focus:border-slate-600"
                             />
                             {modalPlateInput.trim().length >= 5 && (
                               <button
@@ -1310,7 +1310,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                                     });
                                   }
                                 }}
-                                className="px-3.5 py-2 bg-brand-primary hover:bg-orange-600 text-white font-mono text-xs font-bold rounded-xl transition uppercase active:scale-95"
+                                className="px-3.5 py-2 bg-slate-700 hover:bg-slate-600 text-white font-mono text-xs font-bold rounded-xl transition uppercase active:scale-95"
                               >
                                 {isUpdatingPlate ? 'Guardando...' : 'Asignar Patente'}
                               </button>
@@ -1428,7 +1428,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         </span>
                       </div>
                       {selectedIncident.isEdited && selectedIncident.editedAt && (
-                        <span className="text-[11px] font-bold font-mono text-brand-primary">
+                        <span className="text-[11px] font-bold font-mono text-slate-300">
                           Actualizado: {formatFullDateTimeCL(selectedIncident.editedAt)}
                         </span>
                       )}

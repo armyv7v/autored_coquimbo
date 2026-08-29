@@ -29,7 +29,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
         if (item.alert) {
           return (
             <div key={item.id} className="relative flex flex-col items-center justify-center -mt-7 z-10 px-2">
-              <div className="absolute -top-3 w-16 h-10 bg-slate-950 border-t border-x border-red-500/30 rounded-t-full shadow-2xl shadow-red-950/50 -z-10" />
+              <div className="absolute -top-3 w-16 h-10 bg-slate-950 border-t border-x border-red-500/20 rounded-t-full shadow-2xl shadow-red-950/30 -z-10" />
 
               <button
                 onClick={() => {
@@ -38,7 +38,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
                 className="group flex flex-col items-center justify-center active:scale-90 transition-transform cursor-pointer"
                 title="Disparar Alerta Máxima"
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 p-0.5 shadow-2xl shadow-red-600/60 border-2 border-slate-950 animate-pulse flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-red-700 to-red-500 p-0.5 shadow-lg shadow-red-900/40 border-2 border-slate-950 flex items-center justify-center group-hover:scale-105 transition-transform">
                   <div className="w-full h-full rounded-full bg-red-600 flex items-center justify-center text-white">
                     <Icon className="w-7 h-7 text-white" />
                   </div>
@@ -54,14 +54,11 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
         const getActiveStyle = (tabName?: string) => {
           switch (tabName) {
             case 'MAPA':
-              return 'text-sky-400 font-black scale-105 bg-sky-500/10 border border-sky-500/40 shadow-[0_0_15px_rgba(14,165,233,0.25)]';
             case 'FEED':
-              return 'text-emerald-400 font-black scale-105 bg-emerald-500/10 border border-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)]';
             case 'HISTORIAL':
-              return 'text-amber-400 font-black scale-105 bg-amber-500/10 border border-amber-500/40 shadow-[0_0_15px_rgba(245,158,11,0.25)]';
             case 'PANEL':
             default:
-              return 'text-brand-primary font-black scale-105 bg-brand-primary/10 border border-brand-primary/40 shadow-[0_0_15px_rgba(255,107,0,0.25)]';
+              return 'text-slate-100 font-black scale-105 bg-slate-800 border border-slate-600/80';
           }
         };
 

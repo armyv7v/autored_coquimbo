@@ -42,7 +42,7 @@ const capabilityCards = [
     num: '01',
     title: 'Disuasión Colectiva',
     desc: 'Un reporte en su patio activa alertas perimetrales inmediatas en todas las automotoras de la red.',
-    color: 'from-orange-500/20 to-transparent border-brand-primary/40',
+    color: 'from-slate-500/20 to-transparent border-slate-600',
   },
   {
     num: '02',
@@ -244,7 +244,7 @@ export default function Login() {
   };
 
   return (
-    <main className="auth-noise min-h-dvh bg-[#02050c] text-white relative overflow-hidden flex flex-col justify-between selection:bg-brand-primary selection:text-white">
+    <main className="auth-noise min-h-dvh bg-[#02050c] text-white relative overflow-hidden flex flex-col justify-between selection:bg-slate-700 selection:text-white">
       {/* Fullscreen Immersive Organism Spider Web Background */}
       <div className="fixed inset-0 z-0 opacity-90 pointer-events-auto">
         <InteractiveNetworkWeb
@@ -284,10 +284,10 @@ export default function Login() {
           <button
             type="button"
             onClick={handleToggleSound}
-            className="p-2.5 rounded-full bg-slate-900/90 text-slate-300 border border-slate-700/80 hover:border-brand-primary/60 hover:text-brand-primary backdrop-blur-xl transition active:scale-95 shadow-lg"
+            className="p-2.5 rounded-full bg-slate-900/90 text-slate-300 border border-slate-700/80 hover:border-slate-600 hover:text-slate-300 backdrop-blur-xl transition active:scale-95 shadow-lg"
             title={isMuted ? 'Activar Audio Táctico' : 'Silenciar Audio'}
           >
-            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-brand-primary animate-pulse" />}
+            {isMuted ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4 text-slate-300" />}
           </button>
         </div>
       </header>
@@ -298,13 +298,13 @@ export default function Login() {
         <aside className="hidden xl:flex flex-col justify-between p-10 2xl:p-14 border-r border-white/10 pointer-events-auto">
           {/* Spatial Headline */}
           <div className="max-w-4xl my-auto py-4">
-            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-brand-primary/50 bg-gradient-to-r from-brand-primary/20 via-brand-primary/10 to-transparent text-brand-primary text-xs font-mono font-bold uppercase tracking-[0.25em] mb-5 backdrop-blur-xl shadow-[0_0_25px_rgba(255,107,0,0.25)]">
-              <span className="w-2 h-2 rounded-full bg-brand-primary animate-ping" />
+            <div className="inline-flex items-center gap-2.5 px-3.5 py-1.5 rounded-full border border-slate-600 bg-gradient-to-r from-slate-600/20 via-slate-500/10 to-transparent text-slate-300 text-xs font-mono font-bold uppercase tracking-[0.25em] mb-5 backdrop-blur-xl shadow-[0_0_25px_rgba(148,163,184,0.2)]">
+              <span className="w-2 h-2 rounded-full bg-slate-700 animate-ping" />
               Organismo Digital en Red • Coquimbo
             </div>
 
             <h1 className="font-display max-w-4xl text-4xl 2xl:text-6xl font-black tracking-[-.06em] leading-[0.94] text-balance">
-              La red privada que <span className="bg-gradient-to-r from-brand-primary via-orange-400 to-amber-300 bg-clip-text text-transparent">detecta y transmite</span> antes del impacto.
+              La red privada que <span className="bg-gradient-to-r from-slate-600 via-slate-400 to-slate-300 bg-clip-text text-transparent">detecta y transmite</span> antes del impacto.
             </h1>
 
             <p className="mt-5 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-300 font-normal">
@@ -316,13 +316,13 @@ export default function Login() {
               {capabilityCards.map((card) => (
                 <div
                   key={card.num}
-                  className={`p-3 rounded-2xl border bg-slate-950/70 backdrop-blur-xl transition hover:border-brand-primary/60 hover:bg-slate-900/80 group ${card.color}`}
+                  className={`p-3 rounded-2xl border bg-slate-950/70 backdrop-blur-xl transition hover:border-slate-600 hover:bg-slate-900/80 group ${card.color}`}
                 >
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-mono font-black text-brand-primary">{card.num}</span>
+                    <span className="text-xs font-mono font-black text-slate-300">{card.num}</span>
                     <span className="text-[9px] font-mono text-slate-500 uppercase tracking-widest">ACTIVO</span>
                   </div>
-                  <h4 className="text-xs font-bold text-white mb-0.5 group-hover:text-brand-primary transition">
+                  <h4 className="text-xs font-bold text-white mb-0.5 group-hover:text-slate-300 transition">
                     {card.title}
                   </h4>
                   <p className="text-[11px] text-slate-400 leading-relaxed">
@@ -355,7 +355,7 @@ export default function Login() {
                       onClick={() => handleSelectNode(node)}
                       className={`flex items-center justify-between p-2 rounded-xl border text-left transition active:scale-95 ${
                         isSelected
-                          ? 'bg-brand-primary/20 border-brand-primary text-white shadow-[0_0_15px_rgba(255,107,0,0.4)]'
+                          ? 'bg-slate-500/10 border-slate-600 text-white shadow-[0_0_15px_rgba(148,163,184,0.2)]'
                           : 'bg-slate-900/70 border-slate-800/80 text-slate-300 hover:border-slate-700 hover:text-white'
                       }`}
                     >
@@ -367,10 +367,10 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="rounded-2xl border-2 border-brand-primary/40 p-4 backdrop-blur-2xl bg-gradient-to-br from-orange-950/40 via-slate-950/90 to-slate-950 shadow-[0_0_30px_rgba(255,107,0,0.2)]">
+            <div className="rounded-2xl border-2 border-slate-600 p-4 backdrop-blur-2xl bg-gradient-to-br from-slate-900/40 via-slate-950/90 to-slate-950 shadow-[0_0_30px_rgba(148,163,184,0.2)]">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-brand-primary flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5 animate-pulse" />
+                <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
+                  <Radio className="w-3.5 h-3.5" />
                   Transmisión Táctica
                 </span>
                 <span className="text-[10px] font-mono text-slate-400">Enlace Óptico</span>
@@ -383,7 +383,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={handleTriggerNetworkAlert}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-brand-primary to-orange-600 hover:from-orange-500 hover:to-orange-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/30 active:scale-95 transition"
+                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-slate-600 to-slate-500 hover:from-slate-600 hover:to-slate-500 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-black/25 active:scale-95 transition"
               >
                 <Zap className="w-4 h-4 text-white" />
                 {selectedNode ? `Transmitir a ${selectedNode.name}` : 'Transmitir Ráfaga a la Red'}
@@ -402,7 +402,7 @@ export default function Login() {
           >
             <div className="flex items-start justify-between gap-4 mb-6">
               <div>
-                <div className="mb-3.5 inline-flex rounded-2xl bg-gradient-to-br from-brand-primary to-orange-600 p-3 shadow-lg shadow-brand-primary/30">
+                <div className="mb-3.5 inline-flex rounded-2xl bg-gradient-to-br from-slate-600 to-slate-500 p-3 shadow-lg shadow-black/25">
                   <ShieldAlert className="h-6 w-6 text-white" />
                 </div>
                 <h2 className="font-display text-2xl sm:text-3xl font-black tracking-[-.04em] text-white">
@@ -451,7 +451,7 @@ export default function Login() {
                         setMode('login');
                         sound.playNodePulse(false);
                       }}
-                      className="group rounded-2xl bg-gradient-to-r from-brand-primary to-orange-600 p-4 text-left font-black text-white shadow-xl shadow-brand-primary/25 hover:from-orange-500 hover:to-orange-600 active:scale-[.98] transition border border-orange-400/40"
+                      className="group rounded-2xl bg-gradient-to-r from-slate-600 to-slate-500 p-4 text-left font-black text-white shadow-xl shadow-black/25 hover:from-slate-600 hover:to-slate-500 active:scale-[.98] transition border border-slate-600/40"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <Lock className="w-5 h-5 text-white/90" />
@@ -467,10 +467,10 @@ export default function Login() {
                         setMode('request');
                         sound.playNodePulse(false);
                       }}
-                      className="group rounded-2xl border-2 border-white/12 bg-white/[.045] p-4 text-left font-black text-white hover:border-brand-primary/50 hover:bg-white/[.08] active:scale-[.98] transition"
+                      className="group rounded-2xl border-2 border-white/12 bg-white/[.045] p-4 text-left font-black text-white hover:border-slate-600 hover:bg-white/[.08] active:scale-[.98] transition"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <Building2 className="w-5 h-5 text-brand-primary" />
+                        <Building2 className="w-5 h-5 text-slate-300" />
                         <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                       </div>
                       <p className="text-sm font-black">Solicitar Ingreso</p>
@@ -479,9 +479,9 @@ export default function Login() {
                   </div>
 
                   {/* Acceso Rápido de Prueba 1-Tap */}
-                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-brand-primary/30 space-y-3">
+                  <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-600 space-y-3">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-brand-primary flex items-center gap-1.5">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
                         <Sparkles className="w-3.5 h-3.5" />
                         Acceso de Demostración
                       </span>
@@ -491,7 +491,7 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('admin@autored.cl', 'ADMIN')}
-                        className="py-2.5 px-3 rounded-xl bg-brand-primary/20 hover:bg-brand-primary/30 border border-brand-primary/40 text-brand-primary font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
+                        className="py-2.5 px-3 rounded-xl bg-slate-500/10 hover:bg-slate-500/10 border border-slate-600 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
                       >
                         Acceso Administrador
                       </button>
@@ -590,7 +590,7 @@ export default function Login() {
                             setPassword('autored2026');
                             sound.playNodePulse(false);
                           }}
-                          className="text-brand-primary hover:underline font-bold shrink-0"
+                          className="text-slate-300 hover:underline font-bold shrink-0"
                         >
                           Auto-llenar
                         </button>
@@ -604,7 +604,7 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={loading || (mode === 'request' && !requestReady)}
-                    className="w-full rounded-2xl bg-gradient-to-r from-brand-primary to-orange-600 py-3.5 font-black text-white shadow-xl shadow-brand-primary/20 hover:from-orange-500 hover:to-orange-600 active:scale-[.98] disabled:opacity-60 transition"
+                    className="w-full rounded-2xl bg-gradient-to-r from-slate-600 to-slate-500 py-3.5 font-black text-white shadow-xl shadow-black/25 hover:from-slate-600 hover:to-slate-500 active:scale-[.98] disabled:opacity-60 transition"
                   >
                     {loading ? 'Procesando...' : mode === 'request' ? 'Enviar Solicitud de Ingreso' : 'Iniciar Sesión'}
                   </button>
@@ -621,7 +621,7 @@ export default function Login() {
                           resetFeedback();
                           sound.playNodePulse(false);
                         }}
-                        className="font-bold text-brand-primary hover:text-orange-300 transition"
+                        className="font-bold text-slate-300 hover:text-slate-200 transition"
                       >
                         Solicitar ingreso
                       </button>
@@ -645,12 +645,12 @@ export default function Login() {
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 30, scale: 0.95 }}
-            className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-slate-950/95 border-2 border-brand-primary/80 text-white p-4 rounded-3xl shadow-[0_0_50px_rgba(255,107,0,0.4)] backdrop-blur-2xl pointer-events-auto"
+            className="fixed bottom-16 sm:bottom-20 left-1/2 -translate-x-1/2 z-40 w-11/12 max-w-md bg-slate-950/95 border-2 border-slate-600 text-white p-4 rounded-3xl shadow-[0_0_50px_rgba(148,163,184,0.2)] backdrop-blur-2xl pointer-events-auto"
           >
-            <div className="flex items-center justify-between border-b border-brand-primary/30 pb-2 mb-2.5">
+            <div className="flex items-center justify-between border-b border-slate-600 pb-2 mb-2.5">
               <div className="flex items-center gap-2">
                 <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
-                <span className="text-xs font-mono font-black uppercase text-brand-primary tracking-wider">
+                <span className="text-xs font-mono font-black uppercase text-slate-300 tracking-wider">
                   TELEMETRÍA EN VIVO • {selectedNode.sector}
                 </span>
               </div>
@@ -697,7 +697,7 @@ export default function Login() {
                 setAlertPulseCount((prev) => prev + 1);
                 sound.playNodePulse(true);
               }}
-              className="w-full py-2.5 rounded-xl bg-brand-primary hover:bg-orange-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-brand-primary/30 active:scale-95 transition"
+              className="w-full py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-black/25 active:scale-95 transition"
             >
               <Zap className="w-4 h-4" />
               Transmitir Pulso Óptico al Centro
@@ -714,16 +714,16 @@ export default function Login() {
 function BrandHeader({ compact = false }: { compact?: boolean }) {
   return (
     <div className="flex items-center gap-3 sm:gap-4">
-      <div className={`${compact ? 'h-10 w-12' : 'h-11 w-14 sm:h-12 sm:w-16'} brand-node-badge relative rounded-2xl border border-brand-primary/40 bg-slate-950/80 shadow-lg shadow-brand-primary/20 shrink-0`}>
-        <span className="absolute left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-brand-primary shadow-[0_0_18px_rgba(255,107,0,.8)]" />
+      <div className={`${compact ? 'h-10 w-12' : 'h-11 w-14 sm:h-12 sm:w-16'} brand-node-badge relative rounded-2xl border border-slate-600 bg-slate-950/80 shadow-lg shadow-black/25 shrink-0`}>
+        <span className="absolute left-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-slate-700 shadow-[0_0_18px_rgba(148,163,184,0.2)]" />
         <span className="absolute right-3 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-white/90" />
-        <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-brand-primary to-white/70" />
-        <span className="absolute left-1/2 top-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-brand-primary/80" />
+        <span className="absolute left-5 right-5 top-1/2 h-px -translate-y-1/2 bg-gradient-to-r from-slate-600 to-white/70" />
+        <span className="absolute left-1/2 top-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-slate-500/10" />
         <span className="absolute left-1/2 bottom-3 h-1.5 w-1.5 -translate-x-1/2 rounded-full bg-white/60" />
       </div>
       <div>
         <p className={`${compact ? 'text-base' : 'text-lg sm:text-xl'} font-black tracking-[-.04em] text-white leading-tight`}>
-          AutoRed <span className="text-brand-primary">Coquimbo</span>
+          AutoRed <span className="text-slate-300">Coquimbo</span>
         </p>
         <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-400 font-mono font-bold">
           Red Privada Automotora

@@ -60,7 +60,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
               initial={{ opacity: 0, y: 34, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 34, scale: 0.97 }}
-              className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2.4rem] border-2 border-emerald-500/90 bg-slate-950 shadow-[0_0_50px_rgba(16,185,129,0.4)] max-h-[92vh]"
+              className="relative flex h-[92vh] w-full max-w-6xl flex-col overflow-hidden rounded-[2.4rem] border border-emerald-500/40 bg-slate-950 shadow-[0_0_30px_rgba(16,185,129,0.12)] max-h-[92vh]"
             >
               <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_12%_0%,rgba(16,185,129,.2),transparent_34%),radial-gradient(circle_at_100%_10%,rgba(16,185,129,.15),transparent_30%)]" />
               <header className="relative flex items-center justify-between border-b border-emerald-500/30 bg-gradient-to-r from-emerald-950/50 via-slate-950 to-slate-950 p-5 sm:p-6">

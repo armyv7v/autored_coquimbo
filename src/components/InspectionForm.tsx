@@ -87,7 +87,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border-2 border-sky-500/90 bg-slate-950 shadow-[0_0_50px_rgba(14,165,233,0.4)] overflow-hidden"
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-sky-500/40 bg-slate-950 shadow-[0_0_30px_rgba(14,165,233,0.12)] overflow-hidden"
           >
             {/* Mobile Sheet Drag Handle */}
             <div className="flex sm:hidden justify-center pt-3 pb-1">

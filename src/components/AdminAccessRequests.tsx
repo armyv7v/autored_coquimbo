@@ -144,7 +144,7 @@ export default function AdminAccessRequests() {
             onClick={() => setFilter(tab.key)}
             className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all border ${
               filter === tab.key
-                ? 'bg-brand-primary text-white border-brand-primary shadow-lg shadow-blue-500/20'
+                ? 'bg-slate-700 text-white border-slate-600 shadow-lg shadow-black/20'
                 : 'bg-slate-900/50 text-slate-400 border-slate-800 hover:text-white hover:border-slate-700'
             }`}
           >
@@ -163,7 +163,7 @@ export default function AdminAccessRequests() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin mb-4 text-brand-primary" />
+          <Loader2 className="w-8 h-8 animate-spin mb-4 text-slate-300" />
           <p className="text-xs font-black uppercase tracking-widest">Cargando solicitudes...</p>
         </div>
       ) : filtered.length === 0 ? (
@@ -245,7 +245,7 @@ export default function AdminAccessRequests() {
                   <>
                     <button
                       onClick={() => openModal(req)}
-                      className="px-5 py-2.5 rounded-xl bg-brand-primary text-white text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-all shadow-lg shadow-blue-500/20 active:scale-95"
+                      className="px-5 py-2.5 rounded-xl bg-slate-700 text-white text-xs font-black uppercase tracking-widest hover:bg-slate-600 transition-all shadow-lg shadow-black/20 active:scale-95"
                     >
                       Aprobar y generar credenciales
                     </button>
@@ -296,7 +296,7 @@ export default function AdminAccessRequests() {
                   <h3 className="text-lg font-black text-white uppercase tracking-tight mb-1">Acceso Aprobado</h3>
                   <p className="text-xs text-slate-400 leading-relaxed mb-5">
                     Se crearon las credenciales para <strong className="text-white">{result.email}</strong> con perfil{' '}
-                    <strong className="text-brand-primary">PROPIETARIO</strong> y la sede quedó activa en la red.
+                    <strong className="text-slate-300">PROPIETARIO</strong> y la sede quedó activa en la red.
                   </p>
 
                   <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 mb-5">
@@ -332,7 +332,7 @@ export default function AdminAccessRequests() {
                     </button>
                     <button
                       onClick={() => setModal(null)}
-                      className="rounded-xl bg-brand-primary text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-orange-600 transition-all"
+                      className="rounded-xl bg-slate-700 text-white py-3 text-xs font-black uppercase tracking-widest hover:bg-slate-600 transition-all"
                     >
                       Listo
                     </button>

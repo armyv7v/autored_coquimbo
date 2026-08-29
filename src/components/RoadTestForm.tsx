@@ -136,7 +136,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border-2 border-amber-500/90 bg-slate-950 shadow-[0_0_50px_rgba(245,158,11,0.4)] overflow-hidden"
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-amber-500/40 bg-slate-950 shadow-[0_0_30px_rgba(245,158,11,0.12)] overflow-hidden"
           >
             {/* Mobile Sheet Drag Handle */}
             <div className="flex sm:hidden justify-center pt-3 pb-1">

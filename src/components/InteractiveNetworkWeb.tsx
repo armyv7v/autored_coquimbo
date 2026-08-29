@@ -387,7 +387,7 @@ export default function InteractiveNetworkWeb({
           lineGrad.addColorStop(0.5, 'rgba(244, 63, 94, 0.45)');
           lineGrad.addColorStop(1, 'rgba(255, 255, 255, 0.25)');
         } else {
-          lineGrad.addColorStop(0, 'rgba(255, 107, 0, 0.55)');
+          lineGrad.addColorStop(0, 'rgba(148,163,184,0.2)');
           lineGrad.addColorStop(0.5, 'rgba(14, 165, 233, 0.35)');
           lineGrad.addColorStop(1, 'rgba(248, 250, 252, 0.2)');
         }
@@ -474,7 +474,7 @@ export default function InteractiveNetworkWeb({
           const tailY = pFrom.y + (pTo.y - pFrom.y) * tailProg;
 
           const pulseGrad = ctx.createLinearGradient(tailX, tailY, headX, headY);
-          pulseGrad.addColorStop(0, 'rgba(255, 107, 0, 0)');
+          pulseGrad.addColorStop(0, 'rgba(148,163,184,0)');
           pulseGrad.addColorStop(0.6, p.color);
           pulseGrad.addColorStop(1, '#ffffff');
 
@@ -546,7 +546,7 @@ export default function InteractiveNetworkWeb({
 
           ctx.beginPath();
           ctx.arc(x, y, r + 5, 0, Math.PI * 2);
-          ctx.fillStyle = isHovered ? 'rgba(255, 107, 0, 0.4)' : 'rgba(14, 165, 233, 0.15)';
+          ctx.fillStyle = isHovered ? 'rgba(148,163,184,0.2)' : 'rgba(14, 165, 233, 0.15)';
           ctx.fill();
 
           ctx.beginPath();
@@ -582,7 +582,7 @@ export default function InteractiveNetworkWeb({
         ctx.beginPath();
         ctx.arc(0, 0, 18, 0, Math.PI * 2);
         ctx.setLineDash([4, 6]);
-        ctx.strokeStyle = isStorm ? 'rgba(239, 68, 68, 0.6)' : 'rgba(255, 107, 0, 0.5)';
+        ctx.strokeStyle = isStorm ? 'rgba(239, 68, 68, 0.6)' : 'rgba(148,163,184,0.2)';
         ctx.lineWidth = 1.2;
         ctx.stroke();
         ctx.restore();

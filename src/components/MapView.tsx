@@ -123,7 +123,7 @@ function ZoomControls() {
       </button>
       <button
         onClick={() => map.setView(COQUIMBO_CENTER, 14, { animate: true })}
-        className="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-brand-primary transition shadow-xl backdrop-blur-xl active:scale-95"
+        className="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-slate-300 transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Centrar Coquimbo"
       >
         <Target className="w-4 h-4" />
@@ -218,12 +218,12 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
               className="w-full text-left p-3 hover:bg-slate-800/80 transition-colors border-b border-slate-800 last:border-none flex items-center gap-3 group"
             >
               {r.type === 'dealership' ? (
-                <Building2 className="w-4 h-4 text-brand-primary" />
+                <Building2 className="w-4 h-4 text-slate-300" />
               ) : (
                 <MapPin className="w-4 h-4 text-slate-400" />
               )}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-semibold text-white truncate group-hover:text-brand-primary transition-colors">
+                <p className="text-xs font-semibold text-white truncate group-hover:text-slate-300 transition-colors">
                   {r.display_name}
                 </p>
                 <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
@@ -466,7 +466,7 @@ export default function MapView() {
               onClick={() => setTileProvider((prev) => (prev === 'DARK' ? 'SATELLITE' : 'DARK'))}
               className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase transition ${
                 tileProvider === 'SATELLITE'
-                  ? 'bg-brand-primary text-white shadow-sm'
+                  ? 'bg-slate-700 text-white shadow-sm'
                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
             >
@@ -705,7 +705,7 @@ export default function MapView() {
                           {(incident as any).plateFormatted && (
                             <div className={`p-2.5 rounded-xl border text-[11px] font-mono flex items-center justify-between ${(incident as any).hasStolenReport ? 'bg-red-950/80 border-red-500/80 text-red-200 shadow-[0_0_15px_rgba(239,68,68,0.3)]' : 'bg-slate-900 border-slate-700 text-slate-200'}`}>
                               <div className="flex items-center gap-1.5">
-                                <Car className="w-3.5 h-3.5 text-brand-primary" />
+                                <Car className="w-3.5 h-3.5 text-slate-300" />
                                 <span className="font-black uppercase tracking-wider">{(incident as any).plateFormatted}</span>
                               </div>
                               <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-500/20 text-emerald-300'}`}>

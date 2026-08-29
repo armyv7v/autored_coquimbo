@@ -184,7 +184,7 @@ export default function FlashReport() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 50, scale: 0.95 }}
               transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full sm:max-w-lg bg-slate-950 border-2 border-red-500/90 rounded-t-3xl sm:rounded-3xl shadow-[0_0_50px_rgba(239,68,68,0.4)] overflow-hidden flex flex-col max-h-[92vh]"
+              className="w-full sm:max-w-lg bg-slate-950 border border-red-500/40 rounded-t-3xl sm:rounded-3xl shadow-[0_0_30px_rgba(239,68,68,0.12)] overflow-hidden flex flex-col max-h-[92vh]"
             >
               {/* Header */}
               <div className="p-5 border-b border-red-500/30 flex items-center justify-between bg-gradient-to-r from-red-950/50 via-slate-950 to-slate-950">
@@ -385,7 +385,7 @@ export default function FlashReport() {
                         <button
                           type="button"
                           onClick={() => setPickingLocation(false)}
-                          className="flex-1 py-2.5 rounded-xl bg-brand-primary text-white font-mono text-xs font-bold uppercase"
+                          className="flex-1 py-2.5 rounded-xl bg-slate-700 text-white font-mono text-xs font-bold uppercase"
                         >
                           Fijar Punto
                         </button>

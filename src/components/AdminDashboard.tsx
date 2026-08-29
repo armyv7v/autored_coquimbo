@@ -176,7 +176,7 @@ export default function AdminDashboard() {
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <div className="bg-brand-primary p-2 rounded-xl shadow-lg shadow-blue-500/20">
+            <div className="bg-slate-700 p-2 rounded-xl shadow-lg shadow-black/20">
               <Shield className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Panel de Administración</h1>
@@ -187,24 +187,24 @@ export default function AdminDashboard() {
         <nav className="flex bg-slate-900/50 p-1 rounded-2xl border border-slate-800">
           <button 
             onClick={() => setActiveTab('STATS')}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             Estadísticas
           </button>
           <button 
             onClick={() => setActiveTab('USERS')}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             Usuarios
           </button>
           <button 
             onClick={() => setActiveTab('REQUESTS')}
-            className={`relative px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white'}`}
+            className={`relative px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             <Inbox className="w-3.5 h-3.5" />
             Solicitudes
             {pendingCount > 0 && (
-              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-brand-primary' : 'bg-brand-primary text-white'}`}>
+              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-slate-300' : 'bg-slate-700 text-white'}`}>
                 {pendingCount}
               </span>
             )}
@@ -240,7 +240,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-brand-primary" />
+                  <BarChart3 className="w-4 h-4 text-slate-300" />
                   Distribución por Tipo
                 </h3>
                 <div className="w-full h-64">
@@ -271,7 +271,7 @@ export default function AdminDashboard() {
 
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col">
                 <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-brand-primary" />
+                  <Activity className="w-4 h-4 text-slate-300" />
                   Estado de Resolución
                 </h3>
                 <div className="w-full h-64">
@@ -307,7 +307,7 @@ export default function AdminDashboard() {
                     placeholder="Buscar por nombre o email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-brand-primary transition-all"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-all"
                   />
                 </div>
                 <div className="relative">
@@ -315,7 +315,7 @@ export default function AdminDashboard() {
                   <select 
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value as any)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-slate-600 transition-all cursor-pointer"
                   >
                     <option value="ALL">TODOS LOS ROLES</option>
                     <option value="ADMIN">ADMIN</option>
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
                   <select 
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-brand-primary transition-all cursor-pointer"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-slate-600 transition-all cursor-pointer"
                   >
                     <option value="ALL">TODOS LOS ESTADOS</option>
                     <option value="ACTIVE">ACTIVOS</option>
@@ -376,7 +376,7 @@ export default function AdminDashboard() {
                             <select 
                               value={user.role}
                               onChange={(e) => handleUpdateRole(user.uid, e.target.value)}
-                              className="bg-slate-800 text-xs font-black text-white px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-brand-primary uppercase tracking-widest transition-all cursor-pointer"
+                              className="bg-slate-800 text-xs font-black text-white px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-slate-600 uppercase tracking-widest transition-all cursor-pointer"
                             >
                               <option value="ADMIN">ADMIN</option>
                               <option value="OWNER">PROPIETARIO</option>
@@ -433,7 +433,7 @@ export default function AdminDashboard() {
                         <button
                           key={i}
                           onClick={() => setCurrentPage(i + 1)}
-                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${currentPage === i + 1 ? 'bg-brand-primary text-white shadow-lg shadow-blue-500/20' : 'text-slate-400 hover:text-white bg-slate-800/50'}`}
+                          className={`w-8 h-8 rounded-lg text-xs font-black transition-all ${currentPage === i + 1 ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white bg-slate-800/50'}`}
                         >
                           {i + 1}
                         </button>

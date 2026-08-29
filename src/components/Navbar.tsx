@@ -39,7 +39,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
         {/* Left: User Profile Badge & Telemetry */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-sm">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-brand-primary to-amber-500 flex items-center justify-center text-white font-bold text-xs shadow-sm">
+            <div className="w-7 h-7 rounded-lg bg-slate-700 flex items-center justify-center text-white font-bold text-xs shadow-sm">
               <User className="w-3.5 h-3.5" />
             </div>
             <div className="text-left hidden sm:block">
@@ -55,11 +55,11 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
         {/* Center: Brand Logo */}
         <NavLink to="/" className="flex flex-col items-center group">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-brand-primary/10 border border-brand-primary/30 flex items-center justify-center text-brand-primary group-hover:border-brand-primary/60 transition-colors">
+            <div className="w-7 h-7 rounded-lg bg-slate-500/10 border border-slate-600 flex items-center justify-center text-slate-300 group-hover:border-slate-600 transition-colors">
               <Shield className="w-4 h-4" />
             </div>
             <span className="font-bold text-sm md:text-base tracking-wide font-display text-white">
-              AUTORED <span className="text-brand-primary font-mono text-xs px-1.5 py-0.5 rounded bg-brand-primary/10 border border-brand-primary/20 ml-1">COQUIMBO</span>
+              AUTORED <span className="text-slate-300 font-mono text-xs px-1.5 py-0.5 rounded bg-slate-500/10 border border-slate-600 ml-1">COQUIMBO</span>
             </span>
           </div>
         </NavLink>
@@ -72,7 +72,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
             className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition active:scale-95"
             title="Búsqueda rápida y comandos (Cmd + K)"
           >
-            <Search className="w-3.5 h-3.5 text-brand-primary" />
+            <Search className="w-3.5 h-3.5 text-slate-300" />
             <span className="text-xs font-mono hidden md:inline">Comandos</span>
             <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded">
               ⌘K
@@ -81,7 +81,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
           {profile?.role === 'ADMIN' && (
             <button
               onClick={() => navigate('/admin')}
-              className="p-2.5 rounded-xl bg-brand-primary/10 border border-brand-primary/30 text-brand-primary hover:bg-brand-primary/20 active:scale-95 transition-all md:hidden"
+              className="p-2.5 rounded-xl bg-slate-500/10 border border-slate-600 text-slate-300 hover:bg-slate-500/10 active:scale-95 transition-all md:hidden"
               title="Panel de Administración"
             >
               <ShieldCheck className="w-4 h-4" />
@@ -139,7 +139,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
                 className={({ isActive }) =>
                   `flex items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${
                     isActive
-                      ? 'bg-brand-primary/15 text-brand-primary'
+                      ? 'bg-slate-500/10 text-slate-300'
                       : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
                   }`
                 }
@@ -156,7 +156,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
               onClick={() => handleTabClick(item.tab!)}
               className={`flex items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all active:scale-95 ${
                 location.pathname === '/' && activeTab === item.tab
-                  ? 'bg-brand-primary/15 text-brand-primary'
+                  ? 'bg-slate-500/10 text-slate-300'
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
               }`}
             >

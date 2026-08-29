@@ -118,7 +118,7 @@ export default function PlateVerificationBadge({
         <div
           className={`rounded-2xl border-2 p-4 transition-all ${
             result.hasStolenReport
-              ? 'bg-red-950/70 border-red-500 text-red-100 shadow-[0_0_35px_rgba(239,68,68,0.45)] animate-in zoom-in-95'
+              ? 'bg-red-950/70 border-red-500 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.2)] animate-in zoom-in-95'
               : 'bg-emerald-950/40 border-emerald-500/60 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
           }`}
         >

@@ -15,7 +15,7 @@
 
 /* Visible keyboard focus for all interactive controls */
 :where(a, button, input, select, textarea, [role="button"]):focus-visible {
-  outline: 2px solid var(--color-brand-primary) !important;
+  outline: 2px solid #94a3b8 !important;
   outline-offset: 2px !important;
 }
 
@@ -41,7 +41,7 @@ body {
 .tactical-bg {
   background-color: #030712;
   background-image: 
-    radial-gradient(circle at 50% 0%, rgba(255, 90, 31, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 50% 0%, rgba(148, 163, 184, 0.04) 0%, transparent 50%),
     radial-gradient(circle at 100% 100%, rgba(14, 165, 233, 0.03) 0%, transparent 40%),
     linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
@@ -64,16 +64,16 @@ body {
 }
 
 .tactical-card-hover:hover {
-  border-color: rgba(255, 90, 31, 0.35);
+  border-color: rgba(148, 163, 184, 0.28);
   box-shadow: 
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 16px 36px -12px rgba(255, 90, 31, 0.12);
+    0 16px 36px -12px rgba(0, 0, 0, 0.45);
 }
 
 .panel-surface {
   background:
     linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.015)),
-    radial-gradient(circle at top, rgba(255, 90, 31, .06), transparent 45%),
+    radial-gradient(circle at top, rgba(148, 163, 184, .04), transparent 45%),
     #090d16;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow:
@@ -84,7 +84,7 @@ body {
 .network-mark {
   color: #f8fafc;
   overflow: visible;
-  filter: drop-shadow(0 18px 34px rgba(255, 90, 31, 0.12));
+  filter: drop-shadow(0 18px 34px rgba(148, 163, 184, 0.1));
 }
 
 .network-mark .network-web {
@@ -93,7 +93,7 @@ body {
 }
 
 .network-mark .network-nodes circle {
-  filter: drop-shadow(0 0 10px rgba(255, 90, 31, 0.42));
+  filter: drop-shadow(0 0 10px rgba(148, 163, 184, 0.3));
 }
 
 .network-mark .network-core {
@@ -109,12 +109,12 @@ body {
 .brand-node-badge {
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,.08),
-    0 18px 34px rgba(255, 90, 31, .08);
+    0 18px 34px rgba(0, 0, 0, .35);
 }
 
 .map-command-shell {
   background:
-    radial-gradient(circle at 8% 10%, rgba(255, 90, 31, 0.11), transparent 24rem),
+    radial-gradient(circle at 8% 10%, rgba(148, 163, 184, 0.07), transparent 24rem),
     radial-gradient(circle at 86% 90%, rgba(59, 130, 246, 0.12), transparent 24rem),
     #020617;
 }
@@ -146,9 +146,9 @@ body {
 }
 
 .auth-input:focus {
-  border-color: rgba(255, 90, 31, 0.7);
+  border-color: rgba(148, 163, 184, 0.6);
   background: rgba(15, 23, 42, 0.95);
-  box-shadow: 0 0 0 4px rgba(255, 90, 31, 0.14);
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.1);
 }
 
 /* Custom scrollbars for dark mode */
@@ -228,8 +228,8 @@ body {
 }
 
 @keyframes cinematic-float {
-  0%, 100% { opacity: 0.66; filter: drop-shadow(0 0 42px rgba(255,90,31,.18)); }
-  50% { opacity: 0.9; filter: drop-shadow(0 0 70px rgba(255,90,31,.28)); }
+  0%, 100% { opacity: 0.66; filter: drop-shadow(0 0 42px rgba(148,163,184,.12)); }
+  50% { opacity: 0.9; filter: drop-shadow(0 0 70px rgba(148,163,184,.18)); }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -267,9 +267,9 @@ body {
 }
 
 .glass-button-action:hover {
-  background: linear-gradient(180deg, rgba(255, 90, 31, 0.18) 0%, rgba(255, 90, 31, 0.08) 100%);
-  border-color: rgba(255, 90, 31, 0.5);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 12px 32px rgba(255, 90, 31, 0.25);
+  background: linear-gradient(180deg, rgba(148, 163, 184, 0.14) 0%, rgba(148, 163, 184, 0.06) 100%);
+  border-color: rgba(148, 163, 184, 0.4);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 12px 32px rgba(0, 0, 0, 0.35);
   transform: translateY(-2px);
 }
 

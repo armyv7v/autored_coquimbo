@@ -33,7 +33,7 @@ export default function NetworkMark({ className = '', compact = false }: Network
         <path d="M54 107 L190 102 L175 32 L38 29 Z" stroke="rgba(248,250,252,.15)" strokeWidth="1" />
         <path d="M38 29 L88 35 L110 68 L142 39 L175 32" stroke="url(#cyberLineGrad)" strokeWidth={stroke} />
         <path d="M54 107 L82 82 L110 68 L143 88 L190 102" stroke="url(#cyberLineGrad)" strokeWidth={stroke} />
-        <path d="M88 35 L82 82 L143 88 L142 39 Z" stroke="rgba(255,90,31,.6)" strokeWidth="1.8" />
+        <path d="M88 35 L82 82 L143 88 L142 39 Z" stroke="rgba(148,163,184,0.2)" strokeWidth="1.8" />
       </g>
 
       {/* Nodes */}

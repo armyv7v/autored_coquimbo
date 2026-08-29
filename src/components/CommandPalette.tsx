@@ -133,7 +133,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
       subtitle: 'Generar reporte de seguridad para Directorio y Gerencia',
       icon: FileText,
       badge: 'Ejecutivo',
-      color: 'text-brand-primary bg-brand-primary/10 border-brand-primary/30',
+      color: 'text-slate-300 bg-slate-500/10 border-slate-600',
       perform: () => {
         window.dispatchEvent(new CustomEvent('open-executive-digest'));
         onClose();
@@ -309,7 +309,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
                       onMouseEnter={() => setSelectedIndex(idx)}
                       className={`w-full flex items-center justify-between p-3 rounded-xl transition text-left ${
                         isSelected
-                          ? 'bg-slate-800/90 border border-brand-primary/40 shadow-sm'
+                          ? 'bg-slate-800/90 border border-slate-600 shadow-sm'
                           : 'bg-transparent border border-transparent hover:bg-slate-900/50'
                       }`}
                     >
@@ -329,7 +329,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
                           <p className="text-[11px] text-slate-400 truncate mt-0.5">{action.subtitle}</p>
                         </div>
                       </div>
-                      <ArrowRight className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? 'text-brand-primary translate-x-0.5' : 'text-slate-600'}`} />
+                      <ArrowRight className={`w-4 h-4 shrink-0 transition-transform ${isSelected ? 'text-slate-300 translate-x-0.5' : 'text-slate-600'}`} />
                     </button>
                   );
                 })
