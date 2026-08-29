@@ -345,7 +345,7 @@ export default function Login() {
               onMouseEnter={() => setCapPaused(true)}
               onMouseLeave={() => setCapPaused(false)}
             >
-              <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-950/55 backdrop-blur-2xl shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] min-h-[168px] sm:min-h-[184px]">
+              <div className="relative overflow-hidden rounded-3xl border border-slate-800 bg-[#0b1220]/90 backdrop-blur-2xl shadow-[0_20px_50px_-12px_rgba(15,23,42,0.4)] min-h-[168px] sm:min-h-[184px]">
                 <AnimatePresence mode="wait">
                   {(() => {
                     const card = capabilityCards[activeCapability];
