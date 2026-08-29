@@ -19,10 +19,10 @@ export function formatWhatsAppFlashReport(incident: IncidentSummary, reporterNam
 
   const typeEmoji = incident.type === 'ROBO' ? '🚨' : incident.type === 'SOSPECHOSO' ? '⚠️' : '📍';
 
-  let text = `${typeEmoji} *ALERTA TÁCTICA AUTORED COQUIMBO* ${typeEmoji}\n`;
+  let text = `${typeEmoji} *ALERTA TÁCTICA ALERTA DEALERS • COQUIMBO* ${typeEmoji}\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;
   text += `📌 *Tipo:* ${incident.type}\n`;
-  text += `🏢 *Sede:* ${incident.dealershipId || 'Central AutoRed'}\n`;
+  text += `🏢 *Sede:* ${incident.dealershipId || 'Central Alerta Dealers'}\n`;
   text += `⏰ *Hora:* ${timestamp}\n`;
   text += `📝 *Detalle:* ${incident.description || 'Sin descripción adicional.'}\n`;
   
@@ -59,7 +59,7 @@ export function formatExecutiveDailyDigest(incidents: IncidentSummary[], activeD
   const abiertos = incidents.filter(i => i.status === 'OPEN' || !i.status).length;
   const resueltos = incidents.filter(i => i.status === 'RESOLVED').length;
 
-  let text = `📊 *MINUTA EJECUTIVA DE SEGURIDAD AUTORED*\n`;
+  let text = `📊 *MINUTA EJECUTIVA DE SEGURIDAD ALERTA DEALERS*\n`;
   text += `📅 *Fecha:* ${today}\n`;
   text += `🏢 *Nodos Conectados:* ${activeDealershipsCount} automotoras\n`;
   text += `━━━━━━━━━━━━━━━━━━━━━\n`;

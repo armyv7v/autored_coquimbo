@@ -349,7 +349,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
                   Ejecutar
                 </span>
               </div>
-              <span className="hidden sm:inline text-slate-500">AutoRed Coquimbo Command v2.0</span>
+              <span className="hidden sm:inline text-slate-500">Alerta Dealers Command v2.0</span>
             </div>
           </motion.div>
         </motion.div>

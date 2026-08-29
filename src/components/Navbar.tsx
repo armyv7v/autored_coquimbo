@@ -53,15 +53,13 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
         </div>
 
         {/* Center: Brand Logo */}
-        <NavLink to="/" className="flex flex-col items-center group">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-slate-500/10 border border-slate-600 flex items-center justify-center text-slate-300 group-hover:border-slate-600 transition-colors">
-              <Shield className="w-4 h-4" />
-            </div>
-            <span className="font-bold text-sm md:text-base tracking-wide font-display text-white">
-              AUTORED <span className="text-slate-300 font-mono text-xs px-1.5 py-0.5 rounded bg-slate-500/10 border border-slate-600 ml-1">COQUIMBO</span>
-            </span>
-          </div>
+        <NavLink to="/" className="flex items-center gap-2.5 group">
+          <img
+            src="/branding/logo-alerta-dealers-oscuro.svg"
+            alt="Alerta Dealers"
+            className="h-8 sm:h-9 w-auto"
+          />
+          <span className="text-slate-300 font-mono text-xs px-1.5 py-0.5 rounded bg-slate-500/10 border border-slate-600 hidden sm:inline">COQUIMBO</span>
         </NavLink>
 
         {/* Right: Search Cmd+K, Notifications & Logout */}

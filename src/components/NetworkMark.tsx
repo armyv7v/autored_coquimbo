@@ -11,7 +11,7 @@ export default function NetworkMark({ className = '', compact = false }: Network
       className={`network-mark h-full w-full ${className}`}
       viewBox="0 0 220 140"
       role="img"
-      aria-label="Isotipo AutoRed: Escudo Ciber-Automotriz en red de nodos"
+      aria-label="Isotipo Alerta Dealers: Escudo Ciber-Automotriz en red de nodos"
     >
       <defs>
         <radialGradient id="cyberShieldGlow" cx="50%" cy="50%" r="60%">

@@ -158,7 +158,7 @@ export default function Login() {
     setLoading(true);
     resetFeedback();
     sound.playNodePulse(true);
-    const demoPass = 'autored2026';
+    const demoPass = 'alertadealers2026';
     try {
       let userCredential;
       try {
@@ -178,7 +178,7 @@ export default function Login() {
         await setDoc(profileRef, {
           uid: user.uid,
           email: user.email,
-          displayName: role === 'ADMIN' ? 'Administrador AutoRed' : 'Operador Seguridad',
+          displayName: role === 'ADMIN' ? 'Administrador Alerta Dealers' : 'Operador Seguridad',
           role: role,
           dealershipId: 'DEALERSHIP_DEMO',
           status: 'ACTIVE',
@@ -492,7 +492,7 @@ export default function Login() {
                   <img src="/branding/icono-alerta-dealers.svg" alt="Alerta Dealers" className="h-9 w-9 object-contain" />
                 </div>
                 <h2 className="font-display text-2xl sm:text-3xl font-black tracking-[-.04em] text-white">
-                  {mode === 'intro' && 'Acceso a la Red AutoRed'}
+                  {mode === 'intro' && 'Acceso a la Red Alerta Dealers'}
                   {mode === 'request' && 'Solicitar Incorporación'}
                   {mode === 'sent' && 'Solicitud Recibida'}
                   {mode === 'login' && 'Ingreso Autorizado'}
@@ -576,14 +576,14 @@ export default function Login() {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => handleDemoLogin('admin@autored.cl', 'ADMIN')}
+                        onClick={() => handleDemoLogin('admin@alertadealers.cl', 'ADMIN')}
                         className="py-2.5 px-3 rounded-xl bg-transparent hover:bg-[#E20B17]/10 border border-[#E20B17]/60 text-red-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
                       >
                         Acceso Administrador
                       </button>
                       <button
                         type="button"
-                        onClick={() => handleDemoLogin('seguridad@autored.cl', 'SECURITY')}
+                        onClick={() => handleDemoLogin('seguridad@alertadealers.cl', 'SECURITY')}
                         className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
                       >
                         Acceso Operador
@@ -668,12 +668,12 @@ export default function Login() {
                       </Field>
 
                       <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] font-mono flex items-center justify-between gap-2">
-                        <span className="text-slate-400 truncate">Prueba: <strong className="text-white">admin@autored.cl</strong> / <strong className="text-white">autored2026</strong></span>
+                        <span className="text-slate-400 truncate">Prueba: <strong className="text-white">admin@alertadealers.cl</strong> / <strong className="text-white">alertadealers2026</strong></span>
                         <button
                           type="button"
                           onClick={() => {
-                            setEmail('admin@autored.cl');
-                            setPassword('autored2026');
+                            setEmail('admin@alertadealers.cl');
+                            setPassword('alertadealers2026');
                             sound.playNodePulse(false);
                           }}
                           className="text-slate-300 hover:underline font-bold shrink-0"

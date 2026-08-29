@@ -27,7 +27,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6 text-center">
         <XCircle className="w-16 h-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-black uppercase tracking-widest mb-2">Cuenta Suspendida</h1>
-        <p className="text-slate-400 max-w-sm">Tu acceso a AutoRed ha sido restringido por un administrador. Si crees que esto es un error, contacta a soporte.</p>
+        <p className="text-slate-400 max-w-sm">Tu acceso a Alerta Dealers ha sido restringido por un administrador. Si crees que esto es un error, contacta a soporte.</p>
         <button onClick={() => auth.signOut()} className="mt-8 text-sm font-bold text-slate-300 hover:underline">Cerrar Sesión</button>
       </div>
     );

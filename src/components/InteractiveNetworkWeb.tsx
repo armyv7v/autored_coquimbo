@@ -54,7 +54,7 @@ interface MicroSpark {
 }
 
 export const NODES: WebNode[] = [
-  { id: 'core', name: 'Centro de Comando AutoRed', sector: 'Nodo Matriz', rx: 0.48, ry: 0.5, isCore: true, baseRadius: 28, status: 'ONLINE', latency: 4, dealersCount: 14 },
+  { id: 'core', name: 'Centro de Comando Alerta Dealers', sector: 'Nodo Matriz', rx: 0.48, ry: 0.5, isCore: true, baseRadius: 28, status: 'ONLINE', latency: 4, dealersCount: 14 },
   { id: 'n1', name: 'Ruta 5 Norte', sector: 'Sector Norte', rx: 0.18, ry: 0.18, baseRadius: 6, status: 'ONLINE', latency: 8, dealersCount: 3 },
   { id: 'n2', name: 'Muelle Fiscal', sector: 'Zona Portuaria', rx: 0.42, ry: 0.14, baseRadius: 6, status: 'ONLINE', latency: 12, dealersCount: 2 },
   { id: 'n3', name: 'Zona Puerto / Altamira', sector: 'Sector Costero', rx: 0.72, ry: 0.18, baseRadius: 6, status: 'ONLINE', latency: 11, dealersCount: 4 },

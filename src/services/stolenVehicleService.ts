@@ -342,7 +342,7 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
         vehicleDetails: data.vehicleDetails,
         stolenDetails: data.stolenDetails,
         checkedAt,
-        source: data.source || 'AutoSeguro / Registro Nacional Red AutoRed',
+        source: data.source || 'AutoSeguro / Registro Nacional Red Alerta Dealers',
       };
       RUNTIME_VEHICLE_CACHE.set(cleanPlate, result);
       return result;
@@ -426,7 +426,7 @@ export async function setPlateStolenStatus(
       statusText: isStolen ? 'ENCARGO POR ROBO VIGENTE (REGISTRADO EN RED)' : 'SIN ENCARGO POR ROBO REGISTRADO',
       vehicleDetails: vehicleDetails || {
         brand: 'VEHÍCULO REGISTRADO',
-        model: 'EN RED AUTORED',
+        model: 'EN RED ALERTA DEALERS',
         year: 2024,
         color: 'A CONFIRMAR',
         vehicleType: 'VEHÍCULO MOTORIZADO',
@@ -442,7 +442,7 @@ export async function setPlateStolenStatus(
           }
         : null,
       updatedAt: serverTimestamp(),
-      source: 'AutoSeguro / Registro Nacional Red AutoRed',
+      source: 'AutoSeguro / Registro Nacional Red Alerta Dealers',
     });
 
     // Invalidate local runtime cache

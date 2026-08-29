@@ -227,7 +227,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
                   {r.display_name}
                 </p>
                 <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
-                  {r.type === 'dealership' ? 'Sede AutoRed' : 'Ubicación'}
+                  {r.type === 'dealership' ? 'Sede Alerta Dealers' : 'Ubicación'}
                 </p>
               </div>
             </button>
@@ -568,7 +568,7 @@ export default function MapView() {
                       <div className="space-y-3">
                         <div className="bg-slate-900/80 rounded-xl p-3 border border-slate-800/60">
                           <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
-                            Sede oficial integrante de la Red de Seguridad Automotriz AutoRed.
+                            Sede oficial integrante de la Red de Seguridad Automotriz Alerta Dealers.
                           </p>
                         </div>
 
