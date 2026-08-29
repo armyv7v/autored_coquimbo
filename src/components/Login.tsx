@@ -345,7 +345,7 @@ export default function Login() {
               onMouseEnter={() => setCapPaused(true)}
               onMouseLeave={() => setCapPaused(false)}
             >
-              <div className="relative overflow-hidden rounded-3xl border bg-slate-950 shadow-2xl shadow-black/25 min-h-[190px] sm:min-h-[210px]">
+              <div className="relative overflow-hidden rounded-3xl border border-white/15 bg-slate-950/55 backdrop-blur-2xl shadow-[0_20px_50px_-12px_rgba(15,23,42,0.35)] min-h-[168px] sm:min-h-[184px]">
                 <AnimatePresence mode="wait">
                   {(() => {
                     const card = capabilityCards[activeCapability];
@@ -357,22 +357,22 @@ export default function Login() {
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: -60, scale: 0.985 }}
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className={`absolute inset-0 p-6 sm:p-8 flex flex-col justify-between ${card.color}`}
+                        className={`absolute inset-0 p-5 sm:p-7 flex flex-col justify-between ${card.color}`}
                       >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${card.color} pointer-events-none`} />
+                        <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 pointer-events-none`} />
                         <div className="relative flex items-start justify-between">
-                          <span className="text-5xl sm:text-6xl font-mono font-black text-white/15 tracking-tighter leading-none select-none">
+                          <span className="text-4xl sm:text-5xl font-mono font-black text-white/15 tracking-tighter leading-none select-none">
                             {card.num}
                           </span>
-                          <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-slate-100">
-                            <Icon className="w-7 h-7" />
+                          <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10 text-slate-100">
+                            <Icon className="w-6 h-6" />
                           </div>
                         </div>
                         <div className="relative">
-                          <h4 className="text-2xl sm:text-3xl font-black text-white tracking-tight mb-2">
+                          <h4 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1.5">
                             {card.title}
                           </h4>
-                          <p className="text-sm sm:text-base text-slate-300 leading-relaxed max-w-xl">
+                          <p className="text-sm text-slate-300 leading-relaxed max-w-xl">
                             {card.desc}
                           </p>
                         </div>
