@@ -101,6 +101,14 @@ export default function InteractiveNetworkWeb({
   
   const hoverNodeRef = useRef<WebNode | null>(null);
   const stormActiveRef = useRef(stormActive);
+  const coreShieldImgRef = useRef<HTMLImageElement | null>(null);
+
+  // Escudo oficial para el núcleo de la telaraña
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/branding/escudo-alerta-dealers.png';
+    img.onload = () => { coreShieldImgRef.current = img; };
+  }, []);
   stormActiveRef.current = stormActive;
 
   const spawnPulse = useCallback((fromId: string, speed = 0.008 + Math.random() * 0.006, isHighEnergy = false, playAudio = false) => {
@@ -248,36 +256,22 @@ export default function InteractiveNetworkWeb({
       ctx.stroke();
       ctx.restore();
 
-      // 3. Outer Cyber Shield Contour
-      createShieldPath(1.0);
-      ctx.fillStyle = 'rgba(2, 6, 18, 0.92)';
-      ctx.fill();
-      ctx.strokeStyle = primaryColor;
-      ctx.lineWidth = 2.4;
-      ctx.shadowColor = primaryColor;
-      ctx.shadowBlur = 20 + Math.sin(timeVal * 4) * 8;
-      ctx.stroke();
-      ctx.shadowBlur = 0;
-
-      // 4. Inner Tech Accent Shield Contour
-      createShieldPath(0.72);
-      ctx.strokeStyle = `${secondaryColor}cc`;
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-
-      // 5. Central Diamond Core (Custodia & Conexión)
-      const dSize = 11 + Math.sin(timeVal * 5) * 1.8;
+      // 3-5. Escudo oficial Alerta Dealers al centro (sobre disco navy para contraste)
+      const pulse = 1 + Math.sin(timeVal * 4) * 0.05;
+      const iw = sw * 1.12 * pulse;
+      const ih = iw * (82 / 86);
+      const img = coreShieldImgRef.current;
       ctx.beginPath();
-      ctx.moveTo(0, -dSize);
-      ctx.lineTo(dSize, 0);
-      ctx.lineTo(0, dSize);
-      ctx.lineTo(-dSize, 0);
-      ctx.closePath();
-      ctx.fillStyle = '#0f172a';
-      ctx.shadowColor = 'rgba(15, 23, 42, 0.6)';
-      ctx.shadowBlur = 16;
+      ctx.arc(0, 0, iw * 0.64, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(2, 6, 18, 0.9)';
       ctx.fill();
-      ctx.shadowBlur = 0;
+      if (img) {
+        ctx.shadowColor = primaryColor;
+        ctx.shadowBlur = 16 + Math.sin(timeVal * 4) * 6;
+        ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
+        ctx.shadowBlur = 0;
+      }
+      const dSize = iw / 2;
 
       // 6. Crosshair Lines extending from diamond
       ctx.beginPath();
