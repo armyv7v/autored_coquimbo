@@ -304,7 +304,7 @@ export default function InteractiveNetworkWeb({
         const floatX = Math.sin(time * 0.8 + n.rx * 14) * 6;
         const floatY = Math.cos(time * 0.9 + n.ry * 14) * 6;
         
-        const nRy = n.isCore && width < 768 ? 0.14 : n.ry;
+        const nRy = n.isCore && width < 768 ? 0.36 : n.ry;
         let px = n.rx * width + floatX;
         let py = nRy * height + floatY;
 
