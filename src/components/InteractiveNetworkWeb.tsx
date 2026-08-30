@@ -259,7 +259,7 @@ export default function InteractiveNetworkWeb({
       // 3-5. Escudo oficial Alerta Dealers al centro (sobre disco navy para contraste)
       const pulse = 1 + Math.sin(timeVal * 4) * 0.05;
       const iw = sw * 1.12 * pulse;
-      const ih = iw * (82 / 86);
+      const ih = iw * (82 / 72);
       const img = coreShieldImgRef.current;
       ctx.beginPath();
       ctx.arc(0, 0, iw * 0.64, 0, Math.PI * 2);
