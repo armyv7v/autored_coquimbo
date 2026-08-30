@@ -276,7 +276,7 @@ export default function Login() {
   return (
     <main className="auth-noise min-h-dvh bg-slate-100 text-slate-900 relative overflow-hidden flex flex-col justify-between selection:bg-slate-700 selection:text-white">
       {/* Fullscreen Immersive Organism Spider Web Background */}
-      <div className="fixed inset-0 z-0 opacity-90 pointer-events-auto">
+      <div className="fixed inset-0 z-0 opacity-60 sm:opacity-90 pointer-events-auto">
         <InteractiveNetworkWeb
           className="w-full h-full"
           pulseTriggerCount={alertPulseCount}

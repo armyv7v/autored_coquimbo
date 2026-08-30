@@ -212,8 +212,9 @@ export default function InteractiveNetworkWeb({
 
     // Draw Cyber Shield Matrix Core with Glowing Forcefield
     const drawCyberShield = (cx: number, cy: number, timeVal: number, glowIntensity: number) => {
-      const sw = 48; // Shield width
-      const sh = 56; // Shield height
+      const mob = width < 768 ? 0.72 : 1; // núcleo más compacto en móvil
+      const sw = 48 * mob; // Shield width
+      const sh = 56 * mob; // Shield height
 
       ctx.save();
       ctx.translate(cx, cy);
@@ -262,13 +263,14 @@ export default function InteractiveNetworkWeb({
       const ih = iw * (82 / 72);
       const img = coreShieldImgRef.current;
       ctx.beginPath();
-      ctx.arc(0, 0, iw * 0.64, 0, Math.PI * 2);
+      ctx.arc(0, 0, iw * 0.68, 0, Math.PI * 2);
       ctx.fillStyle = 'rgba(2, 6, 18, 0.9)';
       ctx.fill();
       if (img) {
         ctx.shadowColor = primaryColor;
         ctx.shadowBlur = 16 + Math.sin(timeVal * 4) * 6;
-        ctx.drawImage(img, -iw / 2, -ih / 2, iw, ih);
+        // offset ascendente: los arcos rojos superiores bajan el centro óptico del escudo
+        ctx.drawImage(img, -iw / 2, -ih / 2 - ih * 0.05, iw, ih);
         ctx.shadowBlur = 0;
       }
       const dSize = iw / 2;
@@ -302,8 +304,9 @@ export default function InteractiveNetworkWeb({
         const floatX = Math.sin(time * 0.8 + n.rx * 14) * 6;
         const floatY = Math.cos(time * 0.9 + n.ry * 14) * 6;
         
+        const nRy = n.isCore && width < 768 ? 0.14 : n.ry;
         let px = n.rx * width + floatX;
-        let py = n.ry * height + floatY;
+        let py = nRy * height + floatY;
 
         const distMouse = Math.hypot(mouse.x - px, mouse.y - py);
         if (distMouse < 200 && !n.isCore) {
