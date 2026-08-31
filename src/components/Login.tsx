@@ -43,6 +43,15 @@ const capabilityCards = [
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Siren,
     img: 'https://images.unsplash.com/photo-1718447772276-a79e984ee1a7?w=1536&h=368&fit=crop&q=80&auto=format',
+    details: {
+      intro: 'Cuando una automotora reporta un hecho sospechoso, toda la red se entera en segundos. La alerta se propaga a cada patio, vigilante y encargado de la Región de Coquimbo con imagen, ubicación y descripción del implicado. El delincuente sabe que la próxima puerta ya está avisada.',
+      features: [
+        'Propagación instantánea a toda la red de automotoras',
+        'Alertas con imagen, descripción y patente del implicado',
+        'Formato listo para WhatsApp y alarmas locales',
+        'Disuasión real: la red completa vigila cada patio',
+      ],
+    },
   },
   {
     num: '02',
@@ -51,6 +60,15 @@ const capabilityCards = [
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Zap,
     img: 'https://images.unsplash.com/photo-1761897526071-5e29319b4751?w=1536&h=368&fit=crop&q=80&auto=format',
+    details: {
+      intro: 'Un botón dedicado que en 10 segundos transmite tu ubicación exacta al centro de custodia y a las automotoras cercanas. Sin desbloquear el teléfono, sin llamadas: un solo toque y la red completa se mueve hacia tu posición.',
+      features: [
+        'Activación en 10 segundos con GPS automático',
+        'Ubicación en vivo sobre mapa satelital',
+        'Aviso simultáneo al centro de custodia y nodos cercanos',
+        'Historial de eventos para fiscalización y seguros',
+      ],
+    },
   },
   {
     num: '03',
@@ -59,6 +77,15 @@ const capabilityCards = [
     color: 'from-[#FF4D00]/15 to-transparent border-[#FF4D00]/45',
     icon: Activity,
     img: 'https://images.unsplash.com/photo-1648075082196-a3b311df1874?w=1536&h=368&fit=crop&q=80&auto=format',
+    details: {
+      intro: 'Cada test drive queda blindado con un registro fotográfico guiado antes de salir del patio: condición del vehículo, documentos y combustible, con fecha, hora y ubicación selladas. Así se elimina el fraude de sustitución y los reclamos sin respaldo.',
+      features: [
+        'Checklist fotográfico obligatorio antes de la salida',
+        'Sellado de fecha, hora y ubicación en cada imagen',
+        'Protección contra el fraude de sustitución de partes',
+        'Respaldo directo para reclamos y aseguradoras',
+      ],
+    },
   },
   {
     num: '04',
@@ -67,6 +94,15 @@ const capabilityCards = [
     color: 'from-[#112A4D]/40 to-transparent border-[#112A4D]',
     icon: ShieldCheck,
     img: 'https://images.unsplash.com/photo-1510851896000-498520af2236?w=1536&h=368&fit=crop&q=80&auto=format',
+    details: {
+      intro: 'El ingreso a la red no es abierto: cada automotora es validada por su representante legal con RUT comercial vigente y aprobada manualmente por el centro de administración. Una red de pares verificados, donde cada nodo es responsable y confiable.',
+      features: [
+        'Validación de representante legal y RUT comercial',
+        'Aprobación manual por el centro de administración',
+        'Roles y permisos por automotora (propietario, admin, seguridad)',
+        'Red cerrada: sin nodos anónimos ni cuentas falsas',
+      ],
+    },
   },
 ];
 
@@ -92,6 +128,8 @@ export default function Login() {
   );
   const [activeCapability, setActiveCapability] = useState(0);
   const [capPaused, setCapPaused] = useState(false);
+  const [detailIdx, setDetailIdx] = useState<number | null>(null);
+  const detailRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (capPaused) return;
@@ -101,6 +139,16 @@ export default function Login() {
     );
     return () => clearInterval(t);
   }, [capPaused]);
+
+  // Al abrir un detalle: pausar el carrusel y desplazar la vista a la sección
+  React.useEffect(() => {
+    if (detailIdx !== null) {
+      setCapPaused(true);
+      const t = setTimeout(() => detailRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 120);
+      return () => clearTimeout(t);
+    }
+    setCapPaused(false);
+  }, [detailIdx]);
 
   // Live dealership names once Firestore allows public reads; static nodes until then
   React.useEffect(() => {
@@ -334,11 +382,14 @@ export default function Login() {
                     return (
                       <motion.div
                         key={activeCapability}
+                        onClick={() => setDetailIdx(activeCapability)}
+                        role="button"
+                        aria-label={`Ver más sobre ${card.title}`}
                         initial={{ opacity: 0, x: 60, scale: 0.985 }}
                         animate={{ opacity: 1, x: 0, scale: 1 }}
                         exit={{ opacity: 0, x: -60, scale: 0.985 }}
                         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-                        className={`absolute inset-0 p-5 sm:p-7 flex flex-col justify-between ${card.color}`}
+                        className={`absolute inset-0 p-5 sm:p-7 flex flex-col justify-between cursor-pointer ${card.color}`}
                       >
                         <motion.img
                           src={card.img}
@@ -396,6 +447,67 @@ export default function Login() {
                 ))}
               </div>
             </div>
+
+            {/* Detalle ampliado de la capacidad seleccionada */}
+            <AnimatePresence>
+              {detailIdx !== null && (
+                <motion.div
+                  ref={detailRef}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 24 }}
+                  transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                  className="relative mt-5 overflow-hidden rounded-3xl border border-slate-300 bg-white/85 backdrop-blur-xl p-6 sm:p-8 shadow-xl shadow-slate-900/5"
+                >
+                  {(() => {
+                    const card = capabilityCards[detailIdx];
+                    const Icon = card.icon;
+                    return (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setDetailIdx(null)}
+                          aria-label="Cerrar detalle"
+                          className="absolute top-4 right-4 p-2 rounded-full border border-slate-300 text-slate-400 hover:text-slate-700 hover:border-slate-400 transition active:scale-95"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                        <span className="absolute -top-2 right-8 text-7xl sm:text-8xl font-mono font-black text-[#E20B17]/10 tracking-tighter select-none pointer-events-none">
+                          {card.num}
+                        </span>
+                        <div className="relative flex items-center gap-3 mb-4">
+                          <div className="p-2.5 rounded-2xl bg-slate-950 text-white">
+                            <Icon className="w-6 h-6" />
+                          </div>
+                          <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
+                            {card.title}
+                          </h3>
+                        </div>
+                        <p className="relative text-sm sm:text-[15px] leading-7 text-slate-600 max-w-2xl">
+                          {card.details.intro}
+                        </p>
+                        <ul className="relative mt-5 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+                          {card.details.features.map((f) => (
+                            <li key={f} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-semibold text-slate-700">
+                              <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-[#00A85A]" />
+                              {f}
+                            </li>
+                          ))}
+                        </ul>
+                        <button
+                          type="button"
+                          onClick={() => { setMode('request'); setAccessOpen(true); }}
+                          className="relative mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
+                        >
+                          <Building2 className="w-4 h-4" />
+                          Solicitar incorporación a la red
+                        </button>
+                      </>
+                    );
+                  })()}
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           {/* Interactive Node Deck (Punto 4: Telemetría e Interacción en Vivo) */}
