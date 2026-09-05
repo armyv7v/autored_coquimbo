@@ -465,20 +465,26 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${openIncidentsCount > 0 ? 'bg-red-950 border-red-500/25' : 'bg-slate-900 border-slate-800'}`}
+          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${!loading && openIncidentsCount > 0 ? 'bg-red-950 border-red-500/25' : 'bg-slate-900 border-slate-800'}`}
         >
           <div className="flex items-center gap-3.5">
             <div className="relative flex items-center justify-center">
-              <span className={`w-3 h-3 rounded-full ${openIncidentsCount > 0 ? 'bg-red-500/70' : 'bg-emerald-500/80'}`} />
-              <span className={`absolute w-2 h-2 rounded-full ${openIncidentsCount > 0 ? 'bg-red-400/80' : 'bg-emerald-400/80'}`} />
+              {loading ? (
+                <span className="w-3 h-3 rounded-full bg-slate-600 animate-pulse" />
+              ) : (
+                <>
+                  <span className={`w-3 h-3 rounded-full ${openIncidentsCount > 0 ? 'bg-red-500/70' : 'bg-emerald-500/80'}`} />
+                  <span className={`absolute w-2 h-2 rounded-full ${openIncidentsCount > 0 ? 'bg-red-400/80' : 'bg-emerald-400/80'}`} />
+                </>
+              )}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
                   Estado Operativo de la Red
                 </h2>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
-                  {openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
+                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-500/10 text-slate-300/90 border border-slate-500/20' : openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
+                  {loading ? 'Conectando…' : openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Telemetría y cobertura activa en automotoras de Coquimbo y La Serena</p>
@@ -487,8 +493,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="flex items-center gap-6">
             <div className="text-right">
               <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
-              <p className={`text-xl font-bold tabular-nums ${openIncidentsCount > 0 ? 'text-red-300/90' : 'text-emerald-300/90'}`}>
-                {openIncidentsCount}
+              <p className={`text-xl font-bold tabular-nums ${loading ? 'text-slate-500' : openIncidentsCount > 0 ? 'text-red-300/90' : 'text-emerald-300/90'}`}>
+                {loading ? '—' : openIncidentsCount}
               </p>
             </div>
           </div>

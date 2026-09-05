@@ -141,6 +141,8 @@ export default function App() {
               </AdminRoute>
             </ProtectedRoute>
           } />
+          {/* URL desconocida: volver al panel en vez de pantalla vacía */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>
