@@ -161,7 +161,6 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
       badge: 'Vista',
       color: 'text-blue-400 bg-blue-500/10 border-blue-500/30',
       perform: () => {
-        if (setActiveTab) setActiveTab('MAPA');
         navigate('/map');
         onClose();
       }
@@ -192,7 +191,6 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
     badge: d.status === 'online' ? 'Online' : 'Nodo',
     color: d.status === 'online' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-slate-400 bg-slate-800 border-slate-700',
     perform: () => {
-      if (setActiveTab) setActiveTab('MAPA');
       navigate('/map');
       onClose();
     }
@@ -276,10 +274,10 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
                 }}
                 onKeyDown={handleKeyDown}
                 placeholder="Escribe una acción, patente, automotora o módulo (ej: 'test drive', 'sii', 'robo')..."
-                className="w-full bg-transparent text-sm text-white placeholder:text-slate-500 outline-none font-medium"
+                className="w-full bg-transparent text-base text-white placeholder:text-slate-500 outline-none font-medium"
               />
               {search ? (
-                <button onClick={() => setSearch('')} className="p-1 text-slate-500 hover:text-white">
+                <button onClick={() => setSearch('')} aria-label="Limpiar búsqueda" className="p-2 text-slate-500 hover:text-white">
                   <X className="w-4 h-4" />
                 </button>
               ) : (

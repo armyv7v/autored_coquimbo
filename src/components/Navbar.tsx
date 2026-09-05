@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { Shield, ShieldCheck, User, Bell, BellOff, LogOut, Search, Command } from 'lucide-react';
 import { auth } from '../lib/firebase';
+import { sound } from '../lib/soundEngine';
 import { useAuth } from '../hooks/useAuth';
 import { NAV_ITEMS, TabType } from '../lib/navigation';
 
@@ -13,12 +14,13 @@ interface NavbarProps {
 
 export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: NavbarProps) {
   const { profile } = useAuth();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(!sound.getIsMuted());
   const navigate = useNavigate();
   const location = useLocation();
 
   const toggleNotifications = () => {
-    setNotificationsEnabled(!notificationsEnabled);
+    const muted = sound.toggleMute();
+    setNotificationsEnabled(!muted);
   };
 
   const handleTabClick = (tab: TabType) => {
@@ -79,33 +81,38 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
           {profile?.role === 'ADMIN' && (
             <button
               onClick={() => navigate('/admin')}
-              className="p-2.5 rounded-xl bg-slate-500/10 border border-slate-600 text-slate-300 hover:bg-slate-500/10 active:scale-95 transition-all md:hidden"
+              aria-label="Panel de Administración"
+              className="p-3 rounded-xl bg-slate-500/10 border border-slate-600 text-slate-300 hover:bg-slate-500/10 active:scale-95 transition-all md:hidden"
               title="Panel de Administración"
             >
-              <ShieldCheck className="w-4 h-4" />
+              <ShieldCheck className="w-5 h-5" />
             </button>
           )}
           <button
             onClick={toggleNotifications}
-            className={`p-2.5 rounded-xl border transition-all relative active:scale-95 ${
+            aria-label={notificationsEnabled ? 'Silenciar alertas sonoras' : 'Activar alertas sonoras'}
+            className={`p-3 rounded-xl border transition-all relative active:scale-95 ${
               notificationsEnabled
                 ? 'bg-slate-900 border-emerald-500/30 text-emerald-400 hover:border-emerald-500/50'
                 : 'bg-slate-900 border-slate-800 text-slate-500 hover:text-slate-400'
             }`}
             title={notificationsEnabled ? 'Notificaciones en Tiempo Real Activadas' : 'Notificaciones Silenciadas'}
           >
-            {notificationsEnabled ? <Bell className="w-4 h-4" /> : <BellOff className="w-4 h-4" />}
+            {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
             {notificationsEnabled && (
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
             )}
           </button>
 
           <button
-            onClick={() => auth.signOut()}
-            className="p-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 active:scale-95 transition-all"
+            onClick={() => {
+              if (window.confirm('¿Cerrar sesión de la red de seguridad?')) auth.signOut();
+            }}
+            aria-label="Cerrar Sesión"
+            className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 active:scale-95 transition-all"
             title="Cerrar Sesión"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-5 h-5" />
           </button>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Navigation, Car, Search, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
@@ -14,7 +14,7 @@ import 'leaflet/dist/leaflet.css';
 import PlateVerificationBadge from './PlateVerificationBadge';
 import { StolenVehicleCheckResult } from '../services/stolenVehicleService';
 import { normalizePlate, validateChileanPlate } from '../lib/chileanPlates';
-import { scanLicensePlateFromImage } from '../lib/ocrPlateScanner';
+import { scanLicensePlateFromImage, preloadPlateOcrWorker } from '../lib/ocrPlateScanner';
 import { sound } from '../lib/soundEngine';
 
 // Fix for default marker icons in Leaflet + React
@@ -49,6 +49,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const [plate, setPlate] = useState('');
   const [stolenCheckResult, setStolenCheckResult] = useState<StolenVehicleCheckResult | null>(null);
   const [scanningOcr, setScanningOcr] = useState(false);
+  const [ocrHint, setOcrHint] = useState<string | null>(null);
+  const [gpsError, setGpsError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [image, setImage] = useState<File | null>(null);
@@ -58,6 +60,14 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const [usingGps, setUsingGps] = useState(false);
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Precarga del worker de OCR al abrir el formulario: la primera foto no debe
+  // pagar la descarga de WASM + traineddata mientras el operador espera.
+  useEffect(() => {
+    if (isOpen) {
+      preloadPlateOcrWorker();
+    }
+  }, [isOpen]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -71,14 +81,18 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
 
       // Trigger automatic background OCR plate extraction
       setScanningOcr(true);
+      setOcrHint(null);
       try {
         const ocr = await scanLicensePlateFromImage(file);
         if (ocr.detectedPlate) {
           setPlate(ocr.detectedPlate);
           sound.playNodePulse(false);
+        } else {
+          setOcrHint('No se detectó patente en la foto — escríbela manualmente.');
         }
       } catch (ocrErr) {
         console.warn('OCR error:', ocrErr);
+        setOcrHint('No se pudo analizar la foto — escríbela manualmente.');
       } finally {
         setScanningOcr(false);
       }
@@ -90,16 +104,21 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
       navigator.geolocation.getCurrentPosition((pos) => {
         setLocation([pos.coords.latitude, pos.coords.longitude]);
         setUsingGps(true);
+        setGpsError(false);
       }, (err) => {
         console.error("GPS Error:", err);
+        setGpsError(true);
       });
+    } else {
+      setGpsError(true);
     }
   };
 
   const handleStatusResolved = (res: StolenVehicleCheckResult) => {
     setStolenCheckResult(res);
     if (res.hasStolenReport) {
-      setType('ROBO');
+      // Sugerir ROBO solo si el operador no eligió un tipo: nunca pisar su decisión.
+      setType((prev) => prev ?? 'ROBO');
       // Auto populate description if empty
       setDescription((prev) => {
         if (prev.trim()) return prev;
@@ -201,6 +220,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
     setImagePreview(null);
     setLocation(COQUIMBO_CENTER);
     setUsingGps(false);
+    setGpsError(false);
+    setOcrHint(null);
     setError(null);
   };
 
@@ -241,8 +262,9 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   <p className="text-xs text-red-300/80">Notificación inmediata y verificación de patente</p>
                 </div>
               </div>
-              <button 
-                onClick={onClose} 
+              <button
+                onClick={onClose}
+                aria-label="Cerrar reporte de incidente"
                 className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
@@ -302,18 +324,29 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     onChange={(e) => setPlate(e.target.value.toUpperCase())}
                     placeholder="Ej: GKLP42 o AB1234 (Opcional)"
                     maxLength={10}
-                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 px-4 text-sm font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-slate-600 focus:ring-1 focus:ring-slate-500 outline-none transition"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 px-4 text-base font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-slate-600 focus:ring-1 focus:ring-slate-500 outline-none transition"
                   />
                   {plate && (
                     <button
                       type="button"
                       onClick={() => { setPlate(''); setStolenCheckResult(null); }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                      aria-label="Limpiar patente"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-white"
                     >
                       <X className="w-4 h-4" />
                     </button>
                   )}
                 </div>
+
+                {ocrHint && !scanningOcr && (
+                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    {ocrHint}
+                  </p>
+                )}
 
                 {/* Badge de Verificación Automática en Base de Encargos */}
                 <PlateVerificationBadge
@@ -330,7 +363,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 <div className="relative">
                   <textarea
                     placeholder="Describe los hechos, características de los individuos o dirección de fuga..."
-                    className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-xs placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[85px]"
+                    className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-base placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[85px]"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                   />
@@ -419,15 +452,20 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 {pickingLocation && (
                   <div className="space-y-2 rounded-xl border border-slate-800 p-2.5 bg-slate-900/60">
                     <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-                      <span>Haz clic en el mapa para marcar el punto:</span>
-                      <button 
-                        type="button" 
+                      <span>Toca el mapa para marcar el punto:</span>
+                      <button
+                        type="button"
                         onClick={requestGps}
                         className="text-slate-300 flex items-center gap-1 hover:underline font-bold"
                       >
                         <Navigation className="w-3 h-3" /> Mi GPS
                       </button>
                     </div>
+                    {gpsError && (
+                      <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                        GPS no disponible (permiso o señal): se enviará el punto marcado en el mapa.
+                      </p>
+                    )}
                     <div className="h-40 rounded-lg overflow-hidden border border-slate-800 relative z-0">
                       <MapContainer center={location} zoom={14} className="h-full w-full">
                         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />

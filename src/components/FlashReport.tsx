@@ -3,7 +3,7 @@ import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, In
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
 import { db, auth, storage } from '../lib/firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getGeohash, COQUIMBO_CENTER } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
@@ -49,6 +49,8 @@ export default function FlashReport() {
   const [pickingLocation, setPickingLocation] = useState(false);
   const [location, setLocation] = useState<[number, number]>(COQUIMBO_CENTER);
   const [usingGps, setUsingGps] = useState(false);
+  const [gpsError, setGpsError] = useState(false);
+  const [sentSuccess, setSentSuccess] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
   const { profile } = useAuth();
@@ -71,9 +73,13 @@ export default function FlashReport() {
       navigator.geolocation.getCurrentPosition((pos) => {
         setLocation([pos.coords.latitude, pos.coords.longitude]);
         setUsingGps(true);
+        setGpsError(false);
       }, (err) => {
         console.error("GPS Error:", err);
+        setGpsError(true);
       });
+    } else {
+      setGpsError(true);
     }
   };
 
@@ -128,18 +134,28 @@ export default function FlashReport() {
         createdAt: serverTimestamp()
       };
 
-      await setDoc(doc(db, 'incidents', incidentId), incidentData);
-      
       const alertId = safeUUID();
-      await setDoc(doc(db, 'alerts', alertId), {
+
+      // Escritura atómica: incidente y alerta nacen juntos; un reintento tras
+      // un fallo no puede dejar el incidente duplicado sin su alerta.
+      const batch = writeBatch(db);
+      batch.set(doc(db, 'incidents', incidentId), incidentData);
+      batch.set(doc(db, 'alerts', alertId), {
         id: alertId,
         incidentId: incidentId,
         createdAt: serverTimestamp(),
-        notifiedDealershipIds: [] 
+        notifiedDealershipIds: []
       });
+      await batch.commit();
 
-      setIsOpen(false);
-      resetForm();
+      // Feedback de éxito antes de cerrar: el operador debe distinguir
+      // "alerta emitida" de "se cerró el modal".
+      setSentSuccess(true);
+      setTimeout(() => {
+        setIsOpen(false);
+        resetForm();
+        setSentSuccess(false);
+      }, 2400);
     } catch (err) {
       console.error("Error in confirmSubmit:", err);
       if (err instanceof Error) {
@@ -152,7 +168,11 @@ export default function FlashReport() {
       } else {
         setError(String(err));
       }
-      handleFirestoreError(err, OperationType.WRITE, 'incidents');
+      try {
+        handleFirestoreError(err, OperationType.WRITE, 'incidents');
+      } catch {
+        // el error ya quedó visible en el estado `error`
+      }
     } finally {
       setLoading(false);
     }
@@ -165,6 +185,7 @@ export default function FlashReport() {
     setImagePreview(null);
     setLocation(COQUIMBO_CENTER);
     setUsingGps(false);
+    setGpsError(false);
     setError(null);
   };
 
@@ -203,6 +224,7 @@ export default function FlashReport() {
                 </div>
                 <button
                   onClick={() => setIsOpen(false)}
+                  aria-label="Cerrar alerta máxima"
                   className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800/60 transition"
                 >
                   <X className="w-5 h-5" />
@@ -249,7 +271,7 @@ export default function FlashReport() {
                   </label>
                   <textarea
                     placeholder="Detalles clave: personas involucradas, patente, dirección de fuga..."
-                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-white text-xs placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 min-h-[90px]"
+                    className="w-full bg-slate-900 border border-slate-800 rounded-2xl p-3.5 text-white text-base placeholder:text-slate-500 focus:outline-none focus:border-red-500/50 min-h-[90px]"
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     maxLength={500}
@@ -297,6 +319,12 @@ export default function FlashReport() {
                     {usingGps ? 'Punto Fijado' : 'Fijar Mapa'}
                   </button>
                 </div>
+
+                {gpsError && (
+                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    GPS no disponible (permiso o señal): se enviará la ubicación marcada en el mapa.
+                  </p>
+                )}
 
                 {imagePreview && (
                   <div className="relative rounded-2xl overflow-hidden border border-slate-800 h-32">
@@ -424,6 +452,24 @@ export default function FlashReport() {
                         >
                           Volver
                         </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </AnimatePresence>
+              {/* Success Feedback */}
+              <AnimatePresence>
+                {sentSuccess && (
+                  <div className="absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6 text-center">
+                    <div className="space-y-4 max-w-xs">
+                      <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center mx-auto text-slate-950 shadow-xl shadow-emerald-950">
+                        <Check className="w-7 h-7" />
+                      </div>
+                      <div>
+                        <h4 className="font-bold text-white text-base uppercase">¡Alerta Emitida a la Red!</h4>
+                        <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                          El reporte quedó registrado. Los nodos con la app abierta lo están recibiendo ahora.
+                        </p>
                       </div>
                     </div>
                   </div>

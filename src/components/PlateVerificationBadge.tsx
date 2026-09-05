@@ -119,20 +119,30 @@ export default function PlateVerificationBadge({
           className={`rounded-2xl border-2 p-4 transition-all ${
             result.hasStolenReport
               ? 'bg-red-950/70 border-red-500 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.2)] animate-in zoom-in-95'
-              : 'bg-emerald-950/40 border-emerald-500/60 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+              : result.status === 'UNKNOWN'
+                ? 'bg-amber-950/60 border-amber-500 text-amber-100 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+                : 'bg-emerald-950/40 border-emerald-500/60 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
           }`}
         >
           <div className="flex items-start justify-between gap-3 mb-2.5">
             <div className="flex items-center gap-3">
-              <div
-                className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-                  result.hasStolenReport
-                    ? 'bg-red-600 text-white shadow-md shadow-red-950 animate-pulse'
-                    : 'bg-emerald-500 text-slate-950 font-bold'
-                }`}
-              >
-                {result.hasStolenReport ? <ShieldAlert className="w-5 h-5" /> : <ShieldCheck className="w-5 h-5" />}
-              </div>
+                <div
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
+                    result.hasStolenReport
+                      ? 'bg-red-600 text-white shadow-md shadow-red-950 animate-pulse'
+                      : result.status === 'UNKNOWN'
+                        ? 'bg-amber-500 text-slate-950 font-bold'
+                        : 'bg-emerald-500 text-slate-950 font-bold'
+                  }`}
+                >
+                  {result.hasStolenReport ? (
+                    <ShieldAlert className="w-5 h-5" />
+                  ) : result.status === 'UNKNOWN' ? (
+                    <AlertTriangle className="w-5 h-5" />
+                  ) : (
+                    <ShieldCheck className="w-5 h-5" />
+                  )}
+                </div>
               <div>
                 <div className="flex items-center gap-2">
                   <span className="font-mono font-black text-base tracking-wider uppercase text-white">
@@ -142,10 +152,12 @@ export default function PlateVerificationBadge({
                     className={`text-[10px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full ${
                       result.hasStolenReport
                         ? 'bg-red-500 text-white animate-bounce shadow-md shadow-red-900'
-                        : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                        : result.status === 'UNKNOWN'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
                     }`}
                   >
-                    {result.hasStolenReport ? '¡ENCARGO POR ROBO VIGENTE!' : 'SIN ENCARGO'}
+                    {result.hasStolenReport ? '¡ENCARGO POR ROBO VIGENTE!' : result.status === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                   </span>
                 </div>
                 <p className="text-xs font-mono font-bold mt-0.5 text-slate-200">
@@ -199,8 +211,8 @@ export default function PlateVerificationBadge({
             </div>
           )}
 
-          {/* Manual Operator Action Toolbar */}
-          {allowManualOverride && (
+          {/* Manual Operator Action Toolbar — oculta si la consulta no se pudo completar */}
+          {allowManualOverride && result.status !== 'UNKNOWN' && (
             <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-2">
               <span className="text-[10px] font-mono text-slate-400">
                 Fuente: {result.source}

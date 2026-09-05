@@ -393,6 +393,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         plate: result.plate,
         plateFormatted: result.formattedPlate,
         hasStolenReport: Boolean(result.hasStolenReport),
+        stolenCheckStatus: result.status || 'UNKNOWN',
         isEdited: true,
         editedAt: serverTimestamp()
       };
@@ -770,14 +771,14 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           type="date"
                           value={tempDateRange.start}
                           onChange={(e) => setTempDateRange(prev => ({ ...prev, start: e.target.value }))}
-                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-slate-500 outline-none flex-1"
+                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-base text-slate-300 focus:ring-1 focus:ring-slate-500 outline-none flex-1"
                         />
                         <span className="text-slate-400">-</span>
                         <input 
                           type="date"
                           value={tempDateRange.end}
                           onChange={(e) => setTempDateRange(prev => ({ ...prev, end: e.target.value }))}
-                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 focus:ring-1 focus:ring-slate-500 outline-none flex-1"
+                          className="bg-slate-800 border-slate-700 rounded-lg px-2 py-1.5 text-base text-slate-300 focus:ring-1 focus:ring-slate-500 outline-none flex-1"
                         />
                       </div>
                     </div>
@@ -863,8 +864,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
                         <Car className="w-3.5 h-3.5 text-slate-300" />
                         <span className="font-bold text-white uppercase">{(incident as any).plateFormatted || (incident as any).plate}</span>
-                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                          {(incident as any).hasStolenReport ? 'ENCARGO ROBO' : 'SIN ENCARGO'}
+                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                          {(incident as any).hasStolenReport ? 'ENCARGO ROBO' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                         </span>
                       </div>
                     )}
@@ -974,14 +975,14 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   type="date" 
                   value={timelineDate.start}
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, start: e.target.value }))}
-                  className="bg-transparent border-none text-[11px] font-mono text-white focus:ring-0 w-24 p-0 outline-none"
+                  className="bg-transparent border-none text-base font-mono text-white focus:ring-0 w-32 p-0 outline-none"
                 />
                 <span className="text-slate-500">→</span>
                 <input 
                   type="date" 
                   value={timelineDate.end}
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, end: e.target.value }))}
-                  className="bg-transparent border-none text-[11px] font-mono text-white focus:ring-0 w-24 p-0 outline-none"
+                  className="bg-transparent border-none text-base font-mono text-white focus:ring-0 w-32 p-0 outline-none"
                 />
                 {(timelineDate.start || timelineDate.end) && (
                   <button 
@@ -1218,9 +1219,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   <div className="absolute top-4 right-4 z-10">
                     <button
                       onClick={() => { setSelectedIncident(null); setIsEditing(false); }}
-                      className="bg-black/50 hover:bg-black/80 text-white p-2 rounded-full transition-all"
+                      aria-label="Cerrar detalle del incidente"
+                      title="Cerrar detalle"
+                      className="bg-black/50 hover:bg-black/80 text-white p-2.5 rounded-full transition-all"
                     >
-                      <AlertTriangle className="w-6 h-6 rotate-45" />
+                      <X className="w-6 h-6" />
                     </button>
                   </div>
 
@@ -1267,8 +1270,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           Patente y Verificación Nacional (AutoSeguro)
                         </span>
                         {Boolean((selectedIncident as any).plateFormatted || (selectedIncident as any).plate) && (
-                          <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
-                            {(selectedIncident as any).hasStolenReport ? 'ENCARGO POR ROBO' : 'SIN ENCARGO'}
+                          <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white' : (selectedIncident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                            {(selectedIncident as any).hasStolenReport ? 'ENCARGO POR ROBO' : (selectedIncident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                           </span>
                         )}
                       </div>
@@ -1290,7 +1293,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                               onChange={(e) => setModalPlateInput(e.target.value.toUpperCase())}
                               placeholder="Ej: KHCP15 o GKLP42"
                               maxLength={10}
-                              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs font-mono text-white uppercase tracking-widest placeholder:text-slate-600 outline-none focus:border-slate-600"
+                              autoCapitalize="characters"
+                              autoComplete="off"
+                              spellCheck={false}
+                              className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2.5 text-base font-mono text-white uppercase tracking-widest placeholder:text-slate-600 outline-none focus:border-slate-600"
                             />
                             {modalPlateInput.trim().length >= 5 && (
                               <button
@@ -1303,10 +1309,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                                       plate: validation.normalized,
                                       formattedPlate: validation.formatted,
                                       hasStolenReport: false,
-                                      status: 'CLEAN',
-                                      statusText: 'SIN ENCARGO POR ROBO REGISTRADO',
+                                      // Asignación manual: la patente se guarda SIN veredicto
+                                      // (UNKNOWN); el veredicto real llega por onStatusResolved
+                                      // cuando PlateVerificationBadge consulta el registro.
+                                      status: 'UNKNOWN',
+                                      statusText: 'PENDIENTE DE VERIFICACIÓN NACIONAL',
                                       checkedAt: new Date().toISOString(),
-                                      source: 'AutoSeguro / Carabineros de Chile',
+                                      source: 'Asignación manual',
                                     });
                                   }
                                 }}

@@ -183,7 +183,11 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                     onChange={handlePlateChange}
                     placeholder="Ej: GKLP42 o AB1234"
                     maxLength={10}
-                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-sm font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition"
+                    inputMode="text"
+                    autoCapitalize="characters"
+                    autoComplete="off"
+                    spellCheck={false}
+                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 pl-10 pr-4 text-base font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-amber-500/60 focus:ring-1 focus:ring-amber-500/30 outline-none transition"
                   />
                 </div>
 

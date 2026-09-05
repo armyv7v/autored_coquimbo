@@ -385,23 +385,16 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     return result;
   }
 
-  // 5. Fallback if offline or quota exceeded
+  // 5. Fallback if offline or quota exceeded: NEVER fake a clean result —
+  // a green "SIN ENCARGO" here is a false negative on the app's core decision.
   return {
     plate: cleanPlate,
     formattedPlate: validation.formatted,
     hasStolenReport: false,
-    status: 'CLEAN',
-    statusText: 'SIN ENCARGO POR ROBO REGISTRADO',
-    vehicleDetails: {
-      brand: 'PADRÓN EN TRÁMITE',
-      model: 'VEHÍCULO PARTICULAR',
-      year: 'REGISTRADO',
-      color: 'A CONFIRMAR',
-      vehicleType: 'VEHÍCULO MOTORIZADO',
-      vinMasked: `VIN-${cleanPlate.slice(0, 4)}******`,
-    },
+    status: 'UNKNOWN',
+    statusText: 'SIN CONEXIÓN — NO SE PUDO VERIFICAR',
     checkedAt,
-    source: 'AutoSeguro / Subsecretaría de Prevención del Delito (Chile)',
+    source: 'No verificado (sin conexión o cuota de consultas agotada)',
   };
 }
 

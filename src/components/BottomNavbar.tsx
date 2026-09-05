@@ -1,6 +1,5 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
 import { NAV_ITEMS, TabType } from '../lib/navigation';
 
 export type { TabType } from '../lib/navigation';
@@ -14,7 +13,6 @@ interface BottomNavbarProps {
 export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTriggerAlert }: BottomNavbarProps) {
   const location = useLocation();
   const navigate = useNavigate();
-  const { profile } = useAuth();
 
   const handleTabClick = (tab: TabType) => {
     if (setActiveTab) setActiveTab(tab);
@@ -22,8 +20,14 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
   };
 
   return (
-    <nav className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-slate-950 backdrop-blur-2xl border-t border-white/10 px-2 py-2 flex items-end justify-around shadow-2xl shadow-black/30 select-none">
-      {NAV_ITEMS.filter((item) => !item.adminOnly || profile?.role === 'ADMIN').map((item) => {
+    <nav
+      className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-slate-950 backdrop-blur-2xl border-t border-white/10 px-2 pt-2 flex items-end justify-around shadow-2xl shadow-black/30 select-none"
+      style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
+    >
+      {/* El acceso Admin vive en el botón del header (móvil) y en la nav de
+          escritorio: con 6 ítems el sexto quedaba fuera del viewport en
+          teléfonos de 360-375px. */}
+      {NAV_ITEMS.filter((item) => !item.adminOnly).map((item) => {
         const Icon = item.icon;
 
         if (item.alert) {

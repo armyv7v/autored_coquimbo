@@ -91,7 +91,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder="Buscador general"
-                      className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 pl-12 pr-4 text-sm text-white outline-none transition focus:border-emerald-500/60 focus:ring-4 focus:ring-emerald-500/10"
+                      className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 pl-12 pr-4 text-base text-white outline-none transition focus:border-emerald-500/60 focus:ring-4 focus:ring-emerald-500/10"
                     />
                   </label>
                   <Select value={year} onChange={setYear} options={years} label="Año" />

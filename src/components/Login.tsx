@@ -674,7 +674,9 @@ export default function Login() {
                     </button>
                   </div>
 
-                  {/* Acceso Rápido de Prueba 1-Tap */}
+                  {/* Acceso Rápido de Prueba 1-Tap — solo en desarrollo: en producción
+                      cualquiera podría auto-crearse una cuenta ADMIN con el URL. */}
+                  {import.meta.env.DEV && (
                   <div className="p-4 rounded-2xl bg-slate-900 border border-[#E20B17]/40 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#FF4D00] flex items-center gap-1.5">
@@ -700,6 +702,7 @@ export default function Login() {
                       </button>
                     </div>
                   </div>
+                  )}
 
                   <div className="p-3 rounded-xl border border-sky-400/20 bg-sky-400/8 flex items-center gap-2.5 text-xs text-slate-300">
                     <ShieldCheck className="w-4 h-4 text-sky-400 shrink-0" />
@@ -777,20 +780,22 @@ export default function Login() {
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="auth-input" placeholder="••••••••" />
                       </Field>
 
-                      <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] font-mono flex items-center justify-between gap-2">
-                        <span className="text-slate-400 truncate">Prueba: <strong className="text-white">admin@alertadealers.cl</strong> / <strong className="text-white">alertadealers2026</strong></span>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setEmail('admin@alertadealers.cl');
-                            setPassword('alertadealers2026');
-                            sound.playNodePulse(false);
-                          }}
-                          className="text-slate-300 hover:underline font-bold shrink-0"
-                        >
-                          Auto-llenar
-                        </button>
-                      </div>
+                      {import.meta.env.DEV && (
+                        <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-800 text-[11px] font-mono flex items-center justify-between gap-2">
+                          <span className="text-slate-400 truncate">Prueba: <strong className="text-white">admin@alertadealers.cl</strong> / <strong className="text-white">alertadealers2026</strong></span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEmail('admin@alertadealers.cl');
+                              setPassword('alertadealers2026');
+                              sound.playNodePulse(false);
+                            }}
+                            className="text-slate-300 hover:underline font-bold shrink-0"
+                          >
+                            Auto-llenar
+                          </button>
+                        </div>
+                      )}
                     </>
                   )}
 

@@ -162,7 +162,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
                   onChange={(event) => setMessage(event.target.value)}
                   placeholder="Ej: Están solicitando libros de asistencia, contratos y patentes al día..."
                   rows={3}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-xs text-white placeholder:text-slate-600 outline-none focus:border-sky-500/60 transition"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-base text-white placeholder:text-slate-600 outline-none focus:border-sky-500/60 transition"
                 />
               </div>
 

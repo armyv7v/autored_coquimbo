@@ -24,6 +24,8 @@ export default function AlertConfirmationModal({
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [gpsFailed, setGpsFailed] = useState(false);
   const [location, setLocation] = useState<[number, number]>(COQUIMBO_CENTER);
   const { profile } = useAuth();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -34,17 +36,23 @@ export default function AlertConfirmationModal({
       setCountdown(COUNTDOWN_SECONDS);
       setIsSending(false);
       setSentSuccess(false);
+      setSendError(null);
+      setGpsFailed(false);
 
       if ('geolocation' in navigator) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             setLocation([pos.coords.latitude, pos.coords.longitude]);
+            setGpsFailed(false);
           },
           (err) => {
             console.warn('Panic GPS error:', err);
+            setGpsFailed(true);
           },
           { enableHighAccuracy: true, timeout: 5000 }
         );
+      } else {
+        setGpsFailed(true);
       }
     }
   }, [isOpen]);
@@ -94,7 +102,13 @@ export default function AlertConfirmationModal({
       }, 2200);
     } catch (err) {
       console.error('Error in dispatchPanicAlert:', err);
-      handleFirestoreError(err, OperationType.WRITE, 'incidents');
+      setSendError('La alerta no pudo enviarse. Verificá tu conexión y tocá Reintentar.');
+      try {
+        handleFirestoreError(err, OperationType.WRITE, 'incidents');
+      } catch {
+        // ya fue registrada en consola; el error visible lo maneja sendError
+      }
+    } finally {
       setIsSending(false);
     }
   };
@@ -167,7 +181,7 @@ export default function AlertConfirmationModal({
                 ¡Alerta Emitida a la Red!
               </h3>
               <p className="text-xs text-slate-300 font-mono">
-                Todos los nodos y automotoras han sido notificados.
+                El reporte quedó registrado en la red. Los nodos con la app abierta lo están recibiendo ahora.
               </p>
             </div>
           ) : (
@@ -217,10 +231,21 @@ export default function AlertConfirmationModal({
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                   Se transmitirá la emergencia a toda la red al terminar el conteo.
                 </p>
+                {gpsFailed && (
+                  <p className="mt-2 text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    Sin GPS: se enviará la ubicación aproximada (centro de Coquimbo).
+                  </p>
+                )}
               </div>
 
               {/* Action Buttons */}
               <div className="space-y-2.5 pt-1">
+                {sendError && (
+                  <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/40 text-red-300 text-xs font-mono flex items-start gap-2 text-left">
+                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span>{sendError}</span>
+                  </div>
+                )}
                 {/* Immediate Dispatch Button */}
                 <button
                   type="button"
@@ -233,7 +258,7 @@ export default function AlertConfirmationModal({
                   ) : (
                     <>
                       <Send className="w-4 h-4" />
-                      Enviar de Inmediato
+                      {sendError ? 'Reintentar Envío' : 'Enviar de Inmediato'}
                     </>
                   )}
                 </button>

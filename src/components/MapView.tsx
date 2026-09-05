@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db, auth, storage } from '../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { ShieldAlert, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight, Settings2, Sparkles } from 'lucide-react';
+import { ShieldAlert, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight, Settings2, Sparkles, Car } from 'lucide-react';
 import { COQUIMBO_CENTER, getGeohash } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
@@ -198,7 +198,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
         <input
           type="text"
           placeholder="Buscar automotora, calle o zona..."
-          className="bg-transparent border-none outline-none text-white text-xs flex-1 placeholder:text-slate-500 font-medium"
+          className="bg-transparent border-none outline-none text-white text-base flex-1 placeholder:text-slate-500 font-medium"
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
         />
@@ -444,10 +444,10 @@ export default function MapView() {
         <TileLayer
           url={
             tileProvider === 'DARK'
-              ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
+              ? 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
               : 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
           }
-          attribution="&copy; CARTO &copy; Esri"
+          attribution="&copy; Esri"
         />
 
         <MapEffect selectedId={selectedIncidentId} incidents={incidents} />
@@ -708,8 +708,8 @@ export default function MapView() {
                                 <Car className="w-3.5 h-3.5 text-slate-300" />
                                 <span className="font-black uppercase tracking-wider">{(incident as any).plateFormatted}</span>
                               </div>
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : 'bg-emerald-500/20 text-emerald-300'}`}>
-                                {(incident as any).hasStolenReport ? 'ENCARGO ROBO VIGENTE' : 'SIN ENCARGO'}
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                                {(incident as any).hasStolenReport ? 'ENCARGO ROBO VIGENTE' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                               </span>
                             </div>
                           )}
