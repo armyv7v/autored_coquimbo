@@ -15,7 +15,9 @@ import StockAutomotoras from './StockAutomotoras';
 import ExecutiveDigestModal from './ExecutiveDigestModal';
 import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 import { TabType } from '../lib/navigation';
-import { Route, Car, ShieldCheck, FileText, Share2, Copy } from 'lucide-react';
+import { Route, Car, ShieldCheck, FileText, Share2, Copy, Map as MapIcon } from 'lucide-react';
+import TacticalActionCard from './ui/TacticalActionCard';
+import { useNavigate } from 'react-router-dom';
 import { formatTimeCL, formatDateCL, formatFullDateTimeCL, parseIncidentDate } from '../lib/dateUtils';
 import PlateVerificationBadge from './PlateVerificationBadge';
 import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
@@ -76,6 +78,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [copiedIncidentWhatsApp, setCopiedIncidentWhatsApp] = useState(false);
   const { permission } = usePushNotifications();
   const { profile } = useAuth();
+  const navigate = useNavigate();
 
   // Edit States
   const [isEditing, setIsEditing] = useState(false);
@@ -524,99 +527,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </button>
             </div>
 
-            {/* 4 Opciones Tácticas con Bordes de Color y Flechas SVG */}
+            {/* 4 Opciones Tácticas — lenguaje visual único (ui/TacticalActionCard) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              {/* 1era Opcion: REPORTE Robo / Sospechoso - ROJO */}
-              <button
-                type="button"
-                onClick={() => setIsReporting(true)}
-                className="tactical-card p-4 rounded-2xl flex items-center justify-between group border-2 border-red-500/70 hover:border-red-400 bg-gradient-to-br from-red-950/45 via-slate-900/90 to-slate-950 text-left active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-red-500/20 border-2 border-red-500/60 flex items-center justify-center text-red-400 group-hover:scale-105 group-hover:border-red-400 transition-all shadow-md shadow-red-950 shrink-0">
-                    <ShieldAlert className="w-5 h-5" />
-                  </div>
-                  <div className="truncate">
-                    <p className="text-[11px] font-mono font-bold text-red-400 uppercase tracking-wider truncate">REPORTE SOSPECHOSO</p>
-                    <p className="text-sm font-bold text-slate-100 truncate">Alerta de Seguridad</p>
-                  </div>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white group-hover:border-red-400 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(239,68,68,0.5)] transition-all shrink-0 ml-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-
-              {/* 2da Opcion: PRUEBA EN RUTA - AMBER/ORANGE */}
-              <button
-                type="button"
-                onClick={() => setIsRoadTestOpen(true)}
-                className="tactical-card p-4 rounded-2xl flex items-center justify-between group border-2 border-amber-500/70 hover:border-amber-400 bg-gradient-to-br from-amber-950/45 via-slate-900/90 to-slate-950 text-left active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.4)]"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-amber-500/20 border-2 border-amber-500/60 flex items-center justify-center text-amber-400 group-hover:scale-105 group-hover:border-amber-400 transition-all shadow-md shadow-amber-950 shrink-0">
-                    <Route className="w-5 h-5" />
-                  </div>
-                  <div className="truncate">
-                    <p className="text-[11px] font-mono font-bold text-amber-400 uppercase tracking-wider truncate">PRUEBA EN RUTA</p>
-                    <p className="text-sm font-bold text-slate-100 truncate">Respaldo Test Drive</p>
-                  </div>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 group-hover:border-amber-400 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(245,158,11,0.5)] transition-all shrink-0 ml-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-
-              {/* 3era Opcion: Fiscalización - SKY/CYAN */}
-              <button
-                type="button"
-                onClick={() => setIsInspectionOpen(true)}
-                className="tactical-card p-4 rounded-2xl flex items-center justify-between group border-2 border-sky-500/70 hover:border-sky-400 bg-gradient-to-br from-sky-950/45 via-slate-900/90 to-slate-950 text-left active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(14,165,233,0.2)] hover:shadow-[0_0_30px_rgba(14,165,233,0.4)]"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-sky-500/20 border-2 border-sky-500/60 flex items-center justify-center text-sky-400 group-hover:scale-105 group-hover:border-sky-400 transition-all shadow-md shadow-sky-950 shrink-0">
-                    <ShieldCheck className="w-5 h-5" />
-                  </div>
-                  <div className="truncate">
-                    <p className="text-[11px] font-mono font-bold text-sky-400 uppercase tracking-wider truncate">FISCALIZACIÓN</p>
-                    <p className="text-sm font-bold text-slate-100 truncate">Control de Visita</p>
-                  </div>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-sky-500/10 border border-sky-500/30 flex items-center justify-center text-sky-400 group-hover:bg-sky-500 group-hover:text-slate-950 group-hover:border-sky-400 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(14,165,233,0.5)] transition-all shrink-0 ml-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
-
-              {/* 4ta Opcion: STOCK AUTOMOTORAS - EMERALD/GREEN */}
-              <button
-                type="button"
-                onClick={() => setIsStockOpen(true)}
-                className="tactical-card p-4 rounded-2xl flex items-center justify-between group border-2 border-emerald-500/70 hover:border-emerald-400 bg-gradient-to-br from-emerald-950/45 via-slate-900/90 to-slate-950 text-left active:scale-[0.98] transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]"
-              >
-                <div className="flex items-center gap-3.5 min-w-0">
-                  <div className="w-11 h-11 rounded-xl bg-emerald-500/20 border-2 border-emerald-500/60 flex items-center justify-center text-emerald-400 group-hover:scale-105 group-hover:border-emerald-400 transition-all shadow-md shadow-emerald-950 shrink-0">
-                    <Car className="w-5 h-5" />
-                  </div>
-                  <div className="truncate">
-                    <p className="text-[11px] font-mono font-bold text-emerald-400 uppercase tracking-wider truncate">INVENTARIO</p>
-                    <p className="text-sm font-bold text-slate-100 truncate">Stock en Red</p>
-                  </div>
-                </div>
-                <div className="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950 group-hover:border-emerald-400 group-hover:scale-105 group-hover:shadow-[0_0_12px_rgba(16,185,129,0.5)] transition-all shrink-0 ml-2">
-                  <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14" />
-                    <path d="m12 5 7 7-7 7" />
-                  </svg>
-                </div>
-              </button>
+              <TacticalActionCard icon={ShieldAlert} eyebrow="Reporte Sospechoso" title="Alerta de Seguridad" tone="red" onClick={() => setIsReporting(true)} />
+              <TacticalActionCard icon={Route} eyebrow="Prueba en Ruta" title="Respaldo Test Drive" tone="amber" onClick={() => setIsRoadTestOpen(true)} />
+              <TacticalActionCard icon={ShieldCheck} eyebrow="Fiscalización" title="Control de Visita" tone="sky" onClick={() => setIsInspectionOpen(true)} />
+              <TacticalActionCard icon={Car} eyebrow="Inventario" title="Stock en Red" tone="emerald" onClick={() => setIsStockOpen(true)} />
             </div>
           </section>
 
@@ -689,11 +605,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               >
                 Exportar JSON
               </button>
-              <button 
-                onClick={() => {
-                  const element = document.getElementById('timeline');
-                  element?.scrollIntoView({ behavior: 'smooth' });
-                }}
+              <button
+                onClick={() => setActiveTab('HISTORIAL')}
                 className="text-xs text-slate-500 hover:text-slate-800 transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
@@ -912,9 +825,14 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         );
                     })}
                 </div>
-                <button className="w-full mt-6 bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold py-3 rounded-xl transition-all uppercase tracking-widest">
-                    Ver Red Completa
-                </button>
+                <TacticalActionCard
+                  icon={MapIcon}
+                  eyebrow="Red Táctica"
+                  title="Ver Red Completa en el Mapa"
+                  tone="sky"
+                  onClick={() => navigate('/map')}
+                  className="mt-6"
+                />
             </div>
 
             <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 relative overflow-hidden group">

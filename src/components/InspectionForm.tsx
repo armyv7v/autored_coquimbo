@@ -210,7 +210,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
                   type="button"
                   onClick={() => setConfirming(true)}
                   disabled={!ready}
-                  className="flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-sky-500 font-bold uppercase tracking-wider text-slate-950 shadow-lg shadow-sky-500/20 transition hover:bg-sky-400 active:scale-[0.99] disabled:bg-slate-800 disabled:text-slate-600 disabled:shadow-none"
+                  className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-sky-500/70 bg-gradient-to-br from-sky-950/45 via-slate-900/90 to-slate-950 font-bold uppercase tracking-wider text-sky-100 shadow-lg shadow-sky-500/20 transition hover:border-sky-400 active:scale-[0.99] disabled:opacity-50"
                 >
                   <Send className="h-4 w-4" /> Emitir Alerta a la Red
                 </button>

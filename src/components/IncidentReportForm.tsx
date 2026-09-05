@@ -15,6 +15,7 @@ import PlateVerificationBadge from './PlateVerificationBadge';
 import { StolenVehicleCheckResult } from '../services/stolenVehicleService';
 import { normalizePlate, validateChileanPlate } from '../lib/chileanPlates';
 import { scanLicensePlateFromImage, preloadPlateOcrWorker } from '../lib/ocrPlateScanner';
+import { TacticalSubmitBar } from './ui/TacticalActionCard';
 import { sound } from '../lib/soundEngine';
 
 // Fix for default marker icons in Leaflet + React
@@ -483,23 +484,14 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={loading || !type}
-                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-950 border border-red-400/40 disabled:opacity-50 transition active:scale-[0.98]"
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    Transmitiendo Alerta a la Red...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4" />
-                    Transmitir Reporte a la Red
-                  </>
-                )}
-              </button>
+              <TacticalSubmitBar
+                icon={Send}
+                label="Transmitir Reporte a la Red"
+                loading={loading}
+                loadingLabel="Transmitiendo Alerta a la Red..."
+                tone="red"
+                disabled={!type}
+              />
             </form>
           </motion.div>
         </motion.div>

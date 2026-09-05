@@ -10,6 +10,7 @@ import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
 import { safeUUID } from '../lib/uuid';
 import AlertConfirmationModal from './AlertConfirmationModal';
+import { TacticalSubmitBar } from './ui/TacticalActionCard';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { formatWhatsAppFlashReport } from '../lib/executiveReport';
@@ -366,14 +367,14 @@ export default function FlashReport() {
                 </div>
 
                 <div className="pt-2 flex flex-col sm:flex-row gap-2">
-                  <button
-                    type="submit"
-                    disabled={loading || !type}
-                    className="flex-1 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-red-950 transition active:scale-[0.98]"
-                  >
-                    {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-                    Disparar Alerta Red
-                  </button>
+                  <TacticalSubmitBar
+                    icon={Send}
+                    label="Disparar Alerta Red"
+                    loading={loading}
+                    loadingLabel="Transmitiendo a la Red..."
+                    tone="red"
+                    disabled={!type}
+                  />
                 </div>
               </form>
 

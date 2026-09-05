@@ -288,7 +288,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
               <button
                 type="submit"
                 disabled={!ready || saving}
-                className="flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-amber-500 font-bold uppercase tracking-wider text-slate-950 shadow-lg shadow-amber-500/20 transition hover:bg-amber-400 active:scale-[0.99] disabled:bg-slate-800 disabled:text-slate-600 disabled:shadow-none"
+                className="flex h-12 w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-amber-500/70 bg-gradient-to-br from-amber-950/45 via-slate-900/90 to-slate-950 font-bold uppercase tracking-wider text-amber-100 shadow-lg shadow-amber-500/20 transition hover:border-amber-400 active:scale-[0.99] disabled:opacity-50"
               >
                 {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
                 Registrar Salida de Prueba
