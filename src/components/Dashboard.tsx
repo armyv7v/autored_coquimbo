@@ -569,12 +569,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Intelligence Feed */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <Info className="w-5 h-5 text-slate-500" />
+          <div className="flex flex-wrap items-center justify-between gap-3 px-2">
+            <h2 className="text-xl font-bold flex items-center gap-2 min-w-0">
+              <Info className="w-5 h-5 text-slate-500 shrink-0" />
               Feed de Inteligencia Local
             </h2>
-            <div className="flex items-center gap-4">
+            <div className="flex flex-wrap items-center gap-2">
               <button 
                 onClick={() => setIsReporting(true)}
                 className="text-xs bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-lg border border-red-500 transition-all uppercase font-black tracking-widest flex items-center gap-2 shadow-lg shadow-red-900/20"
@@ -607,7 +607,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </button>
               <button
                 onClick={() => setActiveTab('HISTORIAL')}
-                className="text-xs text-slate-500 hover:text-slate-800 transition-all uppercase font-bold tracking-widest"
+                className="text-xs text-slate-500 hover:text-slate-300 transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
               </button>
@@ -754,9 +754,9 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     {incident.type === 'MARCAJE' && <MapPin className="w-5 h-5" />}
                     {incident.type === 'OTRO' && <Info className="w-5 h-5" />}
                   </div>
-                  <div className="flex-1">
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="flex items-center gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 min-w-0">
                         <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
                         {incident.isEdited && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-300 bg-slate-500/10 border border-slate-600 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
@@ -764,24 +764,24 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           </span>
                         )}
                       </div>
-                      <span className="flex items-center gap-1 text-xs text-slate-400 font-medium">
+                      <span className="flex items-center gap-1 text-xs text-slate-400 font-medium shrink-0">
                         <Clock className="w-3 h-3" />
                         {formatTimeCL(incident.createdAt)}
                       </span>
                     </div>
                     <h3 className="font-bold text-white mb-2 leading-none flex items-center gap-2">
-                        {incident.type === 'ROBO' && <ShieldAlert className="w-4 h-4 text-red-500" />}
-                        {incident.type === 'SOSPECHOSO' && <AlertTriangle className="w-4 h-4 text-orange-500" />}
-                        {incident.type === 'MARCAJE' && <MapPin className="w-4 h-4 text-blue-500" />}
-                        {incident.type === 'OTRO' && <Info className="w-4 h-4 text-slate-500" />}
+                        {incident.type === 'ROBO' && <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />}
+                        {incident.type === 'SOSPECHOSO' && <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />}
+                        {incident.type === 'MARCAJE' && <MapPin className="w-4 h-4 text-blue-500 shrink-0" />}
+                        {incident.type === 'OTRO' && <Info className="w-4 h-4 text-slate-500 shrink-0" />}
                         ALERTA: {incident.type}
                     </h3>
-                    <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed">
+                    <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed break-words">
                       {incident.description}
                     </p>
                     {((incident as any).plateFormatted || (incident as any).plate) && (
-                      <div className="mt-2.5 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
-                        <Car className="w-3.5 h-3.5 text-slate-300" />
+                      <div className="mt-2.5 inline-flex max-w-full flex-wrap items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
+                        <Car className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                         <span className="font-bold text-white uppercase">{(incident as any).plateFormatted || (incident as any).plate}</span>
                         <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
                           {(incident as any).hasStolenReport ? 'ENCARGO ROBO' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
@@ -813,12 +813,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         }
                         
                         return (
-                            <div key={dealer.id} className="flex items-center justify-between group">
-                                <div className="flex items-center gap-3">
-                                    <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`}></div>
-                                    <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors">{dealer.name}</span>
+                            <div key={dealer.id} className="flex items-center justify-between gap-3 group">
+                                <div className="flex items-center gap-3 min-w-0">
+                                    <div className={`w-2 h-2 rounded-full shrink-0 ${isOnline ? 'bg-emerald-500 animate-pulse' : 'bg-slate-700'}`}></div>
+                                    <span className="text-xs font-medium text-slate-300 group-hover:text-white transition-colors truncate">{dealer.name}</span>
                                 </div>
-                                <span className={`text-[11px] font-black uppercase tracking-tighter ${isOnline ? 'text-emerald-400/80' : 'text-slate-400'}`}>
+                                <span className={`text-[11px] font-black uppercase tracking-tighter shrink-0 ${isOnline ? 'text-emerald-400/80' : 'text-slate-400'}`}>
                                     {isOnline ? 'LIVE' : 'OFF'}
                                 </span>
                             </div>
