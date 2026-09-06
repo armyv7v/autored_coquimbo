@@ -215,9 +215,9 @@ export default function FlashReport() {
                     <AlertTriangle className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-white text-sm uppercase tracking-wider">
+                    <h2 className="font-bold text-white text-sm uppercase tracking-wider">
                       Alerta Máxima / Flash Report
-                    </h3>
+                    </h2>
                     <p className="text-xs text-red-400 font-mono">
                       Notificación inmediata a toda la red
                     </p>
@@ -388,9 +388,9 @@ export default function FlashReport() {
                     className="absolute inset-0 z-30 bg-slate-950 flex flex-col"
                   >
                     <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
-                      <h4 className="font-bold text-white text-xs uppercase tracking-wider">
+                      <h3 className="font-bold text-white text-xs uppercase tracking-wider">
                         Seleccionar Coordenadas en el Mapa
-                      </h4>
+                      </h3>
                       <button
                         onClick={() => setPickingLocation(false)}
                         className="p-1.5 rounded-lg text-slate-400 hover:text-white"
@@ -433,7 +433,7 @@ export default function FlashReport() {
                         <AlertTriangle className="w-7 h-7" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-base uppercase">¿Confirmar Alerta Máxima?</h4>
+                        <h3 className="font-bold text-white text-base uppercase">¿Confirmar Alerta Máxima?</h3>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                           Se emitirá una notificación de alta prioridad a todas las automotoras de la red.
                         </p>
@@ -467,7 +467,7 @@ export default function FlashReport() {
                         <Check className="w-7 h-7" />
                       </div>
                       <div>
-                        <h4 className="font-bold text-white text-base uppercase">¡Alerta Emitida a la Red!</h4>
+                        <h3 className="font-bold text-white text-base uppercase">¡Alerta Emitida a la Red!</h3>
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                           El reporte quedó registrado. Los nodos con la app abierta lo están recibiendo ahora.
                         </p>

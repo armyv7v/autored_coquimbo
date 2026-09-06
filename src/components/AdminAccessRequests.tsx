@@ -202,7 +202,7 @@ export default function AdminAccessRequests() {
 
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-1">
-                    <h4 className="text-sm font-black text-white truncate">{req.dealershipName}</h4>
+                    <p className="text-sm font-black text-white truncate">{req.dealershipName}</p>
                     <span className="text-xs font-mono text-slate-400 bg-slate-800 px-2 py-0.5 rounded-md tracking-tight">
                       RUT {req.rut}
                     </span>
@@ -293,7 +293,7 @@ export default function AdminAccessRequests() {
                   <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-400/10 text-emerald-400 flex items-center justify-center mb-4">
                     <ShieldCheck className="w-7 h-7" />
                   </div>
-                  <h3 className="text-lg font-black text-white uppercase tracking-tight mb-1">Acceso Aprobado</h3>
+                  <h2 className="text-lg font-black text-white uppercase tracking-tight mb-1">Acceso Aprobado</h2>
                   <p className="text-xs text-slate-400 leading-relaxed mb-5">
                     Se crearon las credenciales para <strong className="text-white">{result.email}</strong> con perfil{' '}
                     <strong className="text-slate-300">PROPIETARIO</strong> y la sede quedó activa en la red.
@@ -342,7 +342,7 @@ export default function AdminAccessRequests() {
                 <>
                   <div className="flex items-start justify-between gap-4 mb-5">
                     <div>
-                      <h3 className="text-lg font-black text-white uppercase tracking-tight">Detalle de solicitud</h3>
+                      <h2 className="text-lg font-black text-white uppercase tracking-tight">Detalle de solicitud</h2>
                       <p className="text-xs text-slate-400 font-mono tracking-tight mt-0.5">RUT {modal.rutKey}</p>
                     </div>
                     <span

@@ -177,9 +177,9 @@ export default function AlertConfirmationModal({
               <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 border-2 border-emerald-500 flex items-center justify-center text-emerald-400">
                 <Check className="w-10 h-10" />
               </div>
-              <h3 className="text-xl font-black text-white uppercase tracking-tight">
+              <h2 className="text-xl font-black text-white uppercase tracking-tight">
                 ¡Alerta Emitida a la Red!
-              </h3>
+              </h2>
               <p className="text-xs text-slate-300 font-mono">
                 El reporte quedó registrado en la red. Los nodos con la app abierta lo están recibiendo ahora.
               </p>
@@ -225,9 +225,9 @@ export default function AlertConfirmationModal({
                   <Radio className="w-3.5 h-3.5" />
                   Botón de Pánico Activo
                 </div>
-                <h3 className="text-lg font-black text-white uppercase tracking-tight">
+                <h2 className="text-lg font-black text-white uppercase tracking-tight">
                   Alerta Máxima Inminente
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-400 mt-1 leading-relaxed">
                   Se transmitirá la emergencia a toda la red al terminar el conteo.
                 </p>

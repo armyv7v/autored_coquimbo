@@ -34,6 +34,7 @@ interface UserProfile {
   displayName: string;
   role: 'ADMIN' | 'OWNER' | 'SECURITY';
   status: 'ACTIVE' | 'SUSPENDED';
+  dealershipId?: string | null;
   createdAt: any;
 }
 
@@ -179,7 +180,7 @@ export default function AdminDashboard() {
             <div className="bg-slate-700 p-2 rounded-xl shadow-lg shadow-black/20">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Panel de Administración</h1>
+            <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Panel de Administración</h1>
           </div>
           <p className="text-slate-500 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
         </div>
@@ -204,7 +205,7 @@ export default function AdminDashboard() {
             <Inbox className="w-3.5 h-3.5" />
             Solicitudes
             {pendingCount > 0 && (
-              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-slate-300' : 'bg-slate-700 text-white'}`}>
+              <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-slate-900' : 'bg-slate-700 text-white'}`}>
                 {pendingCount}
               </span>
             )}
@@ -239,10 +240,10 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center">
-                <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
+                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
                   <BarChart3 className="w-4 h-4 text-slate-300" />
                   Distribución por Tipo
-                </h3>
+                </h2>
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
@@ -270,10 +271,10 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col">
-                <h3 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
+                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
                   <Activity className="w-4 h-4 text-slate-300" />
                   Estado de Resolución
-                </h3>
+                </h2>
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={statusData}>
@@ -384,7 +385,7 @@ export default function AdminDashboard() {
                             </select>
                           </td>
                           <td className="p-6">
-                            <span className="text-xs font-bold text-slate-400">Chile Motors Coquimbo</span>
+                            <span className="text-xs font-bold text-slate-400 truncate">{user.dealershipId || '—'}</span>
                           </td>
                           <td className="p-6">
                             <span className={`text-[11px] font-black uppercase tracking-[0.2em] px-2.5 py-1 rounded-full ${user.status === 'ACTIVE' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-red-500/10 text-red-500'}`}>

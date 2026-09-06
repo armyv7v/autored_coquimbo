@@ -411,9 +411,9 @@ export default function Login() {
                           </div>
                         </div>
                         <div className="relative">
-                          <h4 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1.5">
+                          <h2 className="text-xl sm:text-2xl font-black text-white tracking-tight mb-1.5">
                             {card.title}
-                          </h4>
+                          </h2>
                           <p className="text-sm text-slate-300 leading-relaxed max-w-xl">
                             {card.desc}
                           </p>
@@ -479,9 +479,9 @@ export default function Login() {
                           <div className="p-2.5 rounded-2xl bg-slate-950 text-white">
                             <Icon className="w-6 h-6" />
                           </div>
-                          <h3 className="font-display text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
+                          <h2 className="font-display text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
                             {card.title}
-                          </h3>
+                          </h2>
                         </div>
                         <p className="relative text-sm sm:text-[15px] leading-7 text-slate-600 max-w-2xl">
                           {card.details.intro}
@@ -865,9 +865,9 @@ export default function Login() {
             </div>
 
             <div className="flex items-center justify-between mb-2">
-              <h4 className="font-display font-black text-base text-white">
+              <p className="font-display font-black text-base text-white">
                 {selectedNode.name}
-              </h4>
+              </p>
               <span className="text-xs font-mono font-bold text-[#00E676] bg-[#00E676]/15 px-2.5 py-0.5 rounded-full border border-[#00E676]/30">
                 {selectedNode.latency}ms Ping
               </span>

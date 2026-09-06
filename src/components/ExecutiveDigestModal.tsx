@@ -57,9 +57,9 @@ export default function ExecutiveDigestModal({
                 <FileText className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-white text-sm uppercase tracking-wider">
+                <h2 className="font-bold text-white text-sm uppercase tracking-wider">
                   Minuta Ejecutiva de Seguridad
-                </h3>
+                </h2>
                 <p className="text-xs text-slate-300 font-mono">
                   Resumen de estado para Directorio y Gerencia
                 </p>

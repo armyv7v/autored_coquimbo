@@ -190,13 +190,13 @@ export default function NotificationManager() {
               
               <div className="flex-1">
                 <div className="flex items-center justify-between mb-1">
-                  <h3 className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">Prioridad Crítica</h3>
+                  <h2 className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">Prioridad Crítica</h2>
                   <button onClick={() => setActiveAlert(null)} className="text-slate-500 hover:text-white transition-colors">
                     <X className="w-4 h-4" />
                   </button>
                 </div>
                 
-                <h4 className="text-white font-bold text-sm mb-1">{activeAlert.type} EN PROGRESO</h4>
+                <h3 className="text-white font-bold text-sm mb-1">{activeAlert.type} EN PROGRESO</h3>
                 <p className="text-slate-400 text-xs leading-relaxed mb-3 line-clamp-2">
                   {activeAlert.description}
                 </p>

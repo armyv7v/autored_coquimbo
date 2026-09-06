@@ -553,9 +553,9 @@ export default function MapView() {
                           <Building2 className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
-                          <h4 className="font-bold text-white text-xs truncate leading-tight flex items-center gap-2">
+                          <p className="font-bold text-white text-xs truncate leading-tight flex items-center gap-2">
                             {dealer.name}
-                          </h4>
+                          </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
                             <span className={`text-[10px] font-mono uppercase tracking-wider font-bold ${isOnline ? 'text-emerald-400' : 'text-slate-500'}`}>
@@ -678,9 +678,9 @@ export default function MapView() {
                             >
                               <ShieldAlert className="w-4 h-4" />
                             </div>
-                            <h4 className="font-mono font-bold uppercase text-xs tracking-wider text-white">
+                            <p className="font-mono font-bold uppercase text-xs tracking-wider text-white">
                               {incident.type}
-                            </h4>
+                            </p>
                           </div>
                           <span
                             className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded ${

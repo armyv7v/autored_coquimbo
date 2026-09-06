@@ -88,6 +88,21 @@ service cloud.firestore {
       allow get, list, create, update: if isSignedIn();
     }
 
+    // --- Stock de Vehículos de la Red ---
+    match /stockVehicles/{vehicleId} {
+      allow get, list: if isSignedIn();
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll(['dealershipId', 'dealershipName', 'brand', 'model', 'year', 'price', 'status', 'createdByUid', 'createdAt'])
+        && request.resource.data.createdByUid == request.auth.uid
+        && request.resource.data.brand is string
+        && request.resource.data.model is string
+        && request.resource.data.dealershipId is string
+        && request.resource.data.price is number
+        && request.resource.data.year is number
+        && request.resource.data.status in ['DISPONIBLE', 'NEGOCIACION', 'VENDIDO'];
+      allow update, delete: if isSignedIn() && (resource.data.createdByUid == request.auth.uid || isAdmin());
+    }
+
     // --- Stolen Vehicles Registry (AutoSeguro / AutoRed) ---
     match /stolenVehiclesRegistry/{plate} {
       allow get, list: if true;

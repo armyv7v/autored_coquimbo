@@ -464,7 +464,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </div>
               <div className="flex-1">
                 <p className="text-xs font-black text-white/85 uppercase tracking-widest">Nueva Alerta Crítica</p>
-                <h4 className="text-white font-bold leading-tight">{newIncidentNotify.type}: {newIncidentNotify.description.slice(0, 40)}...</h4>
+                <p className="text-white font-bold leading-tight">{newIncidentNotify.type}: {newIncidentNotify.description.slice(0, 40)}...</p>
               </div>
               <ChevronDown className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
             </div>
