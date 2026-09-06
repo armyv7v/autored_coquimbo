@@ -93,6 +93,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [modalPlateInput, setModalPlateInput] = useState('');
   const [isUpdatingPlate, setIsUpdatingPlate] = useState(false);
 
+  // Gestión de Incidente (modal de detalle)
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState<'RESOLVED' | 'FALSE_ALARM' | 'OPEN' | null>(null);
+  const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
+  const [statusJustUpdated, setStatusJustUpdated] = useState<string | null>(null);
+  const [incidentCopyFailed, setIncidentCopyFailed] = useState(false);
+
   // Timeline specific filters
   const [timelineType, setTimelineType] = useState<string>('ALL');
   const [timelineDate, setTimelineDate] = useState<{ start: string; end: string }>({ start: '', end: '' });
@@ -101,6 +107,15 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     const timer = setInterval(() => setNow(Date.now()), 60000);
     return () => clearInterval(timer);
   }, []);
+
+  // Reset de los estados transitorios de gestión al abrir/cambiar de incidente
+  useEffect(() => {
+    setIsUpdatingStatus(null);
+    setStatusUpdateError(null);
+    setStatusJustUpdated(null);
+    setIncidentCopyFailed(false);
+    setCopiedIncidentWhatsApp(false);
+  }, [selectedIncident?.id]);
 
   useEffect(() => {
     const handleOpenRoadTest = () => setIsRoadTestOpen(true);
@@ -288,19 +303,29 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     setTempDealershipFilter(prev => prev.includes(id) ? prev.filter(d => d !== id) : [...prev, id]);
   };
 
-  const handleUpdateStatus = async (status: string) => {
-    if (!selectedIncident) return;
+  const handleUpdateStatus = async (status: 'RESOLVED' | 'FALSE_ALARM' | 'OPEN') => {
+    if (!selectedIncident || isUpdatingStatus) return;
+    setIsUpdatingStatus(status);
+    setStatusUpdateError(null);
+    setStatusJustUpdated(null);
     try {
       const incidentRef = doc(db, 'incidents', selectedIncident.id);
       await updateDoc(incidentRef, {
         status,
         updatedAt: serverTimestamp()
       });
-      // Locally update to show immediate feedback if needed, 
-      // but onSnapshot should also handle it.
       setSelectedIncident(prev => prev ? { ...prev, status } : null);
+      setStatusJustUpdated(
+        status === 'RESOLVED' ? 'Incidente Resuelto'
+        : status === 'FALSE_ALARM' ? 'Marcado como Falsa Alarma'
+        : 'Incidente Reabierto'
+      );
+      setTimeout(() => setStatusJustUpdated(null), 3000);
     } catch (error) {
       console.error("Error updating incident status:", error);
+      setStatusUpdateError('No se pudo actualizar el estado. Revisá tu conexión e intentá de nuevo.');
+    } finally {
+      setIsUpdatingStatus(null);
     }
   };
 
@@ -757,7 +782,15 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   <div className="flex-1 min-w-0">
                     <div className="flex flex-wrap items-center justify-between gap-1.5 mb-1">
                       <div className="flex flex-wrap items-center gap-2 min-w-0">
-                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono">#{incident.id.slice(0, 8)}</span>
+                        <span className="text-xs font-bold text-slate-400 uppercase tracking-widest font-mono shrink-0">#{incident.id.slice(0, 8)}</span>
+                        {(incident.status || 'OPEN') !== 'OPEN' && (
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border shrink-0 ${
+                            incident.status === 'RESOLVED' ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/40' : 'text-slate-300 bg-slate-500/10 border-slate-600'
+                          }`}>
+                            {incident.status === 'RESOLVED' ? <CheckCircle className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+                            {incident.status === 'RESOLVED' ? 'Resuelto' : 'Falsa Alarma'}
+                          </span>
+                        )}
                         {incident.isEdited && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-300 bg-slate-500/10 border border-slate-600 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
                             <Pencil className="w-3 h-3" /> Editado
@@ -1176,13 +1209,21 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         {selectedIncident.type === 'OTRO' && <Info className="w-8 h-8 text-slate-500" />}
                         {selectedIncident.type}
                       </h2>
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3 flex-wrap">
                         <p className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
                         {selectedIncident.isEdited && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase bg-slate-500/10 text-slate-300 border border-slate-600 px-2 py-0.5 rounded-md">
                             <Pencil className="w-3 h-3" /> Editado / Actualizado
                           </span>
                         )}
+                        <span className={`inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+                          (selectedIncident.status || 'OPEN') === 'OPEN' ? 'bg-red-500/15 text-red-300 border-red-500/40'
+                          : selectedIncident.status === 'RESOLVED' ? 'bg-emerald-500/15 text-emerald-300 border-emerald-500/40'
+                          : 'bg-slate-500/15 text-slate-300 border-slate-500/40'
+                        }`}>
+                          <span className={`w-1.5 h-1.5 rounded-full ${(selectedIncident.status || 'OPEN') === 'OPEN' ? 'bg-red-500 animate-pulse' : selectedIncident.status === 'RESOLVED' ? 'bg-emerald-400' : 'bg-slate-400'}`} />
+                          {(selectedIncident.status || 'OPEN') === 'OPEN' ? 'Abierto' : selectedIncident.status === 'RESOLVED' ? 'Resuelto' : 'Falsa Alarma'}
+                        </span>
                       </div>
                     </div>
 
@@ -1291,6 +1332,18 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     {['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '') && (
                       <div className="flex flex-col gap-3 pt-2">
                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
+                        {statusJustUpdated && (
+                          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-black uppercase tracking-wider" role="status">
+                            <CheckCircle className="w-4 h-4 shrink-0" />
+                            {statusJustUpdated} — visible para toda la red
+                          </div>
+                        )}
+                        {statusUpdateError && (
+                          <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-bold" role="alert">
+                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            {statusUpdateError}
+                          </div>
+                        )}
                         <div className="flex flex-col gap-2.5">
                           {selectedIncident.status === 'OPEN' || !selectedIncident.status ? (
                             <>
@@ -1298,14 +1351,20 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                                 type="button"
                                 icon={CheckCircle}
                                 label="Resolver"
+                                loading={isUpdatingStatus === 'RESOLVED'}
+                                loadingLabel="Resolviendo Incidente..."
                                 tone="emerald"
+                                disabled={isUpdatingStatus !== null}
                                 onClick={() => handleUpdateStatus('RESOLVED')}
                               />
                               <TacticalSubmitBar
                                 type="button"
                                 icon={Ban}
                                 label="Falsa Alarma"
+                                loading={isUpdatingStatus === 'FALSE_ALARM'}
+                                loadingLabel="Marcando Falsa Alarma..."
                                 tone="slate"
+                                disabled={isUpdatingStatus !== null}
                                 onClick={() => handleUpdateStatus('FALSE_ALARM')}
                               />
                             </>
@@ -1314,7 +1373,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                               type="button"
                               icon={AlertCircle}
                               label="Reabrir Incidente"
+                              loading={isUpdatingStatus === 'OPEN'}
+                              loadingLabel="Reabriendo Incidente..."
                               tone="red"
+                              disabled={isUpdatingStatus !== null}
                               onClick={() => handleUpdateStatus('OPEN')}
                             />
                           )}
@@ -1338,16 +1400,39 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <TacticalSubmitBar
                         type="button"
                         icon={Share2}
-                        label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : 'Copiar Formato WhatsApp'}
+                        label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : incidentCopyFailed ? 'No se Pudo Copiar — Reintentar' : 'Copiar Formato WhatsApp'}
                         tone="emerald"
-                        onClick={() => {
+                        onClick={async () => {
                           const text = formatWhatsAppFlashReport(
                             selectedIncident,
                             reporterInfo?.displayName || reporterInfo?.email
                           );
-                          navigator.clipboard.writeText(text);
-                          setCopiedIncidentWhatsApp(true);
-                          setTimeout(() => setCopiedIncidentWhatsApp(false), 2000);
+                          const showCopied = () => {
+                            setCopiedIncidentWhatsApp(true);
+                            setTimeout(() => setCopiedIncidentWhatsApp(false), 2000);
+                          };
+                          try {
+                            await navigator.clipboard.writeText(text);
+                            setIncidentCopyFailed(false);
+                            showCopied();
+                          } catch {
+                            try {
+                              const ta = document.createElement('textarea');
+                              ta.value = text;
+                              ta.style.position = 'fixed';
+                              ta.style.opacity = '0';
+                              document.body.appendChild(ta);
+                              ta.select();
+                              const ok = document.execCommand('copy');
+                              document.body.removeChild(ta);
+                              if (!ok) throw new Error('execCommand copy failed');
+                              setIncidentCopyFailed(false);
+                              showCopied();
+                            } catch {
+                              setIncidentCopyFailed(true);
+                              setTimeout(() => setIncidentCopyFailed(false), 3000);
+                            }
+                          }
                         }}
                       />
                     </div>
