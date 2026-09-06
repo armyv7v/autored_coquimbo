@@ -16,7 +16,7 @@ import ExecutiveDigestModal from './ExecutiveDigestModal';
 import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 import { TabType } from '../lib/navigation';
 import { Route, Car, ShieldCheck, FileText, Share2, Copy, Map as MapIcon } from 'lucide-react';
-import TacticalActionCard from './ui/TacticalActionCard';
+import TacticalActionCard, { TacticalSubmitBar } from './ui/TacticalActionCard';
 import { useNavigate } from 'react-router-dom';
 import { formatTimeCL, formatDateCL, formatFullDateTimeCL, parseIncidentDate } from '../lib/dateUtils';
 import PlateVerificationBadge from './PlateVerificationBadge';
@@ -1291,32 +1291,32 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     {['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '') && (
                       <div className="flex flex-col gap-3 pt-2">
                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
-                        <div className="flex gap-3">
+                        <div className="flex flex-col gap-2.5">
                           {selectedIncident.status === 'OPEN' || !selectedIncident.status ? (
                             <>
-                              <button
+                              <TacticalSubmitBar
+                                type="button"
+                                icon={CheckCircle}
+                                label="Resolver"
+                                tone="emerald"
                                 onClick={() => handleUpdateStatus('RESOLVED')}
-                                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/20"
-                              >
-                                <CheckCircle className="w-4 h-4" />
-                                Resolver
-                              </button>
-                              <button
+                              />
+                              <TacticalSubmitBar
+                                type="button"
+                                icon={Ban}
+                                label="Falsa Alarma"
+                                tone="slate"
                                 onClick={() => handleUpdateStatus('FALSE_ALARM')}
-                                className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 border border-white/5"
-                              >
-                                <Ban className="w-4 h-4" />
-                                Falsa Alarma
-                              </button>
+                              />
                             </>
                           ) : (
-                            <button
+                            <TacticalSubmitBar
+                              type="button"
+                              icon={AlertCircle}
+                              label="Reabrir Incidente"
+                              tone="red"
                               onClick={() => handleUpdateStatus('OPEN')}
-                              className="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 shadow-lg shadow-red-900/20"
-                            >
-                              <AlertCircle className="w-4 h-4" />
-                              Reabrir Incidente
-                            </button>
+                            />
                           )}
                         </div>
                       </div>
@@ -1324,19 +1324,22 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
                     {selectedIncident.reporterId === auth.currentUser?.uid && (
                       <div className="pt-2">
-                        <button
+                        <TacticalSubmitBar
+                          type="button"
+                          icon={Camera}
+                          label="Editar Reporte (Agregar Foto / Detalles)"
+                          tone="amber"
                           onClick={startEditing}
-                          className="w-full bg-slate-800/80 hover:bg-slate-700 text-white font-bold py-3 rounded-2xl transition-all uppercase text-xs tracking-widest flex items-center justify-center gap-2 border border-white/5 active:scale-[0.98]"
-                        >
-                          <Camera className="w-4 h-4 text-slate-400" />
-                          Editar Reporte (Agregar Foto / Detalles)
-                        </button>
+                        />
                       </div>
                     )}
 
                     <div className="pt-2">
-                      <button
+                      <TacticalSubmitBar
                         type="button"
+                        icon={Share2}
+                        label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : 'Copiar Formato WhatsApp'}
+                        tone="emerald"
                         onClick={() => {
                           const text = formatWhatsAppFlashReport(
                             selectedIncident,
@@ -1346,11 +1349,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           setCopiedIncidentWhatsApp(true);
                           setTimeout(() => setCopiedIncidentWhatsApp(false), 2000);
                         }}
-                        className="w-full py-3 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-mono text-xs font-bold uppercase flex items-center justify-center gap-2 transition active:scale-[0.98]"
-                      >
-                        <Share2 className="w-4 h-4" />
-                        {copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : 'Copiar Formato WhatsApp'}
-                      </button>
+                      />
                     </div>
 
                     <div className="flex items-center justify-between text-slate-400 pb-2">
