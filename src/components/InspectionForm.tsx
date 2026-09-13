@@ -79,8 +79,15 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[2200] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md p-0 sm:p-4"
         >
-          {/* Backdrop Click to close */}
-          <div className="absolute inset-0" onClick={onClose} />
+          {/* Backdrop: confirma antes de descartar un fiscalización en curso (A-19) */}
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              const hasDraft = Boolean(selected.length || message.trim());
+              if (hasDraft && !window.confirm('¿Descartar el aviso de fiscalización en curso?')) return;
+              onClose();
+            }}
+          />
 
           <motion.div
             initial={{ opacity: 0, y: '100%' }}

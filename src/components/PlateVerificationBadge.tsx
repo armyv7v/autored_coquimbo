@@ -23,6 +23,8 @@ export default function PlateVerificationBadge({
 }: PlateVerificationBadgeProps) {
   const [loading, setLoading] = useState(false);
   const [isOverriding, setIsOverriding] = useState(false);
+  const [pendingOverride, setPendingOverride] = useState<boolean | null>(null);
+  const [overrideError, setOverrideError] = useState<string | null>(null);
   const [result, setResult] = useState<StolenVehicleCheckResult | null>(null);
   const [lastCheckedPlate, setLastCheckedPlate] = useState('');
 
@@ -58,6 +60,7 @@ export default function PlateVerificationBadge({
   const handleToggleStolenStatus = async (markAsStolen: boolean) => {
     if (!result) return;
     setIsOverriding(true);
+    setOverrideError(null);
     try {
       await setPlateStolenStatus(
         result.plate,
@@ -71,10 +74,14 @@ export default function PlateVerificationBadge({
             }
           : undefined
       );
+      setPendingOverride(null);
       // Re-check to update UI from live Firestore state
       await performCheck(result.plate);
     } catch (err) {
       console.error('Error overriding stolen status:', err);
+      // A-08: el fallo de escritura no puede quedar solo en consola — el
+      // operador debe saber que el registro NO se actualizó.
+      setOverrideError('No se pudo escribir en el registro de la red. Revisá tu conexión e intentá de nuevo.');
     } finally {
       setIsOverriding(false);
     }
@@ -144,12 +151,12 @@ export default function PlateVerificationBadge({
                   )}
                 </div>
               <div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
                   <span className="font-mono font-black text-base tracking-wider uppercase text-white">
                     {result.formattedPlate}
                   </span>
                   <span
-                    className={`text-[10px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full ${
+                    className={`text-[10px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                       result.hasStolenReport
                         ? 'bg-red-500 text-white animate-bounce shadow-md shadow-red-900'
                         : result.status === 'UNKNOWN'
@@ -211,33 +218,74 @@ export default function PlateVerificationBadge({
             </div>
           )}
 
-          {/* Manual Operator Action Toolbar — oculta si la consulta no se pudo completar */}
+          {/* Manual Operator Action Toolbar — oculta si la consulta no se pudo completar.
+              A-08: escribir en el registro compartido de la red exige confirmación
+              explícita (un tap accidental envenenaba la base que consulta toda la red). */}
           {allowManualOverride && result.status !== 'UNKNOWN' && (
-            <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between gap-2">
-              <span className="text-[10px] font-mono text-slate-400">
-                Fuente: {result.source}
-              </span>
+            <div className="mt-3 pt-2.5 border-t border-white/10 space-y-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-[10px] font-mono text-slate-400">
+                  Fuente: {result.source}
+                </span>
 
-              {!result.hasStolenReport ? (
-                <button
-                  type="button"
-                  disabled={isOverriding}
-                  onClick={() => handleToggleStolenStatus(true)}
-                  className="px-2.5 py-1 rounded-lg bg-red-600/30 hover:bg-red-600 border border-red-500/50 text-red-200 hover:text-white text-[10px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
-                >
-                  <ShieldAlert className="w-3 h-3 text-red-400" />
-                  {isOverriding ? 'Actualizando...' : 'Reportar Robo a la Red'}
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  disabled={isOverriding}
-                  onClick={() => handleToggleStolenStatus(false)}
-                  className="px-2.5 py-1 rounded-lg bg-emerald-600/30 hover:bg-emerald-600 border border-emerald-500/50 text-emerald-200 hover:text-white text-[10px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
-                >
-                  <CheckCircle2 className="w-3 h-3 text-emerald-400" />
-                  {isOverriding ? 'Actualizando...' : 'Marcar Recuperado'}
-                </button>
+                {pendingOverride === null && !result.hasStolenReport && (
+                  <button
+                    type="button"
+                    disabled={isOverriding}
+                    onClick={() => setPendingOverride(true)}
+                    className="px-2.5 py-1.5 rounded-lg bg-red-600/30 hover:bg-red-600 border border-red-500/50 text-red-200 hover:text-white text-[10px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
+                  >
+                    <ShieldAlert className="w-3 h-3 text-red-400" />
+                    Reportar Robo a la Red
+                  </button>
+                )}
+
+                {pendingOverride === null && result.hasStolenReport && (
+                  <button
+                    type="button"
+                    disabled={isOverriding}
+                    onClick={() => setPendingOverride(false)}
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600 border border-emerald-500/50 text-emerald-200 hover:text-white text-[10px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
+                  >
+                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    Marcar Recuperado
+                  </button>
+                )}
+              </div>
+
+              {pendingOverride !== null && (
+                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-700 space-y-2.5">
+                  <p className="text-[11px] font-mono text-slate-300 leading-relaxed">
+                    {pendingOverride
+                      ? `¿Reportar ${result.formattedPlate} como ROBO a la red? Queda visible para todas las automotoras.`
+                      : `¿Marcar ${result.formattedPlate} como RECUPERADO? Se quitará el encargo de la red.`}
+                  </p>
+                  {overrideError && (
+                    <p className="text-[11px] font-mono text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg px-2.5 py-1.5" role="alert">
+                      {overrideError}
+                    </p>
+                  )}
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      disabled={isOverriding}
+                      onClick={() => handleToggleStolenStatus(pendingOverride)}
+                      className={`flex-1 min-h-[40px] px-3 rounded-lg text-white text-[10px] font-mono font-black uppercase tracking-wider transition flex items-center justify-center gap-1 active:scale-95 disabled:opacity-50 ${
+                        pendingOverride ? 'bg-red-600 hover:bg-red-500' : 'bg-emerald-600 hover:bg-emerald-500'
+                      }`}
+                    >
+                      {isOverriding ? 'Actualizando…' : 'Confirmar'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isOverriding}
+                      onClick={() => { setPendingOverride(null); setOverrideError(null); }}
+                      className="flex-1 min-h-[40px] px-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-[10px] font-mono font-bold uppercase tracking-wider transition active:scale-95"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
               )}
             </div>
           )}

@@ -64,11 +64,23 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
 
   // Precarga del worker de OCR al abrir el formulario: la primera foto no debe
   // pagar la descarga de WASM + traineddata mientras el operador espera.
+  // Además se pide GPS de una (A-11): sin esto se envía el centro de Coquimbo
+  // en silencio si el operador no descubre el botón "Fijar Ubicación".
   useEffect(() => {
     if (isOpen) {
       preloadPlateOcrWorker();
+      requestGps();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
+
+  // A-19: el toque fuera del sheet no puede descartar un reporte con datos
+  // sin preguntar; si está vacío, cierra directo.
+  const handleBackdropClose = () => {
+    const hasDraft = Boolean(type || description.trim() || plate.trim() || image);
+    if (hasDraft && !window.confirm('¿Descartar el reporte en curso? Se perderá lo escrito.')) return;
+    onClose();
+  };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -235,8 +247,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[2000] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md p-0 sm:p-4"
         >
-          {/* Backdrop Click to close */}
-          <div className="absolute inset-0" onClick={onClose} />
+          {/* Backdrop: confirma antes de descartar un borrador con datos (A-19) */}
+          <div className="absolute inset-0" onClick={handleBackdropClose} />
 
           <motion.div
             initial={{ opacity: 0, y: '100%' }}
@@ -450,30 +462,10 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   </div>
                 )}
 
-                {pickingLocation && (
-                  <div className="space-y-2 rounded-xl border border-slate-800 p-2.5 bg-slate-900/60">
-                    <div className="flex items-center justify-between text-xs font-mono text-slate-400">
-                      <span>Toca el mapa para marcar el punto:</span>
-                      <button
-                        type="button"
-                        onClick={requestGps}
-                        className="text-slate-300 flex items-center gap-1 hover:underline font-bold"
-                      >
-                        <Navigation className="w-3 h-3" /> Mi GPS
-                      </button>
-                    </div>
-                    {gpsError && (
-                      <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
-                        GPS no disponible (permiso o señal): se enviará el punto marcado en el mapa.
-                      </p>
-                    )}
-                    <div className="h-40 rounded-lg overflow-hidden border border-slate-800 relative z-0">
-                      <MapContainer center={location} zoom={14} className="h-full w-full">
-                        <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                        <MapPicker position={location} setPosition={setLocation} />
-                      </MapContainer>
-                    </div>
-                  </div>
+                {!usingGps && !gpsError && (
+                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    Ubicación aproximada (centro de Coquimbo): fijá tu GPS o marcá el punto en el mapa antes de transmitir.
+                  </p>
                 )}
               </div>
 
@@ -493,6 +485,63 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 disabled={!type}
               />
             </form>
+
+            {/* Picker fullscreen de ubicación (A-26): el mapa embebido capturaba
+                el arrastre del dedo y peleaba contra el scroll del sheet; se
+                reutiliza el patrón fullscreen de FlashReport. */}
+            <AnimatePresence>
+              {pickingLocation && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="absolute inset-0 z-30 bg-slate-950 flex flex-col"
+                >
+                  <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
+                    <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                      Toca el mapa para marcar el punto
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => setPickingLocation(false)}
+                      aria-label="Cerrar selector de ubicación"
+                      className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  <div className="flex-1 relative">
+                    <MapContainer center={location} zoom={14} className="h-full w-full">
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <MapPicker position={location} setPosition={(pos) => { setLocation(pos); setUsingGps(true); }} />
+                    </MapContainer>
+                    {gpsError && (
+                      <div className="absolute top-3 left-3 right-3 z-[1000]">
+                        <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5 backdrop-blur-xl">
+                          GPS no disponible (permiso o señal): marcá el punto manualmente.
+                        </p>
+                      </div>
+                    )}
+                    <div className="absolute bottom-4 left-4 right-4 z-[1000] flex gap-2">
+                      <button
+                        type="button"
+                        onClick={requestGps}
+                        className="flex-1 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-mono text-xs font-bold uppercase flex items-center justify-center gap-1.5 active:scale-95 transition"
+                      >
+                        <Navigation className="w-3.5 h-3.5" /> Mi GPS
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setPickingLocation(false)}
+                        className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-bold uppercase active:scale-95 transition"
+                      >
+                        Fijar Punto
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         </motion.div>
       )}

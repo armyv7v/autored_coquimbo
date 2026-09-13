@@ -127,8 +127,15 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[2100] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md p-0 sm:p-4"
         >
-          {/* Backdrop Click to close */}
-          <div className="absolute inset-0" onClick={onClose} />
+          {/* Backdrop: confirma antes de descartar un borrador con datos (A-19) */}
+          <div
+            className="absolute inset-0"
+            onClick={() => {
+              const hasDraft = Boolean(plate.trim() || notes.trim() || Object.values(files).some(Boolean));
+              if (hasDraft && !window.confirm('¿Descartar la prueba en ruta en curso? Se perderán las fotos y lo escrito.')) return;
+              onClose();
+            }}
+          />
 
           <motion.form
             onSubmit={submit}
@@ -223,11 +230,12 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                         {preview ? (
                           <div className="relative w-full h-24 rounded-lg overflow-hidden border border-emerald-500/30 mb-2 group">
                             <img src={preview} alt={field.label} className="w-full h-full object-cover" />
-                            <div 
+                            {/* A-28: siempre visible — en táctil no existe hover */}
+                            <div
                               onClick={() => inputsRef.current[field.key]?.click()}
-                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center cursor-pointer transition-opacity"
+                              className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer transition-opacity"
                             >
-                              <span className="text-[10px] font-bold uppercase text-white bg-slate-900/80 px-2 py-1 rounded">Cambiar</span>
+                              <span className="text-[10px] font-bold uppercase text-white bg-slate-900/80 px-3 py-1.5 rounded">Cambiar</span>
                             </div>
                             <span className="absolute top-1.5 right-1.5 flex items-center gap-1 rounded bg-emerald-500 px-1.5 py-0.5 text-[9px] font-bold text-slate-950">
                               <Check className="w-3 h-3" /> OK
