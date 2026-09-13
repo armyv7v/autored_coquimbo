@@ -215,73 +215,90 @@ const KNOWN_VEHICLE_DATABASE: Record<string, Partial<StolenVehicleCheckResult>> 
   },
 };
 
+/** Motivo por el que la verificación oficial no pudo completarse. */
+export type VerificationFailure = 'QUOTA' | 'AUTH' | 'NETWORK' | 'NO_DATA';
+
+export class VerificationError extends Error {
+  constructor(public failure: VerificationFailure) {
+    super(failure);
+    this.name = 'VerificationError';
+  }
+}
+
 /**
  * Queries official Chilean Vehicle API gateway (Boostr Chile: https://api.boostr.cl/vehicle/{plate}.json).
+ * Lanza VerificationError en vez de devolver null: la diferencia entre
+ * "cuota agotada", "clave rechazada" y "sin conexión" es crítica para el
+ * operador durante una alerta real (A-02).
  */
-async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<StolenVehicleCheckResult> | null> {
+async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<StolenVehicleCheckResult>> {
   const apiKey =
     (import.meta as any).env?.VITE_BOOSTR_API_KEY ||
     (import.meta as any).env?.VITE_PATENTES_API_KEY ||
     DEFAULT_BOOSTR_API_KEY;
 
-  if (!apiKey) return null;
+  if (!apiKey) throw new VerificationError('AUTH');
 
+  let response: Response;
   try {
-    const response = await fetch(`https://api.boostr.cl/vehicle/${cleanPlate}.json`, {
+    response = await fetch(`https://api.boostr.cl/vehicle/${cleanPlate}.json`, {
       method: 'GET',
       headers: {
         'x-api-key': apiKey,
         'Accept': 'application/json',
       },
     });
-
-    if (!response.ok) return null;
-    const data = await response.json();
-    if (!data || !data.data) return null;
-
-    const v = data.data;
-    const isStolen = Boolean(v.stolen || v.encargo || v.has_stolen_report);
-    const brand = (v.make || v.brand || v.marca || 'VEHÍCULO').toUpperCase();
-    const model = (v.model || v.modelo || '').toUpperCase();
-    const year = v.year || v.anio || '';
-    const type = (v.type || v.tipo || 'AUTOMOVIL').toUpperCase();
-    const color = (v.color || 'COLOR REGISTRADO').toUpperCase();
-    const engineNumber = v.engine || v.motor || undefined;
-    const vinMasked = v.vin || v.chassis || undefined;
-    const fuelType = v.gas_type || v.fuel || undefined;
-    const kilometers = v.kilometers || undefined;
-
-    return {
-      hasStolenReport: isStolen,
-      status: isStolen ? 'STOLEN' : 'CLEAN',
-      statusText: isStolen ? 'ENCARGO POR ROBO VIGENTE (SEBV / REGISTRO NACIONAL)' : 'SIN ENCARGO POR ROBO REGISTRADO',
-      vehicleDetails: {
-        brand,
-        model,
-        year,
-        color,
-        vehicleType: type,
-        vinMasked,
-        engineNumber,
-        fuelType,
-        kilometers,
-      },
-      stolenDetails: isStolen
-        ? {
-            reportDate: v.stolen_date || new Date().toLocaleString('es-CL'),
-            policeAgency: 'CARABINEROS DE CHILE',
-            policeStation: v.stolen_station || 'SEBV Carabineros',
-            commune: v.stolen_commune || 'Chile',
-            reportNumber: v.stolen_id || `ENC-${cleanPlate}`,
-            riskLevel: 'CRÍTICO',
-          }
-        : undefined,
-      source: 'Boostr Chile / Registro Civil Oficial',
-    };
   } catch (err) {
-    console.warn('Boostr API fetch error:', err);
-    return null;
+    console.warn('Boostr API network error:', err);
+    throw new VerificationError('NETWORK');
   }
+
+  if (response.status === 429) throw new VerificationError('QUOTA');
+  if (response.status === 401 || response.status === 403) throw new VerificationError('AUTH');
+  if (!response.ok) throw new VerificationError('NETWORK');
+
+  const data = await response.json();
+  if (!data || !data.data) throw new VerificationError('NO_DATA');
+
+  const v = data.data;
+  const isStolen = Boolean(v.stolen || v.encargo || v.has_stolen_report);
+  const brand = (v.make || v.brand || v.marca || 'VEHÍCULO').toUpperCase();
+  const model = (v.model || v.modelo || '').toUpperCase();
+  const year = v.year || v.anio || '';
+  const type = (v.type || v.tipo || 'AUTOMOVIL').toUpperCase();
+  const color = (v.color || 'COLOR REGISTRADO').toUpperCase();
+  const engineNumber = v.engine || v.motor || undefined;
+  const vinMasked = v.vin || v.chassis || undefined;
+  const fuelType = v.gas_type || v.fuel || undefined;
+  const kilometers = v.kilometers || undefined;
+
+  return {
+    hasStolenReport: isStolen,
+    status: isStolen ? 'STOLEN' : 'CLEAN',
+    statusText: isStolen ? 'ENCARGO POR ROBO VIGENTE (SEBV / REGISTRO NACIONAL)' : 'SIN ENCARGO POR ROBO REGISTRADO',
+    vehicleDetails: {
+      brand,
+      model,
+      year,
+      color,
+      vehicleType: type,
+      vinMasked,
+      engineNumber,
+      fuelType,
+      kilometers,
+    },
+    stolenDetails: isStolen
+      ? {
+          reportDate: v.stolen_date || new Date().toLocaleString('es-CL'),
+          policeAgency: 'CARABINEROS DE CHILE',
+          policeStation: v.stolen_station || 'SEBV Carabineros',
+          commune: v.stolen_commune || 'Chile',
+          reportNumber: v.stolen_id || `ENC-${cleanPlate}`,
+          riskLevel: 'CRÍTICO',
+        }
+      : undefined,
+    source: 'Boostr Chile / Registro Civil Oficial',
+  };
 }
 
 /**
@@ -352,8 +369,8 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
   }
 
   // 4. Query live official Boostr Chile API gateway
-  const boostrResult = await queryBoostrVehicleApi(cleanPlate);
-  if (boostrResult && boostrResult.vehicleDetails) {
+  try {
+    const boostrResult = await queryBoostrVehicleApi(cleanPlate);
     const result: StolenVehicleCheckResult = {
       plate: cleanPlate,
       formattedPlate: validation.formatted,
@@ -366,7 +383,7 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
       source: boostrResult.source || 'Boostr Chile / Registro Civil Oficial',
     };
     RUNTIME_VEHICLE_CACHE.set(cleanPlate, result);
-    
+
     // Auto cache to Firestore so other terminals can access without hitting Boostr quota
     try {
       const docRef = doc(db, 'stolenVehiclesRegistry', cleanPlate);
@@ -383,10 +400,37 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     } catch (_) {}
 
     return result;
+  } catch (err) {
+    if (err instanceof VerificationError) {
+      // Nunca devolver un falso "limpio": cada motivo de fallo tiene su estado
+      // visible y distinto (A-02) — el badge los muestra como NO VERIFICADO.
+      const failureText: Record<VerificationFailure, string> = {
+        QUOTA: 'CUOTA DIARIA DE CONSULTAS AGOTADA — NO SE PUDO VERIFICAR',
+        AUTH: 'CLAVE DE API OFICIAL RECHAZADA — NO SE PUDO VERIFICAR',
+        NETWORK: 'SIN CONEXIÓN — NO SE PUDO VERIFICAR',
+        NO_DATA: 'SIN DATOS EN EL REGISTRO OFICIAL — NO VERIFICADO',
+      };
+      const failureSource: Record<VerificationFailure, string> = {
+        QUOTA: 'No verificado (cuota diaria de la API oficial agotada)',
+        AUTH: 'No verificado (clave de API oficial rechazada)',
+        NETWORK: 'No verificado (sin conexión)',
+        NO_DATA: 'No verificado (sin datos en el registro oficial)',
+      };
+      return {
+        plate: cleanPlate,
+        formattedPlate: validation.formatted,
+        hasStolenReport: false,
+        status: 'UNKNOWN',
+        statusText: failureText[err.failure],
+        checkedAt,
+        source: failureSource[err.failure],
+      };
+    }
+    throw err;
   }
 
-  // 5. Fallback if offline or quota exceeded: NEVER fake a clean result —
-  // a green "SIN ENCARGO" here is a false negative on the app's core decision.
+  // 5. Fallback final: NUNCA inventar un resultado limpio — un verde
+  // "SIN ENCARGO" aquí sería un falso negativo en la decisión core.
   return {
     plate: cleanPlate,
     formattedPlate: validation.formatted,
