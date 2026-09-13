@@ -196,6 +196,15 @@ export default function FlashReport() {
     return () => window.removeEventListener('open-flash-report', handleOpen);
   }, []);
 
+  // Pedir GPS al abrir el formulario (A-11): el operador no debería tener que
+  // saber que existe el botón "Mi GPS" para no enviar el centro de Coquimbo.
+  useEffect(() => {
+    if (isOpen) {
+      requestGps();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   return (
     <>
       <AnimatePresence>
@@ -327,6 +336,12 @@ export default function FlashReport() {
                   </p>
                 )}
 
+                {!usingGps && !gpsError && (
+                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    Ubicación aproximada (centro de Coquimbo): fijá tu GPS o marcá el punto en el mapa antes de transmitir.
+                  </p>
+                )}
+
                 {imagePreview && (
                   <div className="relative rounded-2xl overflow-hidden border border-slate-800 h-32">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
@@ -400,7 +415,12 @@ export default function FlashReport() {
                     </div>
                     <div className="flex-1 relative">
                       <MapContainer center={location} zoom={15} className="h-full w-full">
-                        <TileLayer url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png" />
+                        {/* Esri Dark Gray: Carto pasó a exigir API key y renderizaba
+                            "API KEY REQUIRED" (residual A-04). */}
+                        <TileLayer
+                          url="https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}"
+                          attribution="&copy; Esri"
+                        />
                         <MapPicker position={location} setPosition={(pos) => { setLocation(pos); setUsingGps(true); }} />
                       </MapContainer>
                       <div className="absolute bottom-4 left-4 right-4 z-[1000] flex gap-2">

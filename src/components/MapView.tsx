@@ -14,6 +14,8 @@ import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { safeUUID } from '../lib/uuid';
 import { formatTimeCL, formatDateCL, formatFullDateTimeCL } from '../lib/dateUtils';
+import ConnectionBanner from './ConnectionBanner';
+import { TacticalSubmitBar } from './ui/TacticalActionCard';
 
 // Fix for default marker icons in Leaflet + React
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -204,7 +206,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
         />
         {isSearching && <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin" />}
         {query && !isSearching && (
-          <button onClick={() => { setQuery(''); setResults([]); }}>
+          <button onClick={() => { setQuery(''); setResults([]); }} aria-label="Limpiar búsqueda">
             <X className="w-3.5 h-3.5 text-slate-400 hover:text-white" />
           </button>
         )}
@@ -248,6 +250,8 @@ export default function MapView() {
   const [showDealerships, setShowDealerships] = useState(true);
   const [alertingId, setAlertingId] = useState<string | null>(null);
   const [copyingId, setCopyingId] = useState<string | null>(null);
+  const [dbOffline, setDbOffline] = useState(false);
+  const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const selectedIncidentId = searchParams.get('incident');
   const { profile } = useAuth();
@@ -272,21 +276,51 @@ export default function MapView() {
   }, []);
 
   useEffect(() => {
-    const unsubIncidents = onSnapshot(collection(db, 'incidents'), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Incident[];
-      setIncidents(data);
-    });
+    const unsubIncidents = onSnapshot(
+      collection(db, 'incidents'),
+      (snapshot) => {
+        setDbOffline(false);
+        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Incident[];
+        setIncidents(data);
+      },
+      (err) => {
+        console.error('Firestore incidents error:', err);
+        setDbOffline(true);
+      }
+    );
 
-    const unsubDealerships = onSnapshot(collection(db, 'dealerships'), (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Dealership[];
-      setDealerships(data);
-    });
+    const unsubDealerships = onSnapshot(
+      collection(db, 'dealerships'),
+      (snapshot) => {
+        const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Dealership[];
+        setDealerships(data);
+      },
+      (err) => {
+        console.error('Firestore dealerships error:', err);
+        setDbOffline(true);
+      }
+    );
 
     return () => {
       unsubIncidents();
       unsubDealerships();
     };
   }, []);
+
+  // Escape cancela el modo reporte y el panel del mapa (A-25)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (reportLocation) {
+          setReportLocation(null);
+        } else if (isReportingMode) {
+          setIsReportingMode(false);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [reportLocation, isReportingMode]);
 
   const handleUpdateStatus = async (incidentId: string, newStatus: string) => {
     const path = `incidents/${incidentId}`;
@@ -313,7 +347,9 @@ export default function MapView() {
         createdAt: serverTimestamp(),
         notifiedDealershipIds: [],
       });
-      alert('Alerta de Red Disparada Exitosamente');
+      // Feedback no bloqueante (A-25): nada de alert() nativo en una app táctica
+      setFlashMessage('Alerta de Red Disparada');
+      setTimeout(() => setFlashMessage(null), 2500);
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, path);
     } finally {
@@ -398,6 +434,9 @@ export default function MapView() {
         notifiedDealershipIds: [],
       });
 
+      // Éxito visible y no bloqueante (A-25)
+      setFlashMessage('Reporte transmitido a la red');
+      setTimeout(() => setFlashMessage(null), 2500);
       setReportLocation(null);
       setReportType(null);
       setReportDescription('');
@@ -493,13 +532,55 @@ export default function MapView() {
               className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase transition ${
                 showDealerships
                   ? 'bg-sky-500/20 text-sky-400 border border-sky-500/30'
-                  : 'text-slate-500 hover:text-slate-400 hover:bg-slate-900'
+                  : 'text-slate-500 hover:text-white hover:bg-slate-900'
               }`}
             >
               <Building2 className="w-3.5 h-3.5" />
               Nodos
             </button>
+
+            {/* Reportar desde el mapa (A-25): el modo existía en código pero
+                nunca tenía entrada; acá se completa el flujo. */}
+            <button
+              type="button"
+              onClick={() => {
+                setReportLocation(null);
+                setIsReportingMode((prev) => !prev);
+              }}
+              className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase transition ${
+                isReportingMode
+                  ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                  : 'text-slate-500 hover:text-white hover:bg-slate-900'
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Reportar
+            </button>
           </div>
+        </div>
+
+        {/* Aviso de modo reporte activo + banner de conexión + feedback no bloqueante */}
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-[1100] w-full max-w-md px-4 flex flex-col items-center gap-2 pointer-events-none">
+          {isReportingMode && !reportLocation && (
+            <div className="px-4 py-2.5 rounded-xl bg-red-950/90 border border-red-500/50 text-red-200 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl flex items-center gap-2">
+              <MapPin className="w-3.5 h-3.5" />
+              Tocá el mapa para ubicar el incidente (Esc cancela)
+            </div>
+          )}
+          <ConnectionBanner show={dbOffline} />
+          <AnimatePresence>
+            {flashMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl"
+              >
+                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                {flashMessage}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
         <div className="absolute bottom-24 right-4 z-[1000]">
@@ -752,6 +833,91 @@ export default function MapView() {
               );
             })}
       </MapContainer>
+
+      {/* Panel compacto de reporte tras elegir el punto en el mapa (A-25) */}
+      <AnimatePresence>
+        {reportLocation && (
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 40 }}
+            className="absolute bottom-4 left-4 right-4 sm:left-auto sm:right-16 sm:w-96 z-[1200] bg-slate-950/95 border border-red-500/40 rounded-2xl shadow-2xl backdrop-blur-xl overflow-hidden"
+          >
+            <div className="p-4 border-b border-slate-800 flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
+                <MapPin className="w-4 h-4 text-red-400 shrink-0" />
+                <span className="text-xs font-mono font-black uppercase tracking-wider text-white truncate">
+                  Reportar desde el Mapa
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReportLocation(null)}
+                aria-label="Cancelar reporte desde el mapa"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition shrink-0"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <form onSubmit={handleSubmitReport} className="p-4 space-y-3 text-left">
+              <div className="grid grid-cols-4 gap-1.5">
+                {([
+                  { id: 'ROBO', label: 'Robo' },
+                  { id: 'SOSPECHOSO', label: 'Sospe.' },
+                  { id: 'MARCAJE', label: 'Marcaje' },
+                  { id: 'OTRO', label: 'Otro' },
+                ] as const).map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setReportType(item.id)}
+                    className={`py-2 rounded-lg border text-[10px] font-mono font-black uppercase tracking-wider transition ${
+                      reportType === item.id
+                        ? item.id === 'ROBO'
+                          ? 'bg-red-600 border-red-500 text-white'
+                          : item.id === 'SOSPECHOSO'
+                            ? 'bg-amber-600 border-amber-500 text-white'
+                            : item.id === 'MARCAJE'
+                              ? 'bg-sky-600 border-sky-500 text-white'
+                              : 'bg-slate-700 border-slate-600 text-white'
+                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+
+              <textarea
+                value={reportDescription}
+                onChange={(e) => setReportDescription(e.target.value)}
+                placeholder="Describe el hecho (ubicación ya marcada en el mapa)…"
+                maxLength={500}
+                className="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-white text-base placeholder:text-slate-600 focus:outline-none focus:border-red-500/50 transition min-h-[70px]"
+              />
+
+              {error && (
+                <div className="p-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono">
+                  {error}
+                </div>
+              )}
+
+              <p className="text-[10px] font-mono text-slate-500 tracking-wide">
+                Punto: {reportLocation[0].toFixed(5)}, {reportLocation[1].toFixed(5)} — botón "Reportar" arriba para marcar otro.
+              </p>
+
+              <TacticalSubmitBar
+                icon={Send}
+                label="Transmitir a la Red"
+                loading={isSubmitting}
+                loadingLabel="Transmitiendo…"
+                tone="red"
+                disabled={!reportType}
+              />
+            </form>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Floating Bottom Metrics Pill */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-[1000] hidden sm:flex items-center gap-2 p-2 rounded-2xl bg-slate-950/90 border border-slate-800 shadow-2xl backdrop-blur-xl">
