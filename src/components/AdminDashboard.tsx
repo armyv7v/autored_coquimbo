@@ -43,15 +43,23 @@ interface Incident {
   status: string;
 }
 
+interface DealershipDoc {
+  id: string;
+  name?: string;
+}
+
 const COLORS = ['#10b981', '#f59e0b', '#ef4444', '#3b82f6'];
 
 export default function AdminDashboard() {
   const { profile } = useAuth();
   const [users, setUsers] = useState<UserProfile[]>([]);
   const [incidents, setIncidents] = useState<Incident[]>([]);
+  const [dealerships, setDealerships] = useState<DealershipDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'REQUESTS'>('STATS');
   const [pendingCount, setPendingCount] = useState(0);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionOk, setActionOk] = useState<string | null>(null);
 
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -82,29 +90,43 @@ export default function AdminDashboard() {
       setPendingCount(count);
     });
 
+    // Sedes reales para la métrica (A-27: antes era un "12" hardcodeado)
+    const unsubDealerships = onSnapshot(collection(db, 'dealerships'), (snapshot) => {
+      setDealerships(snapshot.docs.map(doc => ({ id: doc.id, name: (doc.data() as any)?.name })));
+    });
+
     return () => {
       unsubUsers();
       unsubIncidents();
       unsubRequests();
+      unsubDealerships();
     };
   }, [profile]);
 
-  const handleUpdateRole = async (userId: string, newRole: string) => {
+  const runUserAction = async (label: string, action: () => Promise<void>) => {
+    setActionError(null);
+    setActionOk(null);
     try {
-      await updateDoc(doc(db, 'users', userId), { role: newRole });
+      await action();
+      setActionOk(label);
+      setTimeout(() => setActionOk(null), 3000);
     } catch (error) {
-      console.error("Error updating role:", error);
+      console.error('Admin user action error:', error);
+      setActionError('No se pudo actualizar el usuario. Revisá tu conexión e intentá de nuevo.');
+      setTimeout(() => setActionError(null), 5000);
     }
   };
 
-  const handleToggleStatus = async (userId: string, currentStatus: string) => {
-    try {
-      await updateDoc(doc(db, 'users', userId), { 
-        status: currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE' 
-      });
-    } catch (error) {
-      console.error("Error updating status:", error);
-    }
+  const handleUpdateRole = (userId: string, newRole: string) => {
+    runUserAction(`Rol actualizado a ${newRole}`, () => updateDoc(doc(db, 'users', userId), { role: newRole }));
+  };
+
+  const handleToggleStatus = (userId: string, currentStatus: string) => {
+    const newStatus = currentStatus === 'ACTIVE' ? 'SUSPENDED' : 'ACTIVE';
+    runUserAction(
+      newStatus === 'SUSPENDED' ? 'Usuario suspendido' : 'Usuario reactivado',
+      () => updateDoc(doc(db, 'users', userId), { status: newStatus })
+    );
   };
 
   if (!profile || profile.role !== 'ADMIN') {
@@ -180,9 +202,10 @@ export default function AdminDashboard() {
             <div className="bg-slate-700 p-2 rounded-xl shadow-lg shadow-black/20">
               <Shield className="w-6 h-6 text-white" />
             </div>
-            <h1 className="text-2xl font-black text-white uppercase tracking-tighter">Panel de Administración</h1>
+            {/* El shell de la app es claro: título oscuro como en el Panel (A-22) */}
+            <h1 className="text-2xl font-black text-slate-900 uppercase tracking-tighter">Panel de Administración</h1>
           </div>
-          <p className="text-slate-500 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
+          <p className="text-slate-600 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
         </div>
 
         <nav className="flex bg-slate-900 p-1 rounded-2xl border border-slate-800">
@@ -227,7 +250,7 @@ export default function AdminDashboard() {
                 { label: 'Total Usuarios', value: users.length, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
                 { label: 'Total Incidentes', value: incidents.length, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
                 { label: 'Resolución', value: `${((incidents.filter(i => i.status === 'RESOLVED').length / (incidents.length || 1)) * 100).toFixed(0)}%`, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                { label: 'Sedes Activas', value: 12, icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+                { label: 'Sedes Activas', value: dealerships.length, icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
               ].map((stat, i) => (
                 <div key={i} className="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden group">
                   <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} blur-3xl -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50`} />
@@ -303,20 +326,20 @@ export default function AdminDashboard() {
               <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-2 relative">
                   <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     placeholder="Buscar por nombre o email..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-all"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-base text-white placeholder:text-slate-600 focus:outline-none focus:border-slate-600 transition-all"
                   />
                 </div>
                 <div className="relative">
                   <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                  <select 
+                  <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value as any)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-slate-600 transition-all cursor-pointer"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-base font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-slate-600 transition-all cursor-pointer"
                   >
                     <option value="ALL">TODOS LOS ROLES</option>
                     <option value="ADMIN">ADMIN</option>
@@ -326,10 +349,10 @@ export default function AdminDashboard() {
                 </div>
                 <div className="relative">
                   <Activity className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
-                  <select 
+                  <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
-                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-xs font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-slate-600 transition-all cursor-pointer"
+                    className="w-full bg-slate-800/50 border border-slate-700 rounded-xl pl-11 pr-4 py-2.5 text-base font-black text-white appearance-none uppercase tracking-widest focus:outline-none focus:border-slate-600 transition-all cursor-pointer"
                   >
                     <option value="ALL">TODOS LOS ESTADOS</option>
                     <option value="ACTIVE">ACTIVOS</option>
@@ -345,6 +368,18 @@ export default function AdminDashboard() {
                 Exportar CSV
               </button>
             </div>
+
+            {/* Feedback visible de acciones sobre usuarios (A-21: nada de catch mudo) */}
+            {actionOk && (
+              <div className="px-4 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs font-bold uppercase tracking-wider" role="status">
+                {actionOk}
+              </div>
+            )}
+            {actionError && (
+              <div className="px-4 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-xs font-bold" role="alert">
+                {actionError}
+              </div>
+            )}
 
             <div className="bg-slate-900 border border-slate-800 rounded-3xl overflow-hidden">
               <div className="overflow-x-auto">

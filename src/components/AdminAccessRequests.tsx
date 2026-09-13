@@ -38,6 +38,7 @@ function formatDate(value: any): string {
 export default function AdminAccessRequests() {
   const [requests, setRequests] = useState<RequestRecord[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [filter, setFilter] = useState<StatusFilter>('PENDING');
   const [modal, setModal] = useState<RequestRecord | null>(null);
   const [result, setResult] = useState<ApprovalResult | null>(null);
@@ -53,10 +54,13 @@ export default function AdminAccessRequests() {
       q,
       (snap) => {
         setRequests(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as RequestRecord));
+        setLoadError(false);
         setLoading(false);
       },
       (error) => {
         console.error('Error cargando solicitudes:', error);
+        // A-16: un fallo de conexión no puede leerse como "no hay solicitudes"
+        setLoadError(true);
         setLoading(false);
       }
     );
@@ -165,6 +169,14 @@ export default function AdminAccessRequests() {
         <div className="flex flex-col items-center justify-center py-24 text-slate-400">
           <Loader2 className="w-8 h-8 animate-spin mb-4 text-slate-300" />
           <p className="text-xs font-black uppercase tracking-widest">Cargando solicitudes...</p>
+        </div>
+      ) : loadError ? (
+        <div className="bg-amber-500/10 border border-amber-500/40 rounded-3xl p-16 flex flex-col items-center text-center">
+          <Inbox className="w-14 h-14 text-amber-500/60 mb-4" />
+          <p className="text-amber-300 text-xs font-black uppercase tracking-widest">
+            Sin conexión con las solicitudes
+          </p>
+          <p className="text-xs text-amber-200/70 mt-1">La app reintentará automáticamente; no es que no haya solicitudes.</p>
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-16 flex flex-col items-center text-center">

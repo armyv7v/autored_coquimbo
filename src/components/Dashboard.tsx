@@ -17,6 +17,7 @@ import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 import { TabType } from '../lib/navigation';
 import { Route, Car, ShieldCheck, FileText, Share2, Copy, Map as MapIcon } from 'lucide-react';
 import TacticalActionCard, { TacticalSubmitBar } from './ui/TacticalActionCard';
+import ConnectionBanner from './ConnectionBanner';
 import { useNavigate } from 'react-router-dom';
 import { formatTimeCL, formatDateCL, formatFullDateTimeCL, parseIncidentDate } from '../lib/dateUtils';
 import PlateVerificationBadge from './PlateVerificationBadge';
@@ -76,6 +77,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [isStockOpen, setIsStockOpen] = useState(false);
   const [isDigestOpen, setIsDigestOpen] = useState(false);
   const [copiedIncidentWhatsApp, setCopiedIncidentWhatsApp] = useState(false);
+  const [dbOffline, setDbOffline] = useState(false);
   const { permission } = usePushNotifications();
   const { profile } = useAuth();
   const navigate = useNavigate();
@@ -117,6 +119,23 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     setCopiedIncidentWhatsApp(false);
   }, [selectedIncident?.id]);
 
+  // El modal de detalle se cierra con Escape, como cualquier modal de
+  // plataforma (A-25); si se está editando, Escape primero cancela la edición.
+  useEffect(() => {
+    if (!selectedIncident) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (isEditing) {
+          setIsEditing(false);
+        } else {
+          setSelectedIncident(null);
+        }
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedIncident, isEditing]);
+
   useEffect(() => {
     const handleOpenRoadTest = () => setIsRoadTestOpen(true);
     const handleOpenInspection = () => setIsInspectionOpen(true);
@@ -140,11 +159,18 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   }, []);
   
   useEffect(() => {
-    // Real-time count of ALL open incidents across the network
     const qOpen = query(collection(db, 'incidents'), where('status', '==', 'OPEN'));
-    const unsubOpen = onSnapshot(qOpen, (snapshot) => {
-      setOpenIncidentsCount(snapshot.size);
-    });
+    const unsubOpen = onSnapshot(
+      qOpen,
+      (snapshot) => {
+        setDbOffline(false);
+        setOpenIncidentsCount(snapshot.size);
+      },
+      (err) => {
+        console.error('Firestore qOpen error:', err);
+        setDbOffline(true);
+      }
+    );
     return () => unsubOpen();
   }, []);
   
@@ -198,56 +224,93 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     { id: 'FALSE_ALARM', label: 'Falsa Alarma', color: 'bg-slate-500' }
   ];
 
+  // Suscripción única al feed (A-16): antes se re-suscribía en cada snapshot
+  // (deps [loading, incidents]); el estado previo se sigue con refs locales.
   useEffect(() => {
     const qIncidents = query(collection(db, 'incidents'), orderBy('createdAt', 'desc'), limit(50));
-    const unsubIncidents = onSnapshot(qIncidents, async (snapshot) => {
-      const data = snapshot.docs.map(doc => {
-        const item = doc.data();
-        // Convert Firestore Timestamp to Date if it exists
-        const createdAt = item.createdAt?.toDate?.() || item.createdAt;
-        return { id: doc.id, ...item, createdAt };
-      }) as Incident[];
 
-      // Detect new arrivals for notification (excluding first load)
-      if (!loading && data.length > incidents.length) {
-        const newest = data[0];
-        // Only notify if it's actually new (within last minute)
-        const isVeryRecent = newest.createdAt && (Date.now() - new Date(newest.createdAt).getTime() < 30000);
-        if (isVeryRecent && newest.id !== incidents[0]?.id) {
-          setNewIncidentNotify(newest);
-          setTimeout(() => setNewIncidentNotify(null), 8000);
+    let isInitialIncidents = true;
+    let lastSeenTopId: string | null = null;
+    let lastTipId: string | null = null;
+    let deepLinkHandled = false;
+
+    const unsubIncidents = onSnapshot(
+      qIncidents,
+      async (snapshot) => {
+        setDbOffline(false);
+        const data = snapshot.docs.map(doc => {
+          const item = doc.data();
+          // Convert Firestore Timestamp to Date if it exists
+          const createdAt = item.createdAt?.toDate?.() || item.createdAt;
+          return { id: doc.id, ...item, createdAt };
+        }) as Incident[];
+
+        // Detect new arrivals for notification (excluding first load)
+        if (!isInitialIncidents && data.length > 0) {
+          const newest = data[0];
+          const isVeryRecent = newest.createdAt && (Date.now() - new Date(newest.createdAt).getTime() < 30000);
+          if (isVeryRecent && newest.id !== lastSeenTopId) {
+            setNewIncidentNotify(newest);
+            setTimeout(() => setNewIncidentNotify(null), 8000);
+          }
         }
-      }
 
-      setIncidents(data);
-      setLoading(false);
-      
-      // Auto-select incident from deep link
-      const params = new URLSearchParams(window.location.search);
-      const sharedId = params.get('incident');
-      if (sharedId) {
-        const sharedDoc = data.find(i => i.id === sharedId);
-        if (sharedDoc) setSelectedIncident(sharedDoc);
-      }
-      
-      if (data.length > 0) {
-        setIsAiLoading(true);
-        const tip = await generateSecurityTip(data);
-        setAiTip(tip);
-        setIsAiLoading(false);
-      }
-    });
+        isInitialIncidents = false;
+        lastSeenTopId = data[0]?.id || null;
+        setIncidents(data);
+        setLoading(false);
 
-    const unsubDealers = onSnapshot(collection(db, 'dealerships'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Dealership[];
-      setDealerships(data);
-    });
+        // Auto-select incident from deep link (una sola vez, no en cada snapshot)
+        if (!deepLinkHandled) {
+          deepLinkHandled = true;
+          const params = new URLSearchParams(window.location.search);
+          const sharedId = params.get('incident');
+          if (sharedId) {
+            const sharedDoc = data.find(i => i.id === sharedId);
+            if (sharedDoc) setSelectedIncident(sharedDoc);
+          }
+        }
+
+        // Tip de seguridad: recalcular solo cuando cambia el incidente más
+        // reciente, y sin dejar el loading colgado si el cómputo falla (A-16).
+        if (data.length > 0 && data[0].id !== lastTipId) {
+          lastTipId = data[0].id;
+          setIsAiLoading(true);
+          try {
+            const tip = await generateSecurityTip(data);
+            setAiTip(tip);
+          } catch (tipErr) {
+            console.error('Security tip error:', tipErr);
+          } finally {
+            setIsAiLoading(false);
+          }
+        }
+      },
+      (err) => {
+        console.error('Firestore incidents error:', err);
+        setDbOffline(true);
+        setLoading(false);
+      }
+    );
+
+    const unsubDealers = onSnapshot(
+      collection(db, 'dealerships'),
+      (snapshot) => {
+        setDbOffline(false);
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Dealership[];
+        setDealerships(data);
+      },
+      (err) => {
+        console.error('Firestore dealerships error:', err);
+        setDbOffline(true);
+      }
+    );
 
     return () => {
       unsubIncidents();
       unsubDealers();
     };
-  }, [loading, incidents]);
+  }, []);
 
   const filteredIncidents = incidents.filter(incident => {
     const matchesType = typeFilter.includes(incident.type);
@@ -474,8 +537,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
       {/* Alert Banner System */}
       <div className="space-y-3">
+        <ConnectionBanner show={dbOffline} />
+
         {permission !== 'granted' && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-slate-400"
@@ -484,7 +549,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               <BellOff className="w-4 h-4 shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
-                <p className="text-xs text-slate-500">Habilitá las notificaciones del navegador para recibir telemetría y alertas críticas en tiempo real.</p>
+                <p className="text-xs text-slate-500">Habilitá las notificaciones del navegador. Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
               </div>
             </div>
           </motion.div>
@@ -613,7 +678,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               >
                 <Filter className="w-3.5 h-3.5" />
                 Filtros
-                {(typeFilter.length < 3 || statusFilter.length < 3 || dealershipFilter.length > 0 || dateRange.start || dateRange.end) && (
+                {(typeFilter.length < incidentTypes.length || statusFilter.length < statusTypes.length || dealershipFilter.length > 0 || dateRange.start || dateRange.end) && (
                   <span className="w-2 h-2 rounded-full bg-slate-500" />
                 )}
               </button>
@@ -810,7 +875,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         ALERTA: {incident.type}
                     </h3>
                     <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed break-words">
-                      {incident.description}
+                      {incident.description || 'Sin detalles entregados por el operador.'}
                     </p>
                     {((incident as any).plateFormatted || (incident as any).plate) && (
                       <div className="mt-2.5 inline-flex max-w-full flex-wrap items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
