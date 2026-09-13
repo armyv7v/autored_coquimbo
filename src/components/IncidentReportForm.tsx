@@ -51,6 +51,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const [stolenCheckResult, setStolenCheckResult] = useState<StolenVehicleCheckResult | null>(null);
   const [scanningOcr, setScanningOcr] = useState(false);
   const [ocrHint, setOcrHint] = useState<string | null>(null);
+  const [voiceHint, setVoiceHint] = useState<string | null>(null);
   const [gpsError, setGpsError] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -361,6 +362,12 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   </p>
                 )}
 
+                {voiceHint && (
+                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    {voiceHint}
+                  </p>
+                )}
+
                 {/* Badge de Verificación Automática en Base de Encargos */}
                 <PlateVerificationBadge
                   plate={plate}
@@ -378,7 +385,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     placeholder="Describe los hechos, características de los individuos o dirección de fuga..."
                     className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-base placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[85px]"
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    onChange={(e) => { setDescription(e.target.value); setVoiceHint(null); }}
                   />
                   <button
                     type="button"
@@ -386,7 +393,9 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     onClick={() => {
                       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
                       if (!SpeechRecognition) {
-                        alert("El navegador no soporta transcripción por voz directa. Puedes escribir el texto manualmente.");
+                        // Nada de alert() nativo: hint inline como el resto del form
+                        setVoiceHint('Este navegador no soporta transcripción por voz — escribí el texto manualmente.');
+                        setTimeout(() => setVoiceHint(null), 6000);
                         return;
                       }
                       const recognition = new SpeechRecognition();
