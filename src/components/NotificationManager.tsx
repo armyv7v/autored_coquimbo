@@ -4,7 +4,7 @@ import { db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldAlert, Bell, X, MapPin } from 'lucide-react';
+import { ShieldAlert, Bell, X, MapPin, WifiOff } from 'lucide-react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
 interface Incident {
@@ -44,14 +44,27 @@ export default function NotificationManager() {
   const navigate = useNavigate();
   const [activeAlert, setActiveAlert] = useState<Incident | null>(null);
   const [dealerships, setDealerships] = useState<Dealership[]>([]);
+  const [now, setNow] = useState(Date.now());
   const { permission } = usePushNotifications();
+
+  // Tick periódico para re-evaluar el heartbeat del nodo sin re-suscribirse
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 60000);
+    return () => clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     // Fetch dealerships for proximity check
-    const unsubDealers = onSnapshot(collection(db, 'dealerships'), (snapshot) => {
-      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Dealership[];
-      setDealerships(data);
-    });
+    const unsubDealers = onSnapshot(
+      collection(db, 'dealerships'),
+      (snapshot) => {
+        const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Dealership[];
+        setDealerships(data);
+      },
+      (err) => {
+        console.error('Firestore dealerships error:', err);
+      }
+    );
 
     return () => unsubDealers();
   }, []);
@@ -115,6 +128,15 @@ export default function NotificationManager() {
     return () => unsubscribe();
   }, [dealerships, profile?.dealershipId]);
 
+  // A-18: heartbeat del propio nodo visible — cuando vence, las alertas de
+  // proximidad se suprimen en silencio y el operador debe enterarse.
+  const userDealer = dealerships.find(d => d.id === profile?.dealershipId);
+  let nodeOnline = Boolean(userDealer) && userDealer?.status === 'online';
+  if (userDealer?.lastSeen) {
+    nodeOnline = (now - new Date(userDealer.lastSeen).getTime()) < HEARTBEAT_THRESHOLD_MS;
+  }
+  const nodeOffline = Boolean(userDealer) && !nodeOnline;
+
   const triggerAlert = async (incident: Incident, dealerName: string) => {
     setActiveAlert(incident);
 
@@ -172,54 +194,76 @@ export default function NotificationManager() {
   };
 
   return (
-    <AnimatePresence>
-      {activeAlert && (
-        <motion.div
-          initial={{ opacity: 0, y: 50, scale: 0.9 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          className="fixed bottom-6 right-6 z-[9999] w-full max-w-sm"
-        >
-          <div className="bg-slate-900 border-2 border-red-500/50 rounded-3xl shadow-2xl shadow-red-500/20 p-5 overflow-hidden relative">
-            <div className="absolute top-0 left-0 w-full h-1 bg-red-500 animate-pulse" />
-            
-            <div className="flex items-start gap-4">
-              <div className="bg-red-500 p-3 rounded-2xl text-white shadow-lg shadow-red-500/40">
-                <ShieldAlert className="w-6 h-6 animate-bounce" />
-              </div>
-              
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-1">
-                  <h2 className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">Prioridad Crítica</h2>
-                  <button onClick={() => setActiveAlert(null)} className="text-slate-500 hover:text-white transition-colors">
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                <h3 className="text-white font-bold text-sm mb-1">{activeAlert.type} EN PROGRESO</h3>
-                <p className="text-slate-400 text-xs leading-relaxed mb-3 line-clamp-2">
-                  {activeAlert.description}
-                </p>
-                
-                <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-xl border border-white/5 font-mono">
-                  <MapPin className="w-3 h-3 text-slate-300" />
-                  <span className="text-xs text-slate-300">Cercano a Dealership Red</span>
-                </div>
-              </div>
-            </div>
-            
-            <button 
-              onClick={() => {
-                navigate(`/map?incident=${activeAlert.id}`);
-                setActiveAlert(null);
-              }}
-              className="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-black py-3 rounded-xl transition-all uppercase tracking-widest border border-white/5 flex items-center justify-center gap-2"
-            >
-              <Bell className="w-3 h-3" /> Ver en Mapa
-            </button>
+    <>
+      {/* Nodo offline: banner persistente, no un console.log (A-18) */}
+      {nodeOffline && (
+        <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[1500] w-full max-w-md px-4">
+          <div
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl"
+            role="alert"
+            aria-live="polite"
+          >
+            <WifiOff className="w-4 h-4 shrink-0" />
+            <span>Tu nodo está OFFLINE: no recibirás alertas de proximidad hasta reconectarte.</span>
           </div>
-        </motion.div>
+        </div>
       )}
-    </AnimatePresence>
+
+      <AnimatePresence>
+        {activeAlert && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            /* A-18: sobre la BottomNavbar — bottom-6 tapaba el botón de Alerta */
+            className="fixed bottom-24 right-4 z-[9999] w-full max-w-sm md:bottom-6 md:right-6"
+          >
+            <div className="bg-slate-900 border-2 border-red-500/50 rounded-3xl shadow-2xl shadow-red-500/20 p-5 overflow-hidden relative">
+              <div className="absolute top-0 left-0 w-full h-1 bg-red-500 animate-pulse" />
+
+              <div className="flex items-start gap-4">
+                <div className="bg-red-500 p-3 rounded-2xl text-white shadow-lg shadow-red-500/40">
+                  <ShieldAlert className="w-6 h-6 animate-bounce" />
+                </div>
+
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <h2 className="text-red-500 font-black text-xs uppercase tracking-[0.2em]">Prioridad Crítica</h2>
+                    <button
+                      onClick={() => setActiveAlert(null)}
+                      aria-label="Descartar alerta"
+                      className="p-1.5 text-slate-500 hover:text-white transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  <h3 className="text-white font-bold text-sm mb-1">{activeAlert.type} EN PROGRESO</h3>
+                  <p className="text-slate-400 text-xs leading-relaxed mb-3 line-clamp-2">
+                    {activeAlert.description}
+                  </p>
+
+                  <div className="flex items-center gap-2 bg-slate-800/50 px-3 py-2 rounded-xl border border-white/5 font-mono">
+                    <MapPin className="w-3 h-3 text-slate-300" />
+                    {/* A-18: nombre real de la sede, no texto placeholder */}
+                    <span className="text-xs text-slate-300 truncate">Cercano a {userDealer?.name || 'tu automotora'}</span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={() => {
+                  navigate(`/map?incident=${activeAlert.id}`);
+                  setActiveAlert(null);
+                }}
+                className="mt-4 w-full bg-slate-800 hover:bg-slate-700 text-white text-xs font-black py-3 rounded-xl transition-all uppercase tracking-widest border border-white/5 flex items-center justify-center gap-2"
+              >
+                <Bell className="w-3 h-3" /> Ver en Mapa
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }

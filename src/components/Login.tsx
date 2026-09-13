@@ -567,7 +567,7 @@ export default function Login() {
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
                 {selectedNode
                   ? `Nodo ${selectedNode.name} seleccionado. Transmite ráfagas de telemetría directamente al núcleo de seguridad.`
-                  : 'Desplace el cursor sobre los filamentos o transmita una ráfaga general de telemetría a la red.'}
+                  : 'Explorá la red: tocá un nodo para inspeccionarlo o transmití una ráfaga general de telemetría.'}
               </p>
               <button
                 type="button"

@@ -55,16 +55,8 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
           );
         }
 
-        const getActiveStyle = (tabName?: string) => {
-          switch (tabName) {
-            case 'MAPA':
-            case 'FEED':
-            case 'HISTORIAL':
-            case 'PANEL':
-            default:
-              return 'text-slate-100 font-black scale-105 bg-slate-800 border border-slate-600/80';
-          }
-        };
+        // Un solo estilo activo: el switch original tenía casos idénticos (código muerto, A-29)
+        const activeClass = 'text-slate-100 font-black scale-105 bg-slate-800 border border-slate-600/80';
 
         if (item.path) {
           return (
@@ -73,7 +65,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
               to={item.path}
               className={({ isActive }) =>
                 `flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
-                  isActive ? getActiveStyle(item.tab) : 'text-slate-400 hover:text-slate-200'
+                  isActive ? activeClass : 'text-slate-400 hover:text-slate-200'
                 }`
               }
             >
@@ -90,7 +82,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
             key={item.id}
             onClick={() => handleTabClick(item.tab!)}
             className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
-              isCurrentActive ? getActiveStyle(item.tab) : 'text-slate-400 hover:text-slate-200'
+              isCurrentActive ? activeClass : 'text-slate-400 hover:text-slate-200'
             }`}
           >
             <Icon className="w-5 h-5" />
