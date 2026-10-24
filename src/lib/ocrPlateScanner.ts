@@ -1,12 +1,17 @@
 /**
  * Browser-Native Plate OCR & Image Preprocessing Engine
  *
- * v2 — ROI-first pipeline: en lugar de pasarle a Tesseract la foto completa
- * (auto, fondo, carteles), primero LOCALIZA las regiones con forma de patente
- * chilena (banda horizontal densa en bordes, aspecto ~4:1), recorta cada
- * candidato, lo reescala a altura útil de OCR y lo lee con parámetros afinados
- * (modo línea única + whitelist alfanumérica). La foto completa queda como
- * fallback, no como pase principal.
+ * v3 — Pipeline ROI-only con doble pasada y votación multi-frame:
+ * 1. LOCALIZA regiones con forma de patente chilena (banda horizontal densa en
+ *    bordes, aspecto ~4:1) y lee solo esos recortes (PSM.SINGLE_LINE).
+ * 2. Si la mejor lectura queda bajo el umbral de reintento, relee la mejor ROI
+ *    con PSM.SINGLE_BLOCK (otra segmentación rescata lecturas distintas).
+ * 3. El pase de foto completa (PSM.AUTO) se eliminó: sobre una escena entera
+ *    generaba falsos positivos de 6 caracteres (señales, publicidad) que la
+ *    ventana deslizante convertía en "patentes". Si no hay ROI con forma de
+ *    patente, se devuelve "no detectado" y la UI pide carga manual.
+ * 4. scanLicensePlatesFromFrames() vota entre N frames consecutivos: una
+ *    patente leída igual en ≥2 frames gana por consenso (multi-frame voting).
  */
 
 import { createWorker, PSM, OEM, type Worker as TesseractWorker, type Page } from 'tesseract.js';
@@ -18,10 +23,24 @@ export interface OcrPlateResult {
   candidates: string[];
   processedImagePreview?: string;
   rawOcrText?: string;
+  /** Cantidad de frames que votaron por la patente ganadora (modo multi-frame). */
+  votes?: number;
 }
 
 const OCR_LANG = 'eng';
 const PLATE_CHARS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+
+/**
+ * Umbrales de confianza (escala 0–1) que separan el autollenado del formulario:
+ * ≥ AUTO_FILL_HIGH llena y avisa en verde; entre AUTO_FILL_MEDIUM y HIGH llena
+ * pidiendo confirmación visual; bajo MEDIUM no llena nada.
+ */
+export const OCR_AUTO_FILL_HIGH = 0.75;
+export const OCR_AUTO_FILL_MEDIUM = 0.5;
+
+// Confianza mínima (0–100, escala Tesseract) para reintentar la mejor ROI con
+// otro modo de segmentación en vez de aceptar la primera lectura.
+const RETRY_CONFIDENCE = 70;
 
 // Corrección posicional de confusiones clásicas del OCR. Aplica solo cuando la
 // clase del carácter contradice el formato (p.ej. letra donde debe ir dígito).
@@ -52,17 +71,17 @@ function enqueue<T>(task: () => Promise<T>): Promise<T> {
 
 // ---------- Carga de imagen (respeta la orientación EXIF de la cámara) ----------
 
-async function loadImage(file: File): Promise<ImageBitmap | HTMLImageElement> {
+async function loadImage(source: Blob): Promise<ImageBitmap | HTMLImageElement> {
   if (typeof createImageBitmap === 'function') {
     try {
-      return await createImageBitmap(file, { imageOrientation: 'from-image' });
+      return await createImageBitmap(source, { imageOrientation: 'from-image' });
     } catch {
       // navegador sin soporte de opciones: caer al camino clásico
     }
   }
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
-    const url = URL.createObjectURL(file);
+    const url = URL.createObjectURL(source);
     img.onload = () => {
       URL.revokeObjectURL(url);
       resolve(img);
@@ -124,7 +143,7 @@ function applyMildGrayscaleContrast(canvas: HTMLCanvasElement, contrast = 55): v
  * Preprocesses an image on an offscreen HTML5 canvas to boost contrast of vehicle license plate characters.
  */
 export async function preprocessPlateImage(
-  imageFile: File
+  imageFile: Blob
 ): Promise<{ canvas: HTMLCanvasElement; dataUrl: string }> {
   const source = await loadImage(imageFile);
   const canvas = drawScaled(source, 1400);
@@ -419,7 +438,7 @@ function tryFormatCorrections(text: string): string[] {
         }
       }
       if (viable && changed) {
-        const check = validateChileanPlate(fixed);
+        const check = validateChileanPlate(fixed, { strict: true });
         if (check.isValid && !out.includes(check.formatted)) out.push(check.formatted);
       }
     }
@@ -440,10 +459,16 @@ const SCAN_TIMEOUT_MS = 15000;
 
 const EMPTY_RESULT: OcrPlateResult = { detectedPlate: null, confidence: 0, candidates: [] };
 
+interface ScanHits {
+  directHits: Map<string, number>;
+  correctedHits: Map<string, number>;
+  rawTexts: string[];
+}
+
 /**
  * Scans an image file for Chilean license plates using Tesseract OCR + heuristics.
  */
-export async function scanLicensePlateFromImage(imageFile: File): Promise<OcrPlateResult> {
+export async function scanLicensePlateFromImage(imageFile: Blob): Promise<OcrPlateResult> {
   return enqueue(async () => {
     try {
       // El operador en la calle no puede esperar un OCR trabado: si en 15s no
@@ -459,7 +484,98 @@ export async function scanLicensePlateFromImage(imageFile: File): Promise<OcrPla
   });
 }
 
-async function runPlateScan(imageFile: File): Promise<OcrPlateResult> {
+/**
+ * Lee N frames de una misma escena (captura en vivo) y decide por consenso:
+ * una patente leída idéntica (ya normalizada) en ≥2 frames gana — un carácter
+ * confundido en un frame puntual ya no puede ganarle a dos lecturas limpias.
+ * Sin consenso entre frames se devuelve "no detectado" y la UI pide lectura
+ * manual: nunca se inventa una patente desde una sola lectura dudosa.
+ */
+export async function scanLicensePlatesFromFrames(frames: Blob[]): Promise<OcrPlateResult> {
+  if (frames.length === 0) return EMPTY_RESULT;
+  if (frames.length === 1) return scanLicensePlateFromImage(frames[0]);
+
+  return enqueue(async () => {
+    const perFrame: ScanHits[] = [];
+    let preview: string | undefined;
+    for (const frame of frames) {
+      try {
+        const hits = await runPlateScanHits(frame);
+        perFrame.push(hits);
+        preview ??= hits.dataUrl;
+      } catch (err) {
+        console.warn('Frame OCR error (se descarta el frame):', err);
+      }
+    }
+    if (perFrame.length === 0) return EMPTY_RESULT;
+
+    // Un frame vota una vez por patente (lectura directa o corregida); el
+    // score suma las lecturas directas (las corregidas pesan 0.7). Gana la
+    // patente con más votos; a igualdad, el mejor score acumulado.
+    const sumScore = new Map<string, number>();
+    const voteCount = new Map<string, number>();
+    for (const hits of perFrame) {
+      const seen = new Set([...hits.directHits.keys()]);
+      for (const [plate, score] of hits.directHits) {
+        sumScore.set(plate, (sumScore.get(plate) ?? 0) + score);
+      }
+      for (const [plate, score] of hits.correctedHits) {
+        if (!seen.has(plate)) {
+          sumScore.set(plate, (sumScore.get(plate) ?? 0) + score * 0.7);
+          seen.add(plate);
+        }
+      }
+      for (const plate of seen) {
+        voteCount.set(plate, (voteCount.get(plate) ?? 0) + 1);
+      }
+    }
+
+    const ranked = [...voteCount.entries()]
+      .filter(([, votes]) => votes >= 2)
+      .sort((a, b) => b[1] - a[1] || (sumScore.get(b[0]) ?? 0) - (sumScore.get(a[0]) ?? 0));
+
+    const candidates = Array.from(new Set([...sumScore.keys()]));
+    if (ranked.length === 0) {
+      // Sin consenso entre frames no se inventa patente: la UI pide lectura
+      // manual. Los candidatos quedan disponibles para diagnóstico.
+      return { ...EMPTY_RESULT, candidates, processedImagePreview: preview };
+    }
+
+    const [winnerPlate, votes] = ranked[0];
+    const rawTexts = perFrame.flatMap((h) => h.rawTexts);
+
+    return {
+      detectedPlate: winnerPlate,
+      // Confianza por frame promediada entre los frames que votaron: dos
+      // lecturas al 90% dan 0.9, no 0.45.
+      confidence: Math.min(1, (sumScore.get(winnerPlate) ?? 0) / (votes * 100)),
+      votes,
+      candidates,
+      processedImagePreview: preview,
+      rawOcrText: Array.from(new Set(rawTexts)).join('\n---\n').trim(),
+    };
+  });
+}
+
+async function runPlateScan(imageFile: Blob): Promise<OcrPlateResult> {
+  const hits = await runPlateScanHits(imageFile);
+  const { directHits, correctedHits, rawTexts } = hits;
+
+  // Ranking: los hits directos ganan sobre los corregidos; dentro de cada
+  // grupo decide confianza.
+  const pickBest = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1])[0];
+  const winner = pickBest(directHits) ?? pickBest(correctedHits);
+
+  return {
+    detectedPlate: winner ? winner[0] : null,
+    confidence: winner ? Math.min(1, winner[1] / 100) : 0,
+    candidates: Array.from(new Set([...directHits.keys(), ...correctedHits.keys()])),
+    processedImagePreview: hits.dataUrl,
+    rawOcrText: Array.from(new Set(rawTexts)).join('\n---\n').trim(),
+  };
+}
+
+async function runPlateScanHits(imageFile: Blob): Promise<ScanHits & { dataUrl: string }> {
   const { canvas, dataUrl } = await preprocessPlateImage(imageFile);
   const worker = await getWorker();
 
@@ -480,27 +596,25 @@ async function runPlateScan(imageFile: File): Promise<OcrPlateResult> {
 
   // 1. Pase principal: leer cada región con forma de patente (el "enfoque")
   const regions = locatePlateRegions(canvas);
+  const crops: { crop: HTMLCanvasElement; confidence: number }[] = [];
+  let bestConfidence = 0;
   for (const region of regions) {
     const crop = cropRegion(canvas, region);
     if (!crop) continue;
     const { text, confidence } = await readCanvas(worker, crop, PSM.SINGLE_LINE);
     collect(text, confidence, 1);
+    crops.push({ crop, confidence });
+    if (confidence > bestConfidence) bestConfidence = confidence;
   }
 
-  // 2. Fallback: foto completa (antes era el único pase)
-  const full = await readCanvas(worker, canvas, PSM.AUTO);
-  collect(full.text, full.confidence, 0.8);
+  // 2. Segunda pasada: si la mejor ROI quedó bajo el umbral, reintentarla con
+  //    otra segmentación (SINGLE_BLOCK) — cada modo rescata caracteres que el
+  //    otro rompe, y la validación por formato decide cuál lectura sirve.
+  if (regions.length > 0 && bestConfidence < RETRY_CONFIDENCE) {
+    const best = crops.sort((a, b) => b.confidence - a.confidence)[0];
+    const { text, confidence } = await readCanvas(worker, best.crop, PSM.SINGLE_BLOCK);
+    collect(text, confidence, 1);
+  }
 
-  // 3. Ranking: los hits directos ganan sobre los corregidos; dentro de cada
-  //    grupo decide confianza (los recortes pesan 1.0, la foto completa 0.8).
-  const pickBest = (m: Map<string, number>) => [...m.entries()].sort((a, b) => b[1] - a[1])[0];
-  const winner = pickBest(directHits) ?? pickBest(correctedHits);
-
-  return {
-    detectedPlate: winner ? winner[0] : null,
-    confidence: winner ? Math.min(1, winner[1] / 100) : 0,
-    candidates: Array.from(new Set([...directHits.keys(), ...correctedHits.keys()])),
-    processedImagePreview: dataUrl,
-    rawOcrText: Array.from(new Set(rawTexts)).join('\n---\n').trim(),
-  };
+  return { directHits, correctedHits, rawTexts, dataUrl };
 }

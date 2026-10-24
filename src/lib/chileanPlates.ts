@@ -21,10 +21,21 @@ export function normalizePlate(plate: string): string {
     .trim();
 }
 
+export interface ValidatePlateOptions {
+  /**
+   * Modo estricto: sin el fallback genérico de 6 caracteres. Es el modo que
+   * debe usar TODO lo que consuma salida de OCR — aceptar cualquier cadena
+   * alfanumérica de 6 chars convierte ruido de la escena (señales, publicidad)
+   * en una "patente válida". La entrada manual humana sí puede usar el modo
+   * permisivo: el operador teclea lo que ve.
+   */
+  strict?: boolean;
+}
+
 /**
  * Validates Chilean vehicle license plate format.
  */
-export function validateChileanPlate(rawPlate: string): PlateValidationResult {
+export function validateChileanPlate(rawPlate: string, options: ValidatePlateOptions = {}): PlateValidationResult {
   const clean = normalizePlate(rawPlate);
 
   // New Format (2007 - Present): 4 Letters + 2 Digits (e.g. GKLP42, BBBB10, TTJG75)
@@ -62,8 +73,8 @@ export function validateChileanPlate(rawPlate: string): PlateValidationResult {
     };
   }
 
-  // Generic fallback if user enters alphanumeric 6 chars
-  if (clean.length === 6 && /^[A-Z0-9]{6}$/.test(clean)) {
+  // Generic fallback if user enters alphanumeric 6 chars (solo entrada manual)
+  if (!options.strict && clean.length === 6 && /^[A-Z0-9]{6}$/.test(clean)) {
     return {
       isValid: true,
       normalized: clean,
@@ -89,7 +100,7 @@ export function extractPlatesFromText(text: string): string[] {
   const matches: string[] = [];
 
   const addMatch = (candidate: string) => {
-    const check = validateChileanPlate(candidate);
+    const check = validateChileanPlate(candidate, { strict: true });
     if (check.isValid && !matches.includes(check.formatted)) {
       matches.push(check.formatted);
     }

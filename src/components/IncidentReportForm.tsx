@@ -14,7 +14,9 @@ import 'leaflet/dist/leaflet.css';
 import PlateVerificationBadge from './PlateVerificationBadge';
 import { StolenVehicleCheckResult } from '../services/stolenVehicleService';
 import { normalizePlate, validateChileanPlate } from '../lib/chileanPlates';
-import { scanLicensePlateFromImage, preloadPlateOcrWorker } from '../lib/ocrPlateScanner';
+import { scanLicensePlateFromImage, preloadPlateOcrWorker, OCR_AUTO_FILL_HIGH, OCR_AUTO_FILL_MEDIUM, type OcrPlateResult } from '../lib/ocrPlateScanner';
+import { compressImageFile } from '../lib/imageUtils';
+import PlateCameraCapture from './PlateCameraCapture';
 import { TacticalSubmitBar } from './ui/TacticalActionCard';
 import { sound } from '../lib/soundEngine';
 
@@ -62,6 +64,14 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [pickingLocation, setPickingLocation] = useState(false);
+  const [showPlateCamera, setShowPlateCamera] = useState(false);
+  // Métrica de precisión del OCR (P2.8): cómo entró la patente al formulario,
+  // qué sugirió el OCR y con cuánta confianza. Viajan con el incidente para
+  // poder medir la tasa de acierto real en producción (y decidir si conviene
+  // migrar de Tesseract).
+  const [plateSource, setPlateSource] = useState<'OCR' | 'MANUAL' | null>(null);
+  const [ocrSuggestedPlate, setOcrSuggestedPlate] = useState<string | null>(null);
+  const [ocrConfidence, setOcrConfidence] = useState<number | null>(null);
   const [location, setLocation] = useState<[number, number]>(COQUIMBO_CENTER);
   const [usingGps, setUsingGps] = useState(false);
   const [draftRestored, setDraftRestored] = useState(false);
@@ -169,6 +179,34 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, type, description, plate, image]);
 
+  /**
+   * Aplica el resultado del OCR al campo patente según umbrales de confianza:
+   * ≥ 0.75 autollena; 0.50–0.75 autollena pidiendo confirmación visual; bajo
+   * 0.50 no llena nada — una lectura dudosa nunca entra al formulario como si
+   * fuera buena, el operador decide.
+   */
+  const applyOcrResult = (ocr: OcrPlateResult) => {
+    if (ocr.detectedPlate && ocr.confidence >= OCR_AUTO_FILL_HIGH) {
+      setPlate(ocr.detectedPlate);
+      setPlateSource('OCR');
+      setOcrSuggestedPlate(ocr.detectedPlate);
+      setOcrConfidence(Math.round(ocr.confidence * 100));
+      setOcrHint(`Patente leída automáticamente (${Math.round(ocr.confidence * 100)}% de confianza) — verificala antes de transmitir.`);
+      sound.playNodePulse(false);
+    } else if (ocr.detectedPlate && ocr.confidence >= OCR_AUTO_FILL_MEDIUM) {
+      setPlate(ocr.detectedPlate);
+      setPlateSource('OCR');
+      setOcrSuggestedPlate(ocr.detectedPlate);
+      setOcrConfidence(Math.round(ocr.confidence * 100));
+      setOcrHint(`Lectura de baja confianza (${Math.round(ocr.confidence * 100)}%) — corregí la patente a mano si no coincide.`);
+      sound.playNodePulse(false);
+    } else {
+      setOcrHint(ocr.candidates.length > 0
+        ? 'No hubo consenso en la lectura — escríbela manualmente (revisá la foto de apoyo).'
+        : 'No se detectó patente en la foto — escríbela manualmente.');
+    }
+  };
+
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -184,12 +222,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
       setOcrHint(null);
       try {
         const ocr = await scanLicensePlateFromImage(file);
-        if (ocr.detectedPlate) {
-          setPlate(ocr.detectedPlate);
-          sound.playNodePulse(false);
-        } else {
-          setOcrHint('No se detectó patente en la foto — escríbela manualmente.');
-        }
+        applyOcrResult(ocr);
       } catch (ocrErr) {
         console.warn('OCR error:', ocrErr);
         setOcrHint('No se pudo analizar la foto — escríbela manualmente.');
@@ -197,6 +230,15 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
         setScanningOcr(false);
       }
     }
+  };
+
+  /** Resultado de la captura en vivo (4 frames + votación): ya viene con OCR. */
+  const handlePlateCaptured = (file: File, ocr: OcrPlateResult) => {
+    setShowPlateCamera(false);
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+    setScanningOcr(false);
+    applyOcrResult(ocr);
   };
 
   const requestGps = () => {
@@ -236,8 +278,12 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
     try {
       let imageUrl = '';
       if (image) {
-        const storageRef = ref(storage, `incidents/${safeUUID()}-${image.name}`);
-        const uploadResult = await uploadBytes(storageRef, image);
+        // Se sube el JPEG re-comprimido, no el original de la cámara (3–8 MB):
+        // misma evidencia a menor latencia y costo de Storage. Si la compresión
+        // falla, compressImageFile devuelve el original.
+        const uploadFile = await compressImageFile(image);
+        const storageRef = ref(storage, `incidents/${safeUUID()}-${uploadFile.name}`);
+        const uploadResult = await uploadBytes(storageRef, uploadFile);
         imageUrl = await getDownloadURL(uploadResult.ref);
       }
 
@@ -266,6 +312,21 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
         incidentData.plate = cleanPlate;
         incidentData.plateFormatted = formattedPlate;
         incidentData.hasStolenReport = Boolean(stolenCheckResult?.hasStolenReport);
+        // Métrica de precisión del OCR: fuente de la patente, confianza de la
+        // lectura y la sugerencia del OCR si el operador la corrigió después.
+        // Con estos tres campos se mide el accuracy real del OCR en producción.
+        if (plateSource) incidentData.plateSource = plateSource;
+        if (ocrConfidence !== null) incidentData.ocrConfidence = ocrConfidence;
+        if (ocrSuggestedPlate && normalizePlate(ocrSuggestedPlate) !== cleanPlate) {
+          incidentData.ocrSuggestedPlate = ocrSuggestedPlate;
+          // Corrección del operador tras una sugerencia del OCR: señal directa
+          // de error de lectura para el monitoreo.
+          console.info('[ocr-plate-correction]', {
+            suggested: ocrSuggestedPlate,
+            final: cleanPlate,
+            confidence: ocrConfidence,
+          });
+        }
         if (stolenCheckResult?.vehicleDetails?.brand) {
           incidentData.vehicleBrand = stolenCheckResult.vehicleDetails.brand;
         }
@@ -325,6 +386,10 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
     setGpsError(false);
     setOcrHint(null);
     setError(null);
+    setShowPlateCamera(false);
+    setPlateSource(null);
+    setOcrSuggestedPlate(null);
+    setOcrConfidence(null);
   };
 
   return (
@@ -441,7 +506,13 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   <input
                     type="text"
                     value={plate}
-                    onChange={(e) => setPlate(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      // Cualquier tipeo del operador invalida la atribución al
+                      // OCR (aunque sea corregir un carácter): la métrica debe
+                      // reflejar quién escribió la patente final.
+                      setPlate(e.target.value.toUpperCase());
+                      setPlateSource('MANUAL');
+                    }}
                     placeholder="Ej: GKLP42 o AB1234 (Opcional)"
                     maxLength={10}
                     inputMode="text"
@@ -453,7 +524,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   {plate && (
                     <button
                       type="button"
-                      onClick={() => { setPlate(''); setStolenCheckResult(null); }}
+                      onClick={() => { setPlate(''); setStolenCheckResult(null); setPlateSource(null); setOcrSuggestedPlate(null); setOcrConfidence(null); }}
                       aria-label="Limpiar patente"
                       className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-white"
                     >
@@ -555,25 +626,21 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
 
                 <div className="grid grid-cols-2 gap-2.5">
                   <div className="relative">
-                    <input 
-                      type="file" 
-                      accept="image/*" 
-                      capture="environment"
-                      ref={fileInputRef} 
-                      className="hidden" 
-                      onChange={handleFileChange}
-                    />
-                    <button 
-                      type="button" 
-                      onClick={() => fileInputRef.current?.click()}
+                    {/* Vía principal: captura en vivo con encuadre guiado y
+                        OCR por votación de 4 frames. El input de archivo queda
+                        como fallback (galería) dentro del modal y en el
+                        borde inferior de la sección de foto. */}
+                    <button
+                      type="button"
+                      onClick={() => setShowPlateCamera(true)}
                       className={`w-full h-11 flex items-center justify-center gap-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition ${
-                        imagePreview 
-                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400' 
+                        imagePreview
+                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
                           : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
                       }`}
                     >
                       <Camera className="w-4 h-4" />
-                      {imagePreview ? 'Foto Cargada' : 'Adjuntar / Tomar Foto'}
+                      {imagePreview ? 'Foto Cargada' : 'Escanear Patente'}
                     </button>
                   </div>
 
@@ -604,6 +671,16 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     </button>
                   </div>
                 )}
+
+                {/* Input de archivo oculto: vía de galería que abre el modal de
+                    cámara cuando getUserMedia falla (permiso, http inseguro). */}
+                <input
+                  type="file"
+                  accept="image/*"
+                  ref={fileInputRef}
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
 
                 {!usingGps && !gpsError && (
                   <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
@@ -685,6 +762,19 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 </motion.div>
               )}
             </AnimatePresence>
+
+            {/* Captura en vivo de patente: encuadre guiado + linterna/zoom +
+                OCR por votación multi-frame. Al cerrar el modal su cleanup
+                detiene el stream de la cámara. */}
+            <PlateCameraCapture
+              isOpen={showPlateCamera}
+              onClose={() => setShowPlateCamera(false)}
+              onCapture={handlePlateCaptured}
+              onFallbackGallery={() => {
+                setShowPlateCamera(false);
+                fileInputRef.current?.click();
+              }}
+            />
           </motion.div>
         </motion.div>
       )}

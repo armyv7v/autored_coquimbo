@@ -7,9 +7,11 @@ import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-// A-02: la clave NUNCA vive en el bundle. En producción consulta el proxy
-// /api/vehicle-plate (función serverless de Vercel con la clave en BOOSTR_API_KEY).
-// El fallback directo con VITE_BOOSTR_API_KEY es solo para `npm run dev` local.
+// A-02: la clave NUNCA vive en el bundle. TODA consulta oficial pasa por el
+// proxy /api/vehicle-plate (función serverless de Vercel con la clave en
+// BOOSTR_API_KEY). No existe fallback directo desde el cliente: un fallback
+// con VITE_BOOSTR_API_KEY expondría la clave en el bundle de producción. En
+// dev local correr `vercel dev` para tener el proxy disponible.
 
 export interface StolenVehicleCheckResult {
   plate: string;
@@ -233,15 +235,13 @@ export class VerificationError extends Error {
  * operador durante una alerta real (A-02).
  */
 async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<StolenVehicleCheckResult>> {
-  const directApiKey = (import.meta as any).env?.VITE_BOOSTR_API_KEY || '';
-
   const mapStatusToError = (status: number): VerificationError | null => {
     if (status === 429) return new VerificationError('QUOTA');
     if (status === 401 || status === 403) return new VerificationError('AUTH');
     return null;
   };
 
-  // 1. Proxy server-side (producción): la clave no viaja al cliente.
+  // Proxy server-side (única vía): la clave no viaja al cliente.
   try {
     const response = await fetch(`/api/vehicle-plate?plate=${encodeURIComponent(cleanPlate)}`, {
       method: 'GET',
@@ -255,34 +255,14 @@ async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<Stolen
       if (!response.ok) throw new VerificationError('NETWORK');
       return parseBoostrResponse(cleanPlate, await response.json());
     }
-    // Si el proxy no existe (dev local sin vercel dev) la SPA devuelve index.html: cae al fallback directo.
+    // Respuesta no-JSON = el proxy no existe (dev local sin `vercel dev`, la
+    // SPA devolvió index.html): sin conexión al gateway oficial.
+    throw new VerificationError('NETWORK');
   } catch (err) {
     if (err instanceof VerificationError) throw err;
-    console.warn('Proxy vehicle-plate no disponible, usando consulta directa (dev):', err);
-  }
-
-  // 2. Fallback directo (solo dev local con clave en .env).
-  if (!directApiKey) throw new VerificationError('AUTH');
-
-  let response: Response;
-  try {
-    response = await fetch(`https://api.boostr.cl/vehicle/${cleanPlate}.json`, {
-      method: 'GET',
-      headers: {
-        'x-api-key': directApiKey,
-        'Accept': 'application/json',
-      },
-    });
-  } catch (err) {
-    console.warn('Boostr API network error:', err);
+    console.warn('Proxy vehicle-plate no disponible:', err);
     throw new VerificationError('NETWORK');
   }
-
-  if (response.status === 429) throw new VerificationError('QUOTA');
-  if (response.status === 401 || response.status === 403) throw new VerificationError('AUTH');
-  if (!response.ok) throw new VerificationError('NETWORK');
-
-  return parseBoostrResponse(cleanPlate, await response.json());
 }
 
 function parseBoostrResponse(plate: string, data: any): Partial<StolenVehicleCheckResult> {
@@ -354,25 +334,9 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     return RUNTIME_VEHICLE_CACHE.get(cleanPlate)!;
   }
 
-  // 2. Check known local registry (instant and resilient)
-  if (KNOWN_VEHICLE_DATABASE[cleanPlate]) {
-    const record = KNOWN_VEHICLE_DATABASE[cleanPlate];
-    const result: StolenVehicleCheckResult = {
-      plate: cleanPlate,
-      formattedPlate: validation.formatted,
-      hasStolenReport: Boolean(record.hasStolenReport),
-      status: record.status || (record.hasStolenReport ? 'STOLEN' : 'CLEAN'),
-      statusText: record.statusText || (record.hasStolenReport ? 'ENCARGO POR ROBO VIGENTE' : 'SIN ENCARGO POR ROBO REGISTRADO'),
-      vehicleDetails: record.vehicleDetails,
-      stolenDetails: record.stolenDetails,
-      checkedAt,
-      source: 'AutoSeguro / Registro Civil Oficial',
-    };
-    RUNTIME_VEHICLE_CACHE.set(cleanPlate, result);
-    return result;
-  }
-
-  // 3. Check live Firestore Stolen Registry (catches real-time network reports)
+  // 2. Check live Firestore Stolen Registry FIRST (real-time network reports
+  //    ganan sobre cualquier dato local: un encargo cargado por la red hoy
+  //    debe aparecer aunque el seed de demo no lo conozca).
   try {
     const customDocRef = doc(db, 'stolenVehiclesRegistry', cleanPlate);
     const customSnap = await getDoc(customDocRef);
@@ -393,10 +357,11 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
       return result;
     }
   } catch (firestoreErr) {
-    // Graceful fallback
+    // Firestore caído no bloquea la verificación: se sigue con la API oficial.
+    console.warn('Consulta a stolenVehiclesRegistry falló, se continúa con la API oficial:', firestoreErr);
   }
 
-  // 4. Query live official Boostr Chile API gateway
+  // 3. Query live official Boostr Chile API gateway
   try {
     const boostrResult = await queryBoostrVehicleApi(cleanPlate);
     const result: StolenVehicleCheckResult = {
@@ -425,13 +390,19 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
         source: result.source,
         cachedAt: serverTimestamp(),
       });
-    } catch (_) {}
+    } catch (cacheErr) {
+      console.warn('No se pudo cachear la consulta en Firestore (cuota de Boostr compartida se resiente):', cacheErr);
+    }
 
     return result;
   } catch (err) {
     if (err instanceof VerificationError) {
       // Nunca devolver un falso "limpio": cada motivo de fallo tiene su estado
       // visible y distinto (A-02) — el badge los muestra como NO VERIFICADO.
+      // Antes de rendir, se intenta con el registro local de demostración.
+      const localResult = lookupLocalDemoDatabase(cleanPlate, validation.formatted, checkedAt);
+      if (localResult) return localResult;
+
       const failureText: Record<VerificationFailure, string> = {
         QUOTA: 'CUOTA DIARIA DE CONSULTAS AGOTADA — NO SE PUDO VERIFICAR',
         AUTH: 'CLAVE DE API OFICIAL RECHAZADA — NO SE PUDO VERIFICAR',
@@ -456,18 +427,35 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     }
     throw err;
   }
+}
 
-  // 5. Fallback final: NUNCA inventar un resultado limpio — un verde
-  // "SIN ENCARGO" aquí sería un falso negativo en la decisión core.
-  return {
+/**
+ * Último recurso de la cascada: el seed hardcodeado de demostración. Va AL
+ * FINAL — antes respondía antes que Firestore y que la API oficial, así que
+ * datos de demo podían tapar un encargo real. Su fuente se anuncia como demo
+ * para que el badge no lo presente como dato oficial.
+ */
+function lookupLocalDemoDatabase(
+  cleanPlate: string,
+  formattedPlate: string,
+  checkedAt: string
+): StolenVehicleCheckResult | null {
+  const record = KNOWN_VEHICLE_DATABASE[cleanPlate];
+  if (!record) return null;
+  const result: StolenVehicleCheckResult = {
     plate: cleanPlate,
-    formattedPlate: validation.formatted,
-    hasStolenReport: false,
-    status: 'UNKNOWN',
-    statusText: 'SIN CONEXIÓN — NO SE PUDO VERIFICAR',
+    formattedPlate,
+    hasStolenReport: Boolean(record.hasStolenReport),
+    status: record.status || (record.hasStolenReport ? 'STOLEN' : 'CLEAN'),
+    statusText: record.statusText || (record.hasStolenReport ? 'ENCARGO POR ROBO VIGENTE' : 'SIN ENCARGO POR ROBO REGISTRADO'),
+    vehicleDetails: record.vehicleDetails,
+    stolenDetails: record.stolenDetails,
     checkedAt,
-    source: 'No verificado (sin conexión o cuota de consultas agotada)',
+    source: 'Registro local de DEMOSTRACIÓN (no oficial)',
   };
+  // Cache en memoria: sin esto, cada chequeo de demo repetiría Firestore + API.
+  RUNTIME_VEHICLE_CACHE.set(cleanPlate, result);
+  return result;
 }
 
 /**
