@@ -312,6 +312,11 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
         incidentData.plate = cleanPlate;
         incidentData.plateFormatted = formattedPlate;
         incidentData.hasStolenReport = Boolean(stolenCheckResult?.hasStolenReport);
+        // Veredicto de la verificación (STOLEN/CLEAN/UNKNOWN): Dashboard y
+        // MapView leen este campo para el badge; sin él, todo incidente nuevo
+        // mostraba "SIN ENCARGO" aunque el chequeo hubiera fallado o seguido
+        // en curso. Sin resultado todavía = UNKNOWN ("NO VERIFICADO").
+        incidentData.stolenCheckStatus = stolenCheckResult?.status || 'UNKNOWN';
         // Métrica de precisión del OCR: fuente de la patente, confianza de la
         // lectura y la sugerencia del OCR si el operador la corrigió después.
         // Con estos tres campos se mide el accuracy real del OCR en producción.

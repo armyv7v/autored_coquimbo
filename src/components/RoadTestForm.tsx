@@ -7,6 +7,7 @@ import { auth, db, storage } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { safeUUID } from '../lib/uuid';
 import PlateVerificationBadge from './PlateVerificationBadge';
+import { normalizePlate } from '../lib/chileanPlates';
 
 interface RoadTestFormProps {
   isOpen: boolean;
@@ -121,7 +122,9 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
         dealershipId: profile?.dealershipId || 'DASHBOARD_UI',
         reporterId: auth.currentUser.uid,
         status: 'ACTIVE',
-        vehiclePlate: plate.trim(),
+        // Misma normalización que incidents.plate y la key de stolenVehiclesRegistry:
+        // sin esto los cruces futuros por patente no coinciden entre módulos.
+        vehiclePlate: normalizePlate(plate),
         notes: notes.trim(),
         files: Object.fromEntries(uploads),
         createdAt: serverTimestamp(),

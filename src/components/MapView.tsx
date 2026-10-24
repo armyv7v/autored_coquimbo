@@ -391,6 +391,8 @@ export default function MapView() {
         reporterId: auth.currentUser.uid,
         dealershipId: profile?.dealershipId || 'MAP_UI',
         location: { lat: reportLocation[0], lng: reportLocation[1], geohash },
+        // geohash top-level: esquema canónico de IncidentReportForm.
+        geohash,
         imageUrl,
         status: 'OPEN',
         createdAt: serverTimestamp(),

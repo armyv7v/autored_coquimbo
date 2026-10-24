@@ -109,5 +109,18 @@ service cloud.firestore {
       allow create, update: if isSignedIn();
       allow delete: if isAdmin();
     }
+
+    // --- Cola de Push Notifications (FCM) ---
+    // El cliente SOLO encola docs (addDoc sin sentAt); el envío y el marcado
+    // de sentAt/deliveredTo lo hace api/push-dispatch.mjs vía Admin SDK, que
+    // bypasea estas reglas. El cliente no necesita leer la cola.
+    match /push_notifications/{notificationId} {
+      allow create: if isSignedIn();
+    }
+
+    // --- Alertas de Fiscalización ---
+    match /inspectionAlerts/{alertId} {
+      allow get, list, create, update: if isSignedIn();
+    }
   }
 }

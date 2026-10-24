@@ -130,6 +130,9 @@ export default function FlashReport() {
         reporterId: auth.currentUser.uid,
         dealershipId: profile?.dealershipId || 'CENTRAL',
         location: { lat: location[0], lng: location[1], geohash },
+        // geohash top-level: esquema canónico de IncidentReportForm (misma
+        // geometría accesible desde cualquier lector de incidentes).
+        geohash,
         imageUrl,
         status: 'OPEN',
         createdAt: serverTimestamp()
