@@ -14,11 +14,38 @@ const messaging = firebase.messaging();
 
 messaging.onBackgroundMessage((payload) => {
   console.log('[firebase-messaging-sw.js] Received background message ', payload);
-  const notificationTitle = payload.notification.title;
+  const incidentId = payload.data && payload.data.incidentId;
+  const notificationTitle = (payload.notification && payload.notification.title) || 'Nueva Alerta';
   const notificationOptions = {
-    body: payload.notification.body,
-    icon: '/vite.svg'
+    body: (payload.notification && payload.notification.body) || '',
+    icon: '/favicon.ico',
+    // tag: una alerta por incidente reemplaza a la anterior en vez de apilarse.
+    tag: incidentId ? 'incident-' + incidentId : undefined,
+    // Deep link: MapView consume /map?incident={id} y centra el incidente.
+    data: {
+      incidentId: incidentId || null,
+      url: incidentId ? '/map?incident=' + incidentId : '/'
+    }
   };
-
   self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// Click en notificación en background: enfoca la pestaña existente y navega
+// al incidente; si no hay ventana abierta, abre una nueva en el deep link.
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  event.waitUntil((async () => {
+    const clientList = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+    for (const client of clientList) {
+      if ('focus' in client) {
+        await client.focus();
+        if (targetUrl !== '/' && 'navigate' in client) {
+          try { await client.navigate(targetUrl); } catch (err) { /* la SPA ya está abierta */ }
+        }
+        return;
+      }
+    }
+    await self.clients.openWindow(targetUrl);
+  })());
 });

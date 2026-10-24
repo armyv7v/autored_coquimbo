@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getToken, onMessage } from 'firebase/messaging';
 import { messaging, db, auth } from '../lib/firebase';
 import { doc, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -9,6 +10,7 @@ const isNotificationSupported = () => {
 };
 
 export function usePushNotifications() {
+  const navigate = useNavigate();
   const [token, setToken] = useState<string | null>(null);
   const [permission, setPermission] = useState<NotificationPermission>(
     isNotificationSupported() ? Notification.permission : 'denied'
@@ -66,10 +68,22 @@ export function usePushNotifications() {
       const unsubscribe = onMessage(messaging, (payload) => {
         console.log('Message received in foreground: ', payload);
         if (payload.notification) {
-          new Notification(payload.notification.title || 'Nueva Alerta', {
+          // El dispatcher envía data.incidentId: al tocar la notificación el
+          // operador aterriza en el mapa con el incidente seleccionado, no en
+          // una alerta muerta que solo se cierra.
+          const incidentId = payload.data?.incidentId;
+          const notification = new Notification(payload.notification.title || 'Nueva Alerta', {
             body: payload.notification.body,
-            icon: '/vite.svg'
+            icon: '/favicon.ico',
+            tag: incidentId ? `incident-${incidentId}` : undefined,
           });
+          if (incidentId) {
+            notification.onclick = () => {
+              window.focus();
+              navigate(`/map?incident=${incidentId}`);
+              notification.close();
+            };
+          }
         }
       });
 
@@ -77,7 +91,7 @@ export function usePushNotifications() {
     } catch (err) {
       console.warn('No se pudo suscribir al onMessage de Firebase Messaging:', err);
     }
-  }, []);
+  }, [navigate]);
 
   return { token, permission };
 }
