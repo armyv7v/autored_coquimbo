@@ -7,8 +7,9 @@ import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
 import { db } from '../lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 
-const DEFAULT_BOOSTR_API_KEY =
-  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjbGllbnQiOiJFbmRlciBQaW5hIiwicGxhbiI6ImZyZWUiLCJhZGRvbnMiOiIiLCJleGNsdWRlcyI6IiIsInJhdGUiOiI1eDEwIiwiY3VzdG9tIjp7ImRvY3VtZW50X251bWJlcl9kYWlseV9saW1pdCI6MCwicGxhdGVzX2RhaWx5X2xpbWl0Ijo1fSwiaWF0IjoxNzg2OTk5MjA3LCJleHAiOjE3ODk1OTEyMDd9.toKPBnXhg4SCVW_9PdmqROGM2vFKeioNKopImHCa_1Y';
+// A-02: la clave NUNCA vive en el bundle. En producción consulta el proxy
+// /api/vehicle-plate (función serverless de Vercel con la clave en BOOSTR_API_KEY).
+// El fallback directo con VITE_BOOSTR_API_KEY es solo para `npm run dev` local.
 
 export interface StolenVehicleCheckResult {
   plate: string;
@@ -232,19 +233,43 @@ export class VerificationError extends Error {
  * operador durante una alerta real (A-02).
  */
 async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<StolenVehicleCheckResult>> {
-  const apiKey =
-    (import.meta as any).env?.VITE_BOOSTR_API_KEY ||
-    (import.meta as any).env?.VITE_PATENTES_API_KEY ||
-    DEFAULT_BOOSTR_API_KEY;
+  const directApiKey = (import.meta as any).env?.VITE_BOOSTR_API_KEY || '';
 
-  if (!apiKey) throw new VerificationError('AUTH');
+  const mapStatusToError = (status: number): VerificationError | null => {
+    if (status === 429) return new VerificationError('QUOTA');
+    if (status === 401 || status === 403) return new VerificationError('AUTH');
+    return null;
+  };
+
+  // 1. Proxy server-side (producción): la clave no viaja al cliente.
+  try {
+    const response = await fetch(`/api/vehicle-plate?plate=${encodeURIComponent(cleanPlate)}`, {
+      method: 'GET',
+      headers: { Accept: 'application/json' },
+    });
+    const isJson = (response.headers.get('content-type') || '').includes('application/json');
+    if (isJson) {
+      const quotaOrAuth = mapStatusToError(response.status);
+      if (quotaOrAuth) throw quotaOrAuth;
+      if (response.status === 503) throw new VerificationError('AUTH'); // proxy sin clave configurada
+      if (!response.ok) throw new VerificationError('NETWORK');
+      return parseBoostrResponse(cleanPlate, await response.json());
+    }
+    // Si el proxy no existe (dev local sin vercel dev) la SPA devuelve index.html: cae al fallback directo.
+  } catch (err) {
+    if (err instanceof VerificationError) throw err;
+    console.warn('Proxy vehicle-plate no disponible, usando consulta directa (dev):', err);
+  }
+
+  // 2. Fallback directo (solo dev local con clave en .env).
+  if (!directApiKey) throw new VerificationError('AUTH');
 
   let response: Response;
   try {
     response = await fetch(`https://api.boostr.cl/vehicle/${cleanPlate}.json`, {
       method: 'GET',
       headers: {
-        'x-api-key': apiKey,
+        'x-api-key': directApiKey,
         'Accept': 'application/json',
       },
     });
@@ -257,7 +282,10 @@ async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<Stolen
   if (response.status === 401 || response.status === 403) throw new VerificationError('AUTH');
   if (!response.ok) throw new VerificationError('NETWORK');
 
-  const data = await response.json();
+  return parseBoostrResponse(cleanPlate, await response.json());
+}
+
+function parseBoostrResponse(plate: string, data: any): Partial<StolenVehicleCheckResult> {
   if (!data || !data.data) throw new VerificationError('NO_DATA');
 
   const v = data.data;
@@ -293,7 +321,7 @@ async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<Stolen
           policeAgency: 'CARABINEROS DE CHILE',
           policeStation: v.stolen_station || 'SEBV Carabineros',
           commune: v.stolen_commune || 'Chile',
-          reportNumber: v.stolen_id || `ENC-${cleanPlate}`,
+          reportNumber: v.stolen_id || `ENC-${plate}`,
           riskLevel: 'CRÍTICO',
         }
       : undefined,

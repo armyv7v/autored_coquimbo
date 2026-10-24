@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, where, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth, storage } from '../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
@@ -8,7 +8,8 @@ import { motion, AnimatePresence } from 'motion/react';
 import { generateSecurityTip } from '../services/geminiService';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useAuth } from '../hooks/useAuth';
-import IncidentReportForm from './IncidentReportForm';
+// Lazy: IncidentReportForm arrastra leaflet + OCR (tesseract), se carga solo al abrir el sheet.
+const IncidentReportForm = lazy(() => import('./IncidentReportForm'));
 import RoadTestForm from './RoadTestForm';
 import InspectionForm from './InspectionForm';
 import StockAutomotoras from './StockAutomotoras';
@@ -1653,10 +1654,12 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         )}
       </AnimatePresence>
 
-      <IncidentReportForm 
-        isOpen={isReporting} 
-        onClose={() => setIsReporting(false)} 
-      />
+      <Suspense fallback={null}>
+        <IncidentReportForm
+          isOpen={isReporting}
+          onClose={() => setIsReporting(false)}
+        />
+      </Suspense>
 
       <RoadTestForm 
         isOpen={isRoadTestOpen} 

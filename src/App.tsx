@@ -3,20 +3,30 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
+import React, { Suspense, lazy, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { auth } from './lib/firebase';
-import { XCircle } from 'lucide-react';
+import { XCircle, Loader2 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
-import AdminDashboard from './components/AdminDashboard';
 import Login from './components/Login';
-import MapView from './components/MapView';
 import Navbar from './components/Navbar';
-import FlashReport from './components/FlashReport';
 import NotificationManager from './components/NotificationManager';
 import BottomNavbar from './components/BottomNavbar';
 import { TabType } from './lib/navigation';
+
+// Code-splitting: componentes pesados (leaflet, charts, firebase admin) cargados bajo demanda.
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const MapView = lazy(() => import('./components/MapView'));
+const FlashReport = lazy(() => import('./components/FlashReport'));
+
+function PageLoader() {
+  return (
+    <div className="h-full w-full flex items-center justify-center bg-slate-950" role="status" aria-label="Cargando">
+      <Loader2 className="w-8 h-8 text-slate-500 animate-spin" />
+    </div>
+  );
+}
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
@@ -76,7 +86,10 @@ function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainL
           <div className="h-full overflow-y-auto pb-28 md:pb-0">
             {children}
           </div>
-          <FlashReport />
+          {/* FlashReport es un overlay: fallback null evita saltos de layout */}
+          <Suspense fallback={null}>
+            <FlashReport />
+          </Suspense>
           <NotificationManager />
           <CommandPalette
             isOpen={isPaletteOpen}
@@ -124,7 +137,9 @@ export default function App() {
                 setActiveTab={setActiveTab}
                 onTriggerAlert={handleTriggerAlert}
               >
-                <MapView />
+                <Suspense fallback={<PageLoader />}>
+                  <MapView />
+                </Suspense>
               </MainLayout>
             </ProtectedRoute>
           } />
@@ -136,7 +151,9 @@ export default function App() {
                   setActiveTab={setActiveTab}
                   onTriggerAlert={handleTriggerAlert}
                 >
-                  <AdminDashboard />
+                  <Suspense fallback={<PageLoader />}>
+                    <AdminDashboard />
+                  </Suspense>
                 </MainLayout>
               </AdminRoute>
             </ProtectedRoute>
