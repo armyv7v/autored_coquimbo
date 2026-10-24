@@ -235,7 +235,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
                     {!profile?.dealershipId && (
                       <label className="relative block lg:col-span-2">
-                        <span className="absolute left-4 top-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Sede</span>
+                        <span className="absolute left-4 top-2 text-[11px] font-black uppercase tracking-[.2em] text-slate-500">Sede</span>
                         <select
                           value={formDealershipId}
                           onChange={(e) => setFormDealershipId(e.target.value)}
@@ -249,7 +249,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                       </label>
                     )}
                     <label className="relative block">
-                      <span className="absolute left-4 top-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Marca</span>
+                      <span className="absolute left-4 top-2 text-[11px] font-black uppercase tracking-[.2em] text-slate-500">Marca</span>
                       <input
                         value={brand}
                         onChange={(e) => setBrand(e.target.value)}
@@ -259,7 +259,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                       />
                     </label>
                     <label className="relative block">
-                      <span className="absolute left-4 top-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Modelo</span>
+                      <span className="absolute left-4 top-2 text-[11px] font-black uppercase tracking-[.2em] text-slate-500">Modelo</span>
                       <input
                         value={model}
                         onChange={(e) => setModel(e.target.value)}
@@ -269,7 +269,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                       />
                     </label>
                     <label className="relative block">
-                      <span className="absolute left-4 top-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Año</span>
+                      <span className="absolute left-4 top-2 text-[11px] font-black uppercase tracking-[.2em] text-slate-500">Año</span>
                       <input
                         value={formYear}
                         onChange={(e) => setFormYear(e.target.value.replace(/[^\d]/g, '').slice(0, 4))}
@@ -279,7 +279,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                       />
                     </label>
                     <label className="relative block">
-                      <span className="absolute left-4 top-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-500">Precio CLP</span>
+                      <span className="absolute left-4 top-2 text-[11px] font-black uppercase tracking-[.2em] text-slate-500">Precio CLP</span>
                       <input
                         value={formPrice}
                         onChange={(e) => setFormPrice(e.target.value.replace(/[^\d]/g, '').slice(0, 10))}
@@ -414,7 +414,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
 function Select({ value, onChange, options, label }: { value: string; onChange: (v: string) => void; options: string[]; label: string }) {
   return (
     <label className="relative block">
-      <span className="absolute left-4 top-2 text-[10px] font-black uppercase tracking-[.2em] text-slate-500">{label}</span>
+      <span className="absolute left-4 top-2 text-[11px] font-black uppercase tracking-[.2em] text-slate-500">{label}</span>
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}

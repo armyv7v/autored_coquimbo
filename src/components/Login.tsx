@@ -35,6 +35,36 @@ const normalizeRut = (value: string) =>
     .replace(/-/g, '')
     .toUpperCase();
 
+// Máscara en vivo con formato chileno XX.XXX.XXX-X (cuerpo máximo 8 dígitos + verificador).
+// Tolerante: extrae dígitos y K de lo que venga y re-formatea.
+const formatRut = (value: string) => {
+  const clean = value.toUpperCase().replace(/[^0-9K]/g, '');
+  if (!clean) return '';
+
+  // Una K solo puede ser dígito verificador: se corta todo lo que venga después.
+  const kIndex = clean.indexOf('K');
+  const effective = kIndex >= 0 ? clean.slice(0, kIndex + 1) : clean;
+
+  // El usuario escribió un guion/espacio justo antes del último carácter:
+  // ese último carácter es el verificador (necesario para RUTs de cuerpo de 7 dígitos).
+  const typedSeparator = /[-\s]\s*[0-9K]?$/.test(value.toUpperCase());
+
+  let body: string;
+  let dv = '';
+  if (effective.length > 8) {
+    body = effective.slice(0, 8);
+    dv = effective[8];
+  } else if (effective.length >= 2 && (kIndex >= 0 || typedSeparator)) {
+    body = effective.slice(0, -1);
+    dv = effective.slice(-1);
+  } else {
+    body = effective;
+  }
+
+  const dotted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  return dv ? `${dotted}-${dv}` : dotted;
+};
+
 const capabilityCards = [
   {
     num: '01',
@@ -623,7 +653,7 @@ export default function Login() {
                     resetFeedback();
                     sound.playNodePulse(false);
                   }}
-                  className="rounded-full border border-white/10 p-2 text-slate-400 hover:text-white hover:bg-white/10 active:scale-95 transition shrink-0"
+                  className="rounded-full border border-white/10 p-2.5 min-h-11 min-w-11 flex items-center justify-center text-slate-400 hover:text-white hover:bg-white/10 active:scale-95 transition shrink-0"
                   aria-label="Volver al menú"
                 >
                   <ArrowLeft className="h-5 w-5" />
@@ -756,7 +786,7 @@ export default function Login() {
                         <input value={dealershipName} onChange={(e) => setDealershipName(e.target.value)} required className="auth-input" placeholder="Nombre Fantasía / Razón Social" />
                       </Field>
                       <Field icon={<Building2 />} label="RUT Automotora">
-                        <input value={rut} onChange={(e) => setRut(e.target.value)} required className="auth-input" placeholder="76.123.456-7" />
+                        <input value={rut} onChange={(e) => setRut(formatRut(e.target.value))} required className="auth-input" inputMode="numeric" placeholder="76.123.456-7" />
                       </Field>
                       <Field icon={<User />} label="Representante Legal / Dueño">
                         <input value={contactName} onChange={(e) => setContactName(e.target.value)} required className="auth-input" placeholder="Nombre completo representante" />

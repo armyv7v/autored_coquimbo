@@ -286,7 +286,7 @@ export default function FlashReport() {
                     onChange={(e) => setDescription(e.target.value)}
                     maxLength={500}
                   />
-                  <div className="flex justify-between text-[10px] font-mono text-slate-500">
+                  <div className="flex justify-between text-[11px] font-mono text-slate-500">
                     <span>Sé lo más conciso posible</span>
                     <span>{description.length}/500</span>
                   </div>
@@ -364,19 +364,19 @@ export default function FlashReport() {
                 {/* WhatsApp Text Preview & Quick Copy */}
                 <div className="p-3 rounded-2xl bg-slate-900/60 border border-slate-800/80 space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-mono uppercase text-slate-400 font-bold">
+                    <span className="text-[11px] font-mono uppercase text-slate-400 font-bold">
                       Copia Táctica para WhatsApp
                     </span>
                     <button
                       type="button"
                       onClick={handleCopyWhatsApp}
-                      className="text-[10px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
+                      className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
                     >
                       {copiedWhatsApp ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
                       {copiedWhatsApp ? 'Copiado' : 'Copiar Texto'}
                     </button>
                   </div>
-                  <pre className="text-[10px] font-mono text-slate-400 whitespace-pre-wrap max-h-20 overflow-y-auto leading-relaxed">
+                  <pre className="text-[11px] font-mono text-slate-400 whitespace-pre-wrap max-h-20 overflow-y-auto leading-relaxed">
                     {getPreviewText()}
                   </pre>
                 </div>

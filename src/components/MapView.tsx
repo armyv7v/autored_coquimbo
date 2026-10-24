@@ -4,7 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import 'leaflet.heat';
 import { useSearchParams } from 'react-router-dom';
-import { collection, onSnapshot, doc, updateDoc, addDoc, serverTimestamp, setDoc } from 'firebase/firestore';
+import { collection, onSnapshot, doc, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db, auth, storage } from '../lib/firebase';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { ShieldAlert, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight, Settings2, Sparkles, Car } from 'lucide-react';
@@ -111,21 +111,21 @@ function ZoomControls() {
     <div className="flex flex-col gap-1.5">
       <button
         onClick={() => map.zoomIn()}
-        className="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-white transition shadow-xl backdrop-blur-xl active:scale-95"
+        className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-white transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Acercar"
       >
         <ZoomIn className="w-4 h-4" />
       </button>
       <button
         onClick={() => map.zoomOut()}
-        className="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-white transition shadow-xl backdrop-blur-xl active:scale-95"
+        className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-white transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Alejar"
       >
         <ZoomOut className="w-4 h-4" />
       </button>
       <button
         onClick={() => map.setView(COQUIMBO_CENTER, 14, { animate: true })}
-        className="p-2.5 bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-slate-300 transition shadow-xl backdrop-blur-xl active:scale-95"
+        className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-slate-300 transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Centrar Coquimbo"
       >
         <Target className="w-4 h-4" />
@@ -228,7 +228,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
                 <p className="text-xs font-semibold text-white truncate group-hover:text-slate-300 transition-colors">
                   {r.display_name}
                 </p>
-                <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider">
+                <p className="text-[11px] font-mono text-slate-500 uppercase tracking-wider">
                   {r.type === 'dealership' ? 'Sede Alerta Dealers' : 'Ubicación'}
                 </p>
               </div>
@@ -246,10 +246,7 @@ export default function MapView() {
   const [now, setNow] = useState(Date.now());
   const [tileProvider, setTileProvider] = useState<'DARK' | 'SATELLITE'>('DARK');
   const [showHeatmap, setShowHeatmap] = useState(false);
-  const [showMarkers, setShowMarkers] = useState(true);
   const [showDealerships, setShowDealerships] = useState(true);
-  const [alertingId, setAlertingId] = useState<string | null>(null);
-  const [copyingId, setCopyingId] = useState<string | null>(null);
   const [dbOffline, setDbOffline] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
@@ -335,34 +332,9 @@ export default function MapView() {
     }
   };
 
-  const handleTriggerAlert = async (incident: Incident) => {
-    setAlertingId(incident.id);
-    const path = 'alerts';
-    try {
-      await addDoc(collection(db, path), {
-        id: safeUUID(),
-        incidentId: incident.id,
-        triggeredManually: true,
-        triggeredBy: profile?.uid || 'unknown',
-        createdAt: serverTimestamp(),
-        notifiedDealershipIds: [],
-      });
-      // Feedback no bloqueante (A-25): nada de alert() nativo en una app táctica
-      setFlashMessage('Alerta de Red Disparada');
-      setTimeout(() => setFlashMessage(null), 2500);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, path);
-    } finally {
-      setAlertingId(null);
-    }
-  };
-
   const handleShare = (incidentId: string) => {
     const url = `${window.location.origin}/map?incident=${incidentId}`;
-    navigator.clipboard.writeText(url).then(() => {
-      setCopyingId(incidentId);
-      setTimeout(() => setCopyingId(null), 2000);
-    });
+    navigator.clipboard.writeText(url);
   };
 
   const handleUpdateDealerStatus = async (dealerId: string, newStatus: 'online' | 'offline') => {
@@ -639,7 +611,7 @@ export default function MapView() {
                           </p>
                           <div className="flex items-center gap-1.5 mt-1">
                             <span className={`w-1.5 h-1.5 rounded-full ${isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-slate-600'}`} />
-                            <span className={`text-[10px] font-mono uppercase tracking-wider font-bold ${isOnline ? 'text-emerald-400' : 'text-slate-500'}`}>
+                            <span className={`text-[11px] font-mono uppercase tracking-wider font-bold ${isOnline ? 'text-emerald-400' : 'text-slate-500'}`}>
                               {isOnline ? 'Conectado / En Red' : 'Desconectado'}
                             </span>
                           </div>
@@ -681,7 +653,7 @@ export default function MapView() {
             );
           })}
 
-        {showMarkers &&
+        {
           incidents
             .filter(
               (incident) =>
@@ -764,7 +736,7 @@ export default function MapView() {
                             </p>
                           </div>
                           <span
-                            className={`text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded ${
+                            className={`text-[11px] font-mono font-bold uppercase px-2 py-0.5 rounded ${
                               incident.status === 'RESOLVED'
                                 ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
                                 : incident.status === 'FALSE_ALARM'
@@ -789,7 +761,7 @@ export default function MapView() {
                                 <Car className="w-3.5 h-3.5 text-slate-300" />
                                 <span className="font-black uppercase tracking-wider">{(incident as any).plateFormatted}</span>
                               </div>
-                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                              <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white animate-pulse' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
                                 {(incident as any).hasStolenReport ? 'ENCARGO ROBO VIGENTE' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                               </span>
                             </div>
@@ -871,7 +843,7 @@ export default function MapView() {
                     key={item.id}
                     type="button"
                     onClick={() => setReportType(item.id)}
-                    className={`py-2 rounded-lg border text-[10px] font-mono font-black uppercase tracking-wider transition ${
+                    className={`py-2 rounded-lg border text-[11px] font-mono font-black uppercase tracking-wider transition ${
                       reportType === item.id
                         ? item.id === 'ROBO'
                           ? 'bg-red-600 border-red-500 text-white'
@@ -902,7 +874,7 @@ export default function MapView() {
                 </div>
               )}
 
-              <p className="text-[10px] font-mono text-slate-500 tracking-wide">
+              <p className="text-[11px] font-mono text-slate-500 tracking-wide">
                 Punto: {reportLocation[0].toFixed(5)}, {reportLocation[1].toFixed(5)} — botón "Reportar" arriba para marcar otro.
               </p>
 

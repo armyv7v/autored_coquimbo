@@ -48,7 +48,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
               <p className="text-xs font-semibold text-slate-200 leading-tight">{profile?.displayName || 'Usuario'}</p>
               <div className="flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">{profile?.role || 'Miembro'}</span>
+                <span className="text-[11px] text-slate-400 font-mono uppercase tracking-wider">{profile?.role || 'Miembro'}</span>
               </div>
             </div>
           </div>

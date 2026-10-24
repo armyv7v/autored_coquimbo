@@ -70,7 +70,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
               }
             >
               <Icon className="w-5 h-5" />
-              <span className="text-[10px] uppercase tracking-wider font-bold">{item.label}</span>
+              <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
             </NavLink>
           );
         }
@@ -86,7 +86,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
             }`}
           >
             <Icon className="w-5 h-5" />
-            <span className="text-[10px] uppercase tracking-wider font-bold">{item.label}</span>
+            <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
           </button>
         );
       })}

@@ -214,7 +214,7 @@ export default function AlertConfirmationModal({
                   <span className="font-mono text-4xl font-black text-white tabular-nums tracking-tighter drop-shadow-[0_0_15px_rgba(239,68,68,0.8)]">
                     {countdown}
                   </span>
-                  <span className="text-[10px] font-mono uppercase text-red-400 font-bold tracking-widest">
+                  <span className="text-[11px] font-mono uppercase text-red-400 font-bold tracking-widest">
                     Segundos
                   </span>
                 </div>

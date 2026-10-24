@@ -54,6 +54,73 @@ interface Dealership {
 
 const HEARTBEAT_THRESHOLD_MS = 10 * 60 * 1000;
 
+/**
+ * Chip de acción secundaria (UX-01): versión compacta y subordinada de la
+ * TacticalSubmitBar, misma familia táctica pero altura y peso menores para
+ * no competir con la acción primaria del modal de detalle.
+ */
+const CHIP_TONES = {
+  slate: 'border-slate-700 bg-slate-800/40 text-slate-300 hover:bg-slate-700/60 hover:border-slate-600 hover:text-white',
+  red: 'border-red-500/30 bg-red-500/5 text-red-300/90 hover:bg-red-500/15 hover:border-red-500/60 hover:text-red-200',
+} as const;
+
+interface TacticalChipProps {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  tone?: keyof typeof CHIP_TONES;
+  disabled?: boolean;
+  loading?: boolean;
+  onClick?: () => void;
+  className?: string;
+}
+
+function TacticalChip({ icon: Icon, label, tone = 'slate', disabled, loading, onClick, className = '' }: TacticalChipProps) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled || loading}
+      className={`inline-flex items-center gap-1.5 min-h-10 px-3.5 rounded-xl border text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 ${CHIP_TONES[tone]} ${className}`}
+    >
+      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5 shrink-0" />}
+      <span className="truncate">{label}</span>
+    </button>
+  );
+}
+
+/**
+ * Skeleton del feed (UX-06): replica la forma exacta de las tarjetas reales
+ * (caja de icono, fila de metadatos con chip, título y descripción de 2
+ * líneas) con capas animate-pulse desfasadas por tarjeta (shimmer sin saltos
+ * de layout al llegar los datos).
+ */
+function FeedCardSkeleton({ index }: { index: number }) {
+  const shimmer = { animationDelay: `${index * -0.35}s`, animationDuration: '1.4s' };
+  const bar = 'rounded-md bg-slate-800 animate-pulse';
+  return (
+    <div className="p-5 rounded-2xl flex gap-4 bg-slate-900 border border-slate-800 relative overflow-hidden" aria-hidden="true">
+      <div className="w-1 absolute left-0 top-0 bottom-0 bg-slate-800/80" />
+      <div className={`p-3 h-fit rounded-xl ${bar}`} style={shimmer}>
+        <div className="w-5 h-5" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-1.5 mb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className={`h-3 w-20 ${bar}`} style={shimmer} />
+            <div className={`h-4 w-16 rounded ${bar}`} style={shimmer} />
+          </div>
+          <div className={`h-3 w-10 ${bar}`} style={shimmer} />
+        </div>
+        <div className={`h-4 w-2/3 mb-2.5 ${bar}`} style={shimmer} />
+        <div className="space-y-1.5">
+          <div className={`h-3 w-full ${bar}`} style={shimmer} />
+          <div className={`h-3 w-4/5 ${bar}`} style={shimmer} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 interface DashboardProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
@@ -100,6 +167,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [statusUpdateError, setStatusUpdateError] = useState<string | null>(null);
   const [statusJustUpdated, setStatusJustUpdated] = useState<string | null>(null);
   const [incidentCopyFailed, setIncidentCopyFailed] = useState(false);
+  // Confirmación inline de Falsa Alarma (UX-01): un tap ya no la dispara.
+  const [confirmFalseAlarm, setConfirmFalseAlarm] = useState(false);
 
   // Timeline specific filters
   const [timelineType, setTimelineType] = useState<string>('ALL');
@@ -117,6 +186,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     setStatusJustUpdated(null);
     setIncidentCopyFailed(false);
     setCopiedIncidentWhatsApp(false);
+    setConfirmFalseAlarm(false);
   }, [selectedIncident?.id]);
 
   // El modal de detalle se cierra con Escape, como cualquier modal de
@@ -125,7 +195,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     if (!selectedIncident) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
-        if (isEditing) {
+        if (confirmFalseAlarm) {
+          // Escape primero cancela la confirmación de Falsa Alarma (UX-01).
+          setConfirmFalseAlarm(false);
+        } else if (isEditing) {
           setIsEditing(false);
         } else {
           setSelectedIncident(null);
@@ -134,7 +207,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [selectedIncident, isEditing]);
+  }, [selectedIncident, isEditing, confirmFalseAlarm]);
 
   useEffect(() => {
     const handleOpenRoadTest = () => setIsRoadTestOpen(true);
@@ -504,6 +577,45 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     }
   };
 
+  const copyIncidentWhatsApp = async () => {
+    if (!selectedIncident) return;
+    const text = formatWhatsAppFlashReport(
+      selectedIncident,
+      reporterInfo?.displayName || reporterInfo?.email
+    );
+    const showCopied = () => {
+      setCopiedIncidentWhatsApp(true);
+      setTimeout(() => setCopiedIncidentWhatsApp(false), 2000);
+    };
+    try {
+      await navigator.clipboard.writeText(text);
+      setIncidentCopyFailed(false);
+      showCopied();
+    } catch {
+      try {
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        const ok = document.execCommand('copy');
+        document.body.removeChild(ta);
+        if (!ok) throw new Error('execCommand copy failed');
+        setIncidentCopyFailed(false);
+        showCopied();
+      } catch {
+        setIncidentCopyFailed(true);
+        setTimeout(() => setIncidentCopyFailed(false), 3000);
+      }
+    }
+  };
+
+  // Jerarquía de acciones del modal de detalle (UX-01)
+  const isAdmin = ['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '');
+  const isReporter = Boolean(selectedIncident && selectedIncident.reporterId === auth.currentUser?.uid);
+  const isIncidentOpen = (selectedIncident?.status || 'OPEN') === 'OPEN';
+
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden p-3.5 sm:p-6 pb-28 md:pb-8 space-y-6 sm:space-y-8 max-w-7xl mx-auto">
       {/* New Incident Toast Notification */}
@@ -576,7 +688,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
                   Estado Operativo de la Red
                 </h2>
-                <span className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-500/10 text-slate-300/90 border border-slate-500/20' : openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
+                <span className={`text-[11px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-500/10 text-slate-300/90 border border-slate-500/20' : openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
                   {loading ? 'Conectando…' : openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
                 </span>
               </div>
@@ -585,7 +697,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           </div>
           <div className="flex items-center gap-6">
             <div className="text-right">
-              <p className="text-[10px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
+              <p className="text-[12px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
               <p className={`text-xl font-bold tabular-nums ${loading ? 'text-slate-500' : openIncidentsCount > 0 ? 'text-red-300/90' : 'text-emerald-300/90'}`}>
                 {loading ? '—' : openIncidentsCount}
               </p>
@@ -818,7 +930,14 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="space-y-3">
             <AnimatePresence mode="popLayout">
               {loading ? (
-                <div className="p-8 text-center text-slate-400 italic">Analizando reportes...</div>
+                <div className="space-y-3" role="status" aria-busy="true">
+                  <span className="sr-only">Cargando incidentes...</span>
+                  {[0, 1, 2].map((i) => (
+                    <React.Fragment key={i}>
+                      <FeedCardSkeleton index={i} />
+                    </React.Fragment>
+                  ))}
+                </div>
               ) : filteredIncidents.length === 0 ? (
                 <div className="p-12 text-center bg-slate-900 border border-slate-800 border-dashed rounded-3xl text-slate-400">
                     <ShieldAlert className="w-12 h-12 mx-auto mb-4 opacity-10" />
@@ -881,7 +1000,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <div className="mt-2.5 inline-flex max-w-full flex-wrap items-center gap-1.5 px-2.5 py-1 rounded-lg bg-slate-950 border border-slate-700 text-xs font-mono">
                         <Car className="w-3.5 h-3.5 text-slate-300 shrink-0" />
                         <span className="font-bold text-white uppercase">{(incident as any).plateFormatted || (incident as any).plate}</span>
-                        <span className={`text-[9px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
+                        <span className={`text-[11px] font-black uppercase px-1.5 py-0.5 rounded ${(incident as any).hasStolenReport ? 'bg-red-600 text-white' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300' : 'bg-emerald-500/20 text-emerald-300'}`}>
                           {(incident as any).hasStolenReport ? 'ENCARGO ROBO' : (incident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                         </span>
                       </div>
@@ -1051,13 +1170,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <span className="text-[11px] font-mono font-medium text-slate-400 uppercase">
                         {formatDateCL(incident.createdAt || (incident as any).clientTimestamp)}
                       </span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
+                      <span className={`px-2 py-0.5 rounded text-[11px] font-mono font-bold uppercase tracking-wider ${
                         incident.status === 'RESOLVED' ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : 'bg-red-500/15 text-red-400 border border-red-500/20'
                       }`}>
                         {incident.status || 'OPEN'}
                       </span>
                       {incident.isEdited && (
-                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase bg-slate-500/10 text-slate-300 border border-slate-600">
+                        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-slate-500/10 text-slate-300 border border-slate-600">
                           <Pencil className="w-2.5 h-2.5" /> Editado
                         </span>
                       )}
@@ -1082,7 +1201,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                               <><Info className="w-4 h-4 text-slate-400 shrink-0" /> Reporte de Seguridad</>
                             )}
                           </h3>
-                          <p className="text-[10px] font-mono text-slate-500 uppercase tracking-wider mt-0.5">
+                          <p className="text-[11px] font-mono text-slate-500 uppercase tracking-wider mt-0.5">
                             #{incident.id.slice(0, 12)}
                           </p>
                         </div>
@@ -1300,7 +1419,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           Patente y Verificación Nacional (AutoSeguro)
                         </span>
                         {Boolean((selectedIncident as any).plateFormatted || (selectedIncident as any).plate) && (
-                          <span className={`text-[10px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white' : (selectedIncident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
+                          <span className={`text-[11px] font-mono font-black uppercase px-2 py-0.5 rounded ${(selectedIncident as any).hasStolenReport ? 'bg-red-600 text-white' : (selectedIncident as any).stolenCheckStatus === 'UNKNOWN' ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}`}>
                             {(selectedIncident as any).hasStolenReport ? 'ENCARGO POR ROBO' : (selectedIncident as any).stolenCheckStatus === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                           </span>
                         )}
@@ -1393,8 +1512,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </div>
                     </div>
 
-                    {/* Admin/Security/Owner Actions */}
-                    {['ADMIN', 'OWNER', 'SECURITY'].includes(profile?.role || '') && (
+                    {/* Admin/Security/Owner Actions — UX-01: una sola acción
+                        primaria full-width según el estado; el resto baja a
+                        chips secundarios compactos y subordinados. */}
+                    {isAdmin && (
                       <div className="flex flex-col gap-3 pt-2">
                         <p className="text-xs font-black text-slate-400 uppercase tracking-widest text-center mb-1">Gestión de Incidente</p>
                         {statusJustUpdated && (
@@ -1409,98 +1530,106 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                             {statusUpdateError}
                           </div>
                         )}
-                        <div className="flex flex-col gap-2.5">
-                          {selectedIncident.status === 'OPEN' || !selectedIncident.status ? (
-                            <>
-                              <TacticalSubmitBar
-                                type="button"
-                                icon={CheckCircle}
-                                label="Resolver"
-                                loading={isUpdatingStatus === 'RESOLVED'}
-                                loadingLabel="Resolviendo Incidente..."
-                                tone="emerald"
-                                disabled={isUpdatingStatus !== null}
-                                onClick={() => handleUpdateStatus('RESOLVED')}
-                              />
-                              <TacticalSubmitBar
-                                type="button"
+
+                        {/* Acción primaria única (mantiene spinner/disabled de TacticalSubmitBar) */}
+                        {isIncidentOpen ? (
+                          <TacticalSubmitBar
+                            type="button"
+                            icon={CheckCircle}
+                            label="Resolver Incidente"
+                            loading={isUpdatingStatus === 'RESOLVED'}
+                            loadingLabel="Resolviendo Incidente..."
+                            tone="emerald"
+                            disabled={isUpdatingStatus !== null}
+                            onClick={() => handleUpdateStatus('RESOLVED')}
+                          />
+                        ) : (
+                          <TacticalSubmitBar
+                            type="button"
+                            icon={AlertCircle}
+                            label="Reabrir Incidente"
+                            loading={isUpdatingStatus === 'OPEN'}
+                            loadingLabel="Reabriendo Incidente..."
+                            tone="red"
+                            disabled={isUpdatingStatus !== null}
+                            onClick={() => handleUpdateStatus('OPEN')}
+                          />
+                        )}
+
+                        {/* Acciones secundarias compactas (ghost/outline subordinado) */}
+                        <div className="flex flex-wrap items-center gap-2">
+                          {isIncidentOpen && (
+                            confirmFalseAlarm ? (
+                              <div className="flex flex-wrap items-center gap-2 w-full min-h-10 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/40" role="group" aria-label="Confirmar Falsa Alarma">
+                                <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-red-300 mr-auto">
+                                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                                  ¿Confirmar Falsa Alarma?
+                                </span>
+                                <button
+                                  type="button"
+                                  disabled={isUpdatingStatus !== null}
+                                  onClick={() => { setConfirmFalseAlarm(false); handleUpdateStatus('FALSE_ALARM'); }}
+                                  className="min-h-9 px-3.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400 flex items-center gap-1.5"
+                                >
+                                  {isUpdatingStatus === 'FALSE_ALARM' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
+                                  {isUpdatingStatus === 'FALSE_ALARM' ? 'Marcando...' : 'Sí, Marcar'}
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={isUpdatingStatus !== null}
+                                  onClick={() => setConfirmFalseAlarm(false)}
+                                  className="min-h-9 px-3.5 rounded-lg border border-slate-600 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+                                >
+                                  No
+                                </button>
+                              </div>
+                            ) : (
+                              <TacticalChip
                                 icon={Ban}
                                 label="Falsa Alarma"
-                                loading={isUpdatingStatus === 'FALSE_ALARM'}
-                                loadingLabel="Marcando Falsa Alarma..."
-                                tone="slate"
+                                tone="red"
                                 disabled={isUpdatingStatus !== null}
-                                onClick={() => handleUpdateStatus('FALSE_ALARM')}
+                                onClick={() => setConfirmFalseAlarm(true)}
                               />
-                            </>
-                          ) : (
-                            <TacticalSubmitBar
-                              type="button"
-                              icon={AlertCircle}
-                              label="Reabrir Incidente"
-                              loading={isUpdatingStatus === 'OPEN'}
-                              loadingLabel="Reabriendo Incidente..."
-                              tone="red"
+                            )
+                          )}
+                          {isReporter && (
+                            <TacticalChip
+                              icon={Pencil}
+                              label="Editar Reporte"
                               disabled={isUpdatingStatus !== null}
-                              onClick={() => handleUpdateStatus('OPEN')}
+                              onClick={startEditing}
                             />
                           )}
+                          <TacticalChip
+                            icon={copiedIncidentWhatsApp ? CheckCircle : incidentCopyFailed ? AlertTriangle : Share2}
+                            label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : incidentCopyFailed ? 'Error — Reintentar' : 'Copiar WhatsApp'}
+                            disabled={isUpdatingStatus !== null}
+                            onClick={copyIncidentWhatsApp}
+                            className={copiedIncidentWhatsApp ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : incidentCopyFailed ? 'border-red-500/40 bg-red-500/10 text-red-300' : ''}
+                          />
                         </div>
                       </div>
                     )}
 
-                    {selectedIncident.reporterId === auth.currentUser?.uid && (
-                      <div className="pt-2">
-                        <TacticalSubmitBar
-                          type="button"
-                          icon={Camera}
-                          label="Editar Reporte (Agregar Foto / Detalles)"
-                          tone="amber"
-                          onClick={startEditing}
+                    {/* Operador sin rol de gestión: acciones secundarias compactas */}
+                    {!isAdmin && (
+                      <div className="flex flex-wrap items-center gap-2 pt-2">
+                        {isReporter && (
+                          <TacticalChip
+                            icon={Pencil}
+                            label="Editar Reporte"
+                            onClick={startEditing}
+                          />
+                        )}
+                        <TacticalChip
+                          icon={copiedIncidentWhatsApp ? CheckCircle : incidentCopyFailed ? AlertTriangle : Share2}
+                          label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : incidentCopyFailed ? 'Error — Reintentar' : 'Copiar WhatsApp'}
+                          onClick={copyIncidentWhatsApp}
+                          className={copiedIncidentWhatsApp ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : incidentCopyFailed ? 'border-red-500/40 bg-red-500/10 text-red-300' : ''}
                         />
                       </div>
                     )}
-
-                    <div className="pt-2">
-                      <TacticalSubmitBar
-                        type="button"
-                        icon={Share2}
-                        label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : incidentCopyFailed ? 'No se Pudo Copiar — Reintentar' : 'Copiar Formato WhatsApp'}
-                        tone="emerald"
-                        onClick={async () => {
-                          const text = formatWhatsAppFlashReport(
-                            selectedIncident,
-                            reporterInfo?.displayName || reporterInfo?.email
-                          );
-                          const showCopied = () => {
-                            setCopiedIncidentWhatsApp(true);
-                            setTimeout(() => setCopiedIncidentWhatsApp(false), 2000);
-                          };
-                          try {
-                            await navigator.clipboard.writeText(text);
-                            setIncidentCopyFailed(false);
-                            showCopied();
-                          } catch {
-                            try {
-                              const ta = document.createElement('textarea');
-                              ta.value = text;
-                              ta.style.position = 'fixed';
-                              ta.style.opacity = '0';
-                              document.body.appendChild(ta);
-                              ta.select();
-                              const ok = document.execCommand('copy');
-                              document.body.removeChild(ta);
-                              if (!ok) throw new Error('execCommand copy failed');
-                              setIncidentCopyFailed(false);
-                              showCopied();
-                            } catch {
-                              setIncidentCopyFailed(true);
-                              setTimeout(() => setIncidentCopyFailed(false), 3000);
-                            }
-                          }
-                        }}
-                      />
-                    </div>
 
                     <div className="flex items-center justify-between text-slate-400 pb-2">
                       <div className="flex items-center gap-2">

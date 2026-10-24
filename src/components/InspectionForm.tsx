@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { Check, Loader2, Mic, Send, ShieldCheck, X } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -31,6 +31,25 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
 
   const ready = selected.length > 0 || message.trim().length > 0;
   const selectedText = useMemo(() => selected.join(', '), [selected]);
+
+  // A-19 / UX-10: cierre con confirmación si hay datos. Compartido por el
+  // backdrop y la tecla Escape para que ambos disparen el mismo flujo.
+  const requestClose = () => {
+    const hasDraft = Boolean(selected.length || message.trim());
+    if (hasDraft && !window.confirm('¿Descartar el aviso de fiscalización en curso?')) return;
+    onClose();
+  };
+
+  // UX-10: Escape dispara el mismo flujo de cierre que el backdrop.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') requestClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, selected, message]);
 
   const toggle = (agency: string) => {
     setSelected((current) =>
@@ -80,14 +99,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
           className="fixed inset-0 z-[2200] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md p-0 sm:p-4"
         >
           {/* Backdrop: confirma antes de descartar un fiscalización en curso (A-19) */}
-          <div
-            className="absolute inset-0"
-            onClick={() => {
-              const hasDraft = Boolean(selected.length || message.trim());
-              if (hasDraft && !window.confirm('¿Descartar el aviso de fiscalización en curso?')) return;
-              onClose();
-            }}
-          />
+          <div className="absolute inset-0" onClick={requestClose} />
 
           <motion.div
             initial={{ opacity: 0, y: '100%' }}
@@ -109,7 +121,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
                 <div>
                   <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-2">
                     FISCALIZACIÓN
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40 font-bold">ALERTA RED</span>
+                    <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 border border-sky-500/40 font-bold">ALERTA RED</span>
                   </h2>
                   <p className="text-xs text-sky-300/80">Notificar presencia de fiscalizadores a la red</p>
                 </div>

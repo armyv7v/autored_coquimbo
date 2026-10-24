@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Navigation, Car, Search, Sparkles } from 'lucide-react';
+import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Navigation, Car, Search, Sparkles, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
 import { db, auth, storage } from '../lib/firebase';
@@ -44,6 +44,10 @@ interface IncidentReportFormProps {
   onClose: () => void;
 }
 
+// UX-05: borrador persistente. sessionStorage muere al cerrar la pestaña,
+// así que no extiende la vida de los datos más allá de la sesión activa.
+const DRAFT_KEY = 'alerta-dealers:incident-draft';
+
 export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFormProps) {
   const [type, setType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
   const [description, setDescription] = useState('');
@@ -60,8 +64,68 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const [pickingLocation, setPickingLocation] = useState(false);
   const [location, setLocation] = useState<[number, number]>(COQUIMBO_CENTER);
   const [usingGps, setUsingGps] = useState(false);
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const recognitionRef = useRef<any>(null);
+
+  // UX-05: restauración al montar. Este componente vive montado bajo Dashboard
+  // (el sheet solo condiciona el JSX), así que el montaje real ocurre al cargar
+  // la ruta: si el operador navegó a /map o recargó, el draft de sessionStorage
+  // vuelve aquí, antes de que vuelva a abrir el sheet.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(DRAFT_KEY);
+      if (!raw) return;
+      const draft = JSON.parse(raw);
+      const hasContent = Boolean(
+        draft.type || String(draft.description || '').trim() || String(draft.plate || '').trim()
+      );
+      if (!hasContent) return;
+      if (draft.type) setType(draft.type);
+      if (draft.description) setDescription(draft.description);
+      if (draft.plate) setPlate(draft.plate);
+      if (
+        Array.isArray(draft.location) &&
+        typeof draft.location[0] === 'number' &&
+        typeof draft.location[1] === 'number'
+      ) {
+        setLocation([draft.location[0], draft.location[1]]);
+        setUsingGps(Boolean(draft.usingGps));
+      }
+      setDraftRestored(true);
+    } catch {
+      // Draft corrupto o storage bloqueado: se ignora, el formulario parte limpio.
+    }
+  }, []);
+
+  // UX-05: guardado con debounce (300 ms). Si el formulario queda vacío se
+  // elimina la clave para no arrastrar drafts fantasma. La foto (File) no se
+  // persiste: no es serializable y el draft cubre lo escrito, no binarios.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const hasContent = Boolean(type || description.trim() || plate.trim());
+      try {
+        if (!hasContent) {
+          sessionStorage.removeItem(DRAFT_KEY);
+        } else {
+          sessionStorage.setItem(DRAFT_KEY, JSON.stringify({ type, description, plate, location, usingGps }));
+        }
+      } catch {
+        // Cuota llena o sessionStorage bloqueado: el formulario sigue funcionando.
+      }
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [type, description, plate, location, usingGps]);
+
+  const clearDraft = () => {
+    try {
+      sessionStorage.removeItem(DRAFT_KEY);
+    } catch {
+      // noop
+    }
+  };
 
   // Precarga del worker de OCR al abrir el formulario: la primera foto no debe
   // pagar la descarga de WASM + traineddata mientras el operador espera.
@@ -71,17 +135,39 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
     if (isOpen) {
       preloadPlateOcrWorker();
       requestGps();
+    } else {
+      // UX-09: si el sheet cierra a mitad de un dictado, cortar el micrófono.
+      try { recognitionRef.current?.stop(); } catch { /* noop */ }
+      setIsRecording(false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
-  // A-19: el toque fuera del sheet no puede descartar un reporte con datos
-  // sin preguntar; si está vacío, cierra directo.
+  // A-19 / UX-10: cierre por backdrop o Escape. El toque fuera del sheet (o la
+  // tecla Escape) no puede descartar un reporte con datos sin preguntar; si
+  // está vacío, cierra directo. Un descarte confirmado también limpia el draft
+  // persistente y el estado en memoria: "descartar" debe significar descartar.
   const handleBackdropClose = () => {
     const hasDraft = Boolean(type || description.trim() || plate.trim() || image);
     if (hasDraft && !window.confirm('¿Descartar el reporte en curso? Se perderá lo escrito.')) return;
+    if (hasDraft) {
+      clearDraft();
+      resetForm();
+      setDraftRestored(false);
+    }
     onClose();
   };
+
+  // UX-10: Escape dispara el mismo flujo de cierre que el backdrop.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleBackdropClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, type, description, plate, image]);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -205,6 +291,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
       });
 
       await setDoc(doc(collection(db, 'incidents'), incidentId), incidentData);
+      // UX-05: el reporte salió — el draft deja de tener razón de ser.
+      clearDraft();
       resetForm();
       onClose();
     } catch (err) {
@@ -271,7 +359,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 <div>
                   <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                     REPORTE DE INCIDENTE
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">ALERTA</span>
+                    <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">ALERTA</span>
                   </h2>
                   <p className="text-xs text-red-300/80">Notificación inmediata y verificación de patente</p>
                 </div>
@@ -279,13 +367,31 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               <button
                 onClick={onClose}
                 aria-label="Cerrar reporte de incidente"
-                className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-5 space-y-4 flex-1 min-h-0 overflow-y-auto text-left">
+              {/* UX-05: aviso discreto no bloqueante de borrador restaurado */}
+              {draftRestored && (
+                <div className="flex items-center justify-between gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-1.5">
+                  <p className="text-[11px] font-mono text-sky-300 flex items-center gap-1.5">
+                    <RotateCcw className="w-3 h-3 shrink-0" />
+                    Borrador restaurado — revisá y transmití cuando quieras.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setDraftRestored(false)}
+                    aria-label="Descartar aviso de borrador"
+                    className="p-1.5 rounded-lg text-sky-300/70 hover:text-white hover:bg-sky-500/20 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+
               <div>
                 <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider mb-2 block">
                   Tipo de Evento
@@ -325,7 +431,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     Patente del Vehículo (Consulta Nacional)
                   </label>
                   {scanningOcr && (
-                    <span className="text-[10px] font-mono text-sky-400 flex items-center gap-1 animate-pulse">
+                    <span className="text-[11px] font-mono text-sky-400 flex items-center gap-1 animate-pulse">
                       <Sparkles className="w-3 h-3" /> Leyendo patente de foto...
                     </span>
                   )}
@@ -381,6 +487,24 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   Descripción del Hecho
                 </label>
                 <div className="relative">
+                  {/* UX-09: indicador de grabación como pill flotante (antes se
+                      inyectaba "[Grabando...]" dentro del texto, un hack que
+                      contaminaba la descripción si el dictado fallaba). */}
+                  {isRecording && (
+                    <div
+                      role="status"
+                      aria-live="polite"
+                      className="absolute top-2 left-2 z-10 flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-3 py-1 backdrop-blur-sm"
+                    >
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
+                      </span>
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-red-300">
+                        Grabando…
+                      </span>
+                    </div>
+                  )}
                   <textarea
                     placeholder="Describe los hechos, características de los individuos o dirección de fuga..."
                     className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-base placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[85px]"
@@ -398,21 +522,30 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                         setTimeout(() => setVoiceHint(null), 6000);
                         return;
                       }
+                      // UX-09: si ya está grabando, un segundo toque corta el dictado.
+                      if (isRecording) {
+                        recognitionRef.current?.stop();
+                        return;
+                      }
                       const recognition = new SpeechRecognition();
+                      recognitionRef.current = recognition;
                       recognition.lang = 'es-CL';
                       recognition.onstart = () => {
-                        setDescription((prev) => prev + " [Grabando...] ");
+                        setIsRecording(true);
                       };
                       recognition.onresult = (event: any) => {
                         const transcript = event.results[0][0].transcript;
-                        setDescription((prev) => prev.replace(" [Grabando...] ", "") + " " + transcript);
+                        setDescription((prev) => (prev.trim() ? prev + ' ' : '') + transcript);
                       };
                       recognition.onerror = () => {
-                        setDescription((prev) => prev.replace(" [Grabando...] ", ""));
+                        setIsRecording(false);
+                      };
+                      recognition.onend = () => {
+                        setIsRecording(false);
                       };
                       recognition.start();
                     }}
-                    className="absolute right-2.5 bottom-3 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition active:scale-95"
+                    className="absolute right-2.5 bottom-3 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -461,10 +594,11 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 {imagePreview && (
                   <div className="relative rounded-xl overflow-hidden border border-slate-800 h-28 w-full bg-slate-900">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
-                    <button 
+                    <button
                       type="button"
                       onClick={() => { setImage(null); setImagePreview(null); }}
-                      className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-950/80 text-slate-400 hover:text-white border border-slate-700"
+                      aria-label="Quitar foto"
+                      className="absolute top-1 right-1 flex items-center justify-center min-h-11 min-w-11 p-2 rounded-lg bg-slate-950/80 text-slate-400 hover:text-white border border-slate-700 transition"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>

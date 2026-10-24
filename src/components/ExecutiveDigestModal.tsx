@@ -78,15 +78,15 @@ export default function ExecutiveDigestModal({
             {/* Quick Metrics Grid */}
             <div className="grid grid-cols-3 gap-2">
               <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 text-center">
-                <span className="text-[10px] font-mono uppercase text-slate-400 block">Total Eventos</span>
+                <span className="text-[11px] font-mono uppercase text-slate-400 block">Total Eventos</span>
                 <span className="text-xl font-bold text-white tabular-nums">{total}</span>
               </div>
               <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/20 text-center">
-                <span className="text-[10px] font-mono uppercase text-red-400 block">Casos Abiertos</span>
+                <span className="text-[11px] font-mono uppercase text-red-400 block">Casos Abiertos</span>
                 <span className="text-xl font-bold text-red-400 tabular-nums">{abiertos}</span>
               </div>
               <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-center">
-                <span className="text-[10px] font-mono uppercase text-emerald-400 block">Resueltos</span>
+                <span className="text-[11px] font-mono uppercase text-emerald-400 block">Resueltos</span>
                 <span className="text-xl font-bold text-emerald-400 tabular-nums">{resueltos}</span>
               </div>
             </div>

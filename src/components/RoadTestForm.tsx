@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { Camera, Check, FileText, Loader2, Route, ShieldCheck, X, Car, Image as ImageIcon } from 'lucide-react';
@@ -48,6 +48,25 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
   });
 
   const ready = useMemo(() => Boolean(files.licenseFront && files.licenseBack && files.driverPhoto), [files]);
+
+  // A-19 / UX-10: cierre con confirmación si hay datos. Compartido por el
+  // backdrop y la tecla Escape para que ambos disparen el mismo flujo.
+  const requestClose = () => {
+    const hasDraft = Boolean(plate.trim() || notes.trim() || Object.values(files).some(Boolean));
+    if (hasDraft && !window.confirm('¿Descartar la prueba en ruta en curso? Se perderán las fotos y lo escrito.')) return;
+    onClose();
+  };
+
+  // UX-10: Escape dispara el mismo flujo de cierre que el backdrop.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') requestClose();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, plate, notes, files]);
 
   const handleFileSelect = (key: PhotoKey, file: File | null) => {
     if (file) {
@@ -128,14 +147,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
           className="fixed inset-0 z-[2100] flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-md p-0 sm:p-4"
         >
           {/* Backdrop: confirma antes de descartar un borrador con datos (A-19) */}
-          <div
-            className="absolute inset-0"
-            onClick={() => {
-              const hasDraft = Boolean(plate.trim() || notes.trim() || Object.values(files).some(Boolean));
-              if (hasDraft && !window.confirm('¿Descartar la prueba en ruta en curso? Se perderán las fotos y lo escrito.')) return;
-              onClose();
-            }}
-          />
+          <div className="absolute inset-0" onClick={requestClose} />
 
           <motion.form
             onSubmit={submit}
@@ -159,7 +171,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                 <div>
                   <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-2">
                     PRUEBA EN RUTA
-                    <span className="text-[10px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold">TEST DRIVE</span>
+                    <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40 font-bold">TEST DRIVE</span>
                   </h2>
                   <p className="text-xs text-amber-300/80">Registro fotográfico preventivo previo a salida</p>
                 </div>
@@ -167,7 +179,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
               <button
                 type="button"
                 onClick={onClose}
-                className="rounded-lg p-2 text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -235,11 +247,19 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                               onClick={() => inputsRef.current[field.key]?.click()}
                               className="absolute inset-0 bg-black/60 flex items-center justify-center cursor-pointer transition-opacity"
                             >
-                              <span className="text-[10px] font-bold uppercase text-white bg-slate-900/80 px-3 py-1.5 rounded">Cambiar</span>
+                              <span className="text-[11px] font-bold uppercase text-white bg-slate-900/80 px-3 py-1.5 rounded">Cambiar</span>
                             </div>
-                            <span className="absolute top-1.5 right-1.5 flex items-center gap-1 rounded bg-emerald-500 px-1.5 py-0.5 text-[9px] font-bold text-slate-950">
+                            <span className="absolute top-1.5 right-1.5 flex items-center gap-1 rounded bg-emerald-500 px-1.5 py-0.5 text-[11px] font-bold text-slate-950">
                               <Check className="w-3 h-3" /> OK
                             </span>
+                            <button
+                              type="button"
+                              onClick={() => handleFileSelect(field.key, null)}
+                              aria-label={`Quitar foto: ${field.label}`}
+                              className="absolute top-0.5 left-0.5 z-10 flex items-center justify-center min-h-11 min-w-11 p-2 rounded-lg bg-slate-950/80 text-slate-300 hover:text-white border border-slate-700 transition"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
                           </div>
                         ) : (
                           <button
@@ -248,7 +268,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                             className="w-full h-24 rounded-lg border border-dashed border-slate-700 bg-slate-900 hover:border-amber-500/50 flex flex-col items-center justify-center gap-1 mb-2 text-slate-400 hover:text-amber-400 transition"
                           >
                             <Camera className="w-5 h-5" />
-                            <span className="text-[10px] font-medium font-mono text-slate-500">{field.guideText}</span>
+                            <span className="text-[11px] font-medium font-mono text-slate-500">{field.guideText}</span>
                           </button>
                         )}
 
@@ -261,7 +281,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                               <span className="w-2 h-2 rounded-full bg-amber-500/40" />
                             )}
                           </div>
-                          <span className="text-[10px] text-slate-500 line-clamp-1">{field.helper}</span>
+                          <span className="text-[11px] text-slate-500 line-clamp-1">{field.helper}</span>
                         </div>
                       </div>
                     );

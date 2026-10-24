@@ -319,7 +319,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
                           <div className="flex items-center gap-2">
                             <p className="text-xs font-bold text-slate-100 truncate">{action.title}</p>
                             {action.badge && (
-                              <span className="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 shrink-0">
+                              <span className="text-[11px] font-mono uppercase px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-slate-300 shrink-0">
                                 {action.badge}
                               </span>
                             )}
