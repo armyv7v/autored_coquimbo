@@ -189,6 +189,11 @@ export default function NotificationManager() {
       }
     }
 
+    // Disparo fire-and-forget del consumidor server-side (A-05): envía las
+    // pushes encoladas vía FCM. No bloquea la UI; si el backend aún no tiene
+    // credenciales, la cola queda pendiente para el próximo disparo.
+    fetch('/api/push-dispatch', { method: 'POST' }).catch(() => {});
+
     // Auto-dismiss in-app toast
     setTimeout(() => setActiveAlert(null), 10000);
   };

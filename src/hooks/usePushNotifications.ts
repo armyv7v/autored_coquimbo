@@ -26,11 +26,11 @@ export function usePushNotifications() {
         setPermission(status);
         
         if (status === 'granted') {
-          // Get FCM Token
-          // Note: You need a VAPID key from Firebase Console -> Project Settings -> Cloud Messaging
-          const vapidKey = 'BD8X8W9R8-H-PLACEHOLDER-VAPID-KEY-NEED-REAL-ONE-FROM-CONSOLE';
-          
-          // Solo intentamos registrar si el VAPID Key no es el de mentira/placeholder
+          // A-05: la VAPID key llega por env en build time (VITE_FCM_VAPID_KEY).
+          // Sin env configurado, el registro se omite silenciosamente y la app
+          // sigue funcionando solo con los nodos en primer plano.
+          const vapidKey = (import.meta as any).env?.VITE_FCM_VAPID_KEY || '';
+
           if (vapidKey && !vapidKey.includes('PLACEHOLDER')) {
             const currentToken = await getToken(messaging, { vapidKey });
             
