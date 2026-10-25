@@ -1,18 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { collection, query, onSnapshot, doc, updateDoc, getDocs } from 'firebase/firestore';
+import { collection, query, onSnapshot, doc, updateDoc, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
-import { 
-  Users, 
-  ShieldCheck, 
-  ShieldAlert, 
-  BarChart3, 
-  Settings, 
-  UserPlus, 
-  MoreVertical, 
-  UserMinus, 
-  Shield, 
-  Clock, 
+import {
+  Users,
+  ShieldCheck,
+  ShieldAlert,
+  BarChart3,
+  Settings,
+  UserPlus,
+  MoreVertical,
+  UserMinus,
+  Shield,
+  Clock,
   Activity,
   CheckCircle2,
   XCircle,
@@ -22,7 +22,10 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
-  Inbox
+  Inbox,
+  ScanLine,
+  Route,
+  Eye
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -41,6 +44,30 @@ interface UserProfile {
 interface Incident {
   type: string;
   status: string;
+  // Campos de la métrica de calidad del OCR (los escribe IncidentReportForm)
+  plate?: string;
+  plateSource?: 'OCR' | 'MANUAL';
+  ocrConfidence?: number;
+  ocrSuggestedPlate?: string;
+  stolenCheckStatus?: 'STOLEN' | 'CLEAN' | 'UNKNOWN';
+}
+
+interface RoadTestDoc {
+  id: string;
+  dealershipId?: string;
+  reporterId?: string;
+  vehiclePlate?: string;
+  notes?: string;
+  status?: string;
+  createdAt?: any;
+}
+
+interface InspectionAlertDoc {
+  id: string;
+  agencies?: string[];
+  message?: string;
+  dealershipId?: string;
+  createdAt?: any;
 }
 
 interface DealershipDoc {
@@ -56,7 +83,9 @@ export default function AdminDashboard() {
   const [incidents, setIncidents] = useState<Incident[]>([]);
   const [dealerships, setDealerships] = useState<DealershipDoc[]>([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'REQUESTS'>('STATS');
+  const [activeTab, setActiveTab] = useState<'STATS' | 'USERS' | 'REQUESTS' | 'OPS'>('STATS');
+  const [roadTests, setRoadTests] = useState<RoadTestDoc[]>([]);
+  const [inspectionAlerts, setInspectionAlerts] = useState<InspectionAlertDoc[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionOk, setActionOk] = useState<string | null>(null);
@@ -95,11 +124,28 @@ export default function AdminDashboard() {
       setDealerships(snapshot.docs.map(doc => ({ id: doc.id, name: (doc.data() as any)?.name })));
     });
 
+    // Registros operativos: test drives y avisos de fiscalización (antes
+    // colecciones huérfanas: se escribían y nadie las leía).
+    const unsubRoadTests = onSnapshot(
+      query(collection(db, 'roadTests'), orderBy('createdAt', 'desc'), limit(30)),
+      (snapshot) => {
+        setRoadTests(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<RoadTestDoc, 'id'>) })));
+      }
+    );
+    const unsubInspections = onSnapshot(
+      query(collection(db, 'inspectionAlerts'), orderBy('createdAt', 'desc'), limit(30)),
+      (snapshot) => {
+        setInspectionAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<InspectionAlertDoc, 'id'>) })));
+      }
+    );
+
     return () => {
       unsubUsers();
       unsubIncidents();
       unsubRequests();
       unsubDealerships();
+      unsubRoadTests();
+      unsubInspections();
     };
   }, [profile]);
 
@@ -152,6 +198,35 @@ export default function AdminDashboard() {
     { name: 'Resueltos', value: incidents.filter(i => i.status === 'RESOLVED').length },
     { name: 'Falsa Alarma', value: incidents.filter(i => i.status === 'FALSE_ALARM').length },
   ];
+
+  // Calidad del reconocimiento de patentes: los campos plateSource /
+  // ocrConfidence / ocrSuggestedPlate los escribe el formulario de incidentes
+  // (plateSource pasa a MANUAL si el operador corrige algo del autollenado).
+  const platedIncidents = incidents.filter(i => Boolean(i.plate));
+  const ocrIncidents = platedIncidents.filter(i => i.plateSource === 'OCR' || (!i.plateSource && i.ocrConfidence != null));
+  const manualIncidents = platedIncidents.filter(i => i.plateSource === 'MANUAL');
+  // Corrección = el OCR sugirió una patente y el documento final quedó con otra.
+  const ocrCorrections = incidents.filter(i => Boolean(i.ocrSuggestedPlate));
+  const avgConfidence = ocrIncidents.length > 0
+    ? Math.round(ocrIncidents.reduce((sum, i) => sum + (i.ocrConfidence || 0), 0) / ocrIncidents.length)
+    : 0;
+  // Acierto implícito: lecturas OCR que el operador no corrigió a mano.
+  const ocrAccuracy = ocrIncidents.length > 0
+    ? Math.max(0, Math.round((1 - ocrCorrections.length / ocrIncidents.length) * 100))
+    : 0;
+
+  const tsToDate = (value: any): Date | null => {
+    if (!value) return null;
+    if (typeof value.toDate === 'function') return value.toDate();
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
+  const fmtDate = (value: any): string => {
+    const date = tsToDate(value);
+    if (!date) return '—';
+    return date.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  };
 
   // Filtering Logic
   const filteredUsers = users.filter(user => {
@@ -221,7 +296,13 @@ export default function AdminDashboard() {
           >
             Usuarios
           </button>
-          <button 
+          <button
+            onClick={() => setActiveTab('OPS')}
+            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'OPS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+          >
+            Registros
+          </button>
+          <button
             onClick={() => setActiveTab('REQUESTS')}
             className={`relative px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
@@ -302,7 +383,7 @@ export default function AdminDashboard() {
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={statusData}>
                       <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
-                      <Tooltip 
+                      <Tooltip
                         cursor={{ fill: '#1e293b' }}
                         contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px' }}
                       />
@@ -311,6 +392,37 @@ export default function AdminDashboard() {
                   </ResponsiveContainer>
                 </div>
               </div>
+            </div>
+
+            {/* Calidad del OCR de patentes: decide si conviene migrar de
+                Tesseract a un motor externo. accuracy = lecturas OCR que el
+                operador no tuvo que corregir a mano. */}
+            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
+              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <ScanLine className="w-4 h-4 text-slate-300" />
+                Calidad del Reconocimiento de Patentes (OCR)
+              </h2>
+              {platedIncidents.length === 0 ? (
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Sin incidentes con patente todavía — las métricas aparecen al usar el escáner.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                  {[
+                    { label: 'Con Patente', value: platedIncidents.length, hint: 'incidentes totales', color: 'text-white' },
+                    { label: 'Leídas por OCR', value: ocrIncidents.length, hint: `${manualIncidents.length} escritas a mano`, color: 'text-sky-400' },
+                    { label: 'Confianza Promedio', value: ocrIncidents.length > 0 ? `${avgConfidence}%` : '—', hint: 'del motor Tesseract', color: avgConfidence >= 75 ? 'text-emerald-400' : 'text-amber-400' },
+                    { label: 'Corregidas a Mano', value: ocrCorrections.length, hint: 'OCR equivocado', color: ocrCorrections.length === 0 ? 'text-emerald-400' : 'text-red-400' },
+                    { label: 'Acierto Implícito', value: ocrIncidents.length > 0 ? `${ocrAccuracy}%` : '—', hint: 'sin corrección del operador', color: ocrAccuracy >= 90 ? 'text-emerald-400' : 'text-amber-400' },
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-slate-800/40 border border-slate-800 p-4 rounded-2xl">
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                      <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
+                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.hint}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         ) : activeTab === 'USERS' ? (
@@ -483,6 +595,91 @@ export default function AdminDashboard() {
                       <ChevronRight className="w-4 h-4" />
                     </button>
                   </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+        ) : activeTab === 'OPS' ? (
+          <motion.div
+            key="ops"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="grid grid-cols-1 xl:grid-cols-2 gap-8"
+          >
+            {/* Test Drives: antes colección huérfana (se escribía, nadie leía) */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
+              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <Route className="w-4 h-4 text-slate-300" />
+                Pruebas en Ruta (últimas 30)
+              </h2>
+              {roadTests.length === 0 ? (
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest py-8 text-center">
+                  Sin pruebas de manejo registradas aún.
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+                  {roadTests.map((test) => (
+                    <div key={test.id} className="bg-slate-800/40 border border-slate-800 rounded-2xl p-4">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <span className="text-sm font-black font-mono text-white tracking-wider uppercase">
+                          {test.vehiclePlate || 'S/PATENTE'}
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-500 font-mono uppercase">
+                          {fmtDate(test.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">
+                        {test.notes || 'Sin observaciones.'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                          {test.dealershipId || '—'}
+                        </span>
+                        {test.status && (
+                          <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
+                            {test.status}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Fiscalizaciones: ídem, ahora visible para admin */}
+            <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
+              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+                <Eye className="w-4 h-4 text-slate-300" />
+                Alertas de Fiscalización (últimas 30)
+              </h2>
+              {inspectionAlerts.length === 0 ? (
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest py-8 text-center">
+                  Sin avisos de fiscalización registrados aún.
+                </p>
+              ) : (
+                <div className="space-y-3 max-h-[480px] overflow-y-auto pr-1">
+                  {inspectionAlerts.map((alert) => (
+                    <div key={alert.id} className="bg-slate-800/40 border border-slate-800 rounded-2xl p-4">
+                      <div className="flex items-center justify-between gap-3 mb-2">
+                        <div className="flex flex-wrap gap-1.5">
+                          {(alert.agencies || []).map((agency) => (
+                            <span key={agency} className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+                              {agency}
+                            </span>
+                          ))}
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-500 font-mono uppercase">
+                          {fmtDate(alert.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 leading-relaxed">{alert.message || 'Sin detalle.'}</p>
+                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2">
+                        {alert.dealershipId || '—'}
+                      </p>
+                    </div>
+                  ))}
                 </div>
               )}
             </div>
