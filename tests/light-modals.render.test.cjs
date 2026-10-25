@@ -47,8 +47,10 @@ Module._load = function (request, parent, isMain) {
 };
 
 let IncidentReportForm;
+let PlateVerificationBadge;
 try {
   IncidentReportForm = require('../src/components/IncidentReportForm').default;
+  PlateVerificationBadge = require('../src/components/PlateVerificationBadge').default;
 } finally {
   Module._load = originalLoad;
   for (const ext of extensions) {
@@ -133,4 +135,56 @@ test('IncidentReportForm uses coherent light surfaces with deliberate dark excep
   checkClasses(tagForText(html, 'button', 'Mi GPS'), ['bg-white', 'border-slate-300', 'text-slate-700']);
   const photoHtml = renderWithStates(IncidentReportForm, incidentProps, { 11: 'data:image/jpeg;base64,AA==' });
   checkClasses(tagWith(photoHtml, 'aria-label="Quitar foto"'), ['bg-slate-950/80', 'hover:text-white', 'min-h-11', 'min-w-11']);
+});
+
+const plateProps = { plate: 'HRGR53', autoCheck: false };
+const vehicleResult = {
+  plate: 'HRGR53', formattedPlate: 'HR·GR·53', hasStolenReport: false, status: 'CLEAN',
+  statusText: 'SIN ENCARGO POR ROBO REGISTRADO', checkedAt: '2026-10-25T00:00:00.000Z',
+  source: 'Registro de prueba',
+  vehicleDetails: { brand: 'CHEVROLET', model: 'SPARK GT', year: 2016, color: 'GRIS', vehicleType: 'AUTOMOVIL' },
+};
+function renderPlateResult(result, states = {}) {
+  return renderWithStates(PlateVerificationBadge, plateProps, { 4: result, 5: result.plate, ...states });
+}
+
+test('PlateVerificationBadge lightens pending surfaces', () => {
+  const manual = renderWithStates(PlateVerificationBadge, plateProps);
+  checkClasses(tagForText(manual, 'button', 'Verificar en AutoSeguro'), ['bg-white', 'border-slate-300', 'text-sky-700']);
+  const loading = renderWithStates(PlateVerificationBadge, plateProps, { 0: true });
+  checkClasses(tagForText(loading, 'div', 'Consultando base nacional'), ['bg-slate-50', 'border-slate-200', 'text-slate-600']);
+});
+
+test('PlateVerificationBadge keeps semantic tones on light result surfaces', () => {
+  const tones = [
+    ['STOLEN', 'bg-red-50', 'border-red-500', 'text-red-900'],
+    ['UNKNOWN', 'bg-amber-50', 'border-amber-500', 'text-amber-900'],
+    ['CLEAN', 'bg-emerald-50', 'border-emerald-500/60', 'text-emerald-900'],
+  ];
+  for (const [status, background, border, foreground] of tones) {
+    const result = {
+      ...vehicleResult, status, hasStolenReport: status === 'STOLEN',
+      statusText: status === 'STOLEN' ? 'ENCARGO POR ROBO VIGENTE' : status === 'UNKNOWN' ? 'NO SE PUDO VERIFICAR' : vehicleResult.statusText,
+      ...(status === 'STOLEN' ? { stolenDetails: {
+        reportDate: '2026-10-25', policeAgency: 'CARABINEROS DE CHILE', policeStation: 'Comisaría',
+        commune: 'Coquimbo', reportNumber: 'PAR-1', riskLevel: 'CRÍTICO',
+      } } : {}),
+    };
+    const html = renderPlateResult(result);
+    checkClasses(tagWith(html, 'rounded-2xl border-2 p-4'), [background, border, foreground]);
+    checkClasses(tagForText(html, 'span', result.formattedPlate), ['text-slate-900']);
+    checkClasses(tagWith(html, 'aria-label="Volver a consultar"'), ['bg-white/80', 'border-slate-300', 'min-h-11', 'min-w-11']);
+    checkClasses(tagForText(html, 'div', 'Marca / Modelo'), ['bg-white/80', 'border-slate-200']);
+    assert.doesNotMatch(html, /bg-(?:slate-900|slate-800|red-950|amber-950|emerald-950)/);
+    if (status === 'UNKNOWN') assert.doesNotMatch(html, /Reportar Robo a la Red/);
+    if (status === 'CLEAN') checkClasses(tagForText(html, 'button', 'Reportar Robo a la Red'), ['bg-red-50', 'text-red-700']);
+    if (status === 'STOLEN') {
+      checkClasses(tagWith(html, 'mt-2.5 p-3'), ['bg-red-100/80', 'border-red-300']);
+      checkClasses(tagForText(html, 'button', 'Marcar Recuperado'), ['bg-emerald-50', 'text-emerald-700']);
+    }
+  }
+  const pending = renderPlateResult(vehicleResult, { 2: true });
+  checkClasses(tagForText(pending, 'div', '¿Reportar'), ['bg-white/90', 'border-slate-300']);
+  checkClasses(tagForText(pending, 'button', 'Confirmar'), ['bg-red-600', 'text-white']);
+  checkClasses(tagForText(pending, 'button', 'Cancelar'), ['bg-slate-100', 'border-slate-300', 'text-slate-700']);
 });
