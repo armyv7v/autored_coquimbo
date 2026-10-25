@@ -107,7 +107,7 @@ export default function PlateVerificationBadge({
         <button
           type="button"
           onClick={() => performCheck(plate)}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-mono font-bold text-sky-400 hover:bg-slate-800 transition active:scale-95"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-mono font-bold text-sky-700 hover:bg-slate-50 transition active:scale-95"
         >
           <Search className="w-3.5 h-3.5" />
           Verificar en AutoSeguro / SEBV Carabineros
@@ -115,8 +115,8 @@ export default function PlateVerificationBadge({
       )}
 
       {loading && (
-        <div className="flex items-center gap-2 p-3 rounded-2xl bg-slate-900/90 border border-slate-800 text-xs font-mono text-slate-300 animate-pulse">
-          <Loader2 className="w-4 h-4 text-sky-400 animate-spin" />
+        <div className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-600 animate-pulse">
+          <Loader2 className="w-4 h-4 text-sky-600 animate-spin" />
           <span>Consultando base nacional de encargo por robo (AutoSeguro / PDI)...</span>
         </div>
       )}
@@ -125,10 +125,10 @@ export default function PlateVerificationBadge({
         <div
           className={`rounded-2xl border-2 p-4 transition-all ${
             result.hasStolenReport
-              ? 'bg-red-950/70 border-red-500 text-red-100 shadow-[0_0_20px_rgba(239,68,68,0.2)] animate-in zoom-in-95'
+              ? 'bg-red-50 border-red-500 text-red-900 shadow-[0_0_20px_rgba(239,68,68,0.2)] animate-in zoom-in-95'
               : result.status === 'UNKNOWN'
-                ? 'bg-amber-950/60 border-amber-500 text-amber-100 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
-                : 'bg-emerald-950/40 border-emerald-500/60 text-emerald-100 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
+                ? 'bg-amber-50 border-amber-500 text-amber-900 shadow-[0_0_20px_rgba(245,158,11,0.15)]'
+                : 'bg-emerald-50 border-emerald-500/60 text-emerald-900 shadow-[0_0_20px_rgba(16,185,129,0.2)]'
           }`}
         >
           <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -152,22 +152,22 @@ export default function PlateVerificationBadge({
                 </div>
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="font-mono font-black text-base tracking-wider uppercase text-white">
+                  <span className="font-mono font-black text-base tracking-wider uppercase text-slate-900">
                     {result.formattedPlate}
                   </span>
                   <span
                     className={`text-[11px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                       result.hasStolenReport
-                        ? 'bg-red-500 text-white animate-bounce shadow-md shadow-red-900'
+                        ? 'bg-red-600 text-white animate-bounce shadow-md shadow-red-900'
                         : result.status === 'UNKNOWN'
-                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                          : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+                          ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                          : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                     }`}
                   >
                     {result.hasStolenReport ? '¡ENCARGO POR ROBO VIGENTE!' : result.status === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                   </span>
                 </div>
-                <p className="text-xs font-mono font-bold mt-0.5 text-slate-200">
+                <p className="text-xs font-mono font-bold mt-0.5 text-slate-700">
                   {result.statusText}
                 </p>
               </div>
@@ -176,7 +176,7 @@ export default function PlateVerificationBadge({
             <button
               type="button"
               onClick={() => performCheck(plate)}
-              className="flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-slate-400 hover:text-white bg-slate-900/60 border border-slate-700 transition"
+              className="flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-slate-500 hover:text-slate-900 bg-white/80 border border-slate-300 hover:bg-white transition"
               title="Volver a consultar"
               aria-label="Volver a consultar"
             >
@@ -186,34 +186,34 @@ export default function PlateVerificationBadge({
 
           {/* Vehicle Details */}
           {result.vehicleDetails && (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2.5 mt-2 border-t border-white/10 text-xs font-mono">
-              <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
-                <span className="block text-[11px] uppercase text-slate-400 font-bold">Marca / Modelo</span>
-                <span className="font-black text-white truncate block">{result.vehicleDetails.brand} {result.vehicleDetails.model}</span>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 pt-2.5 mt-2 border-t border-slate-200 text-xs font-mono">
+              <div className="bg-white/80 p-2 rounded-xl border border-slate-200">
+                <span className="block text-[11px] uppercase text-slate-500 font-bold">Marca / Modelo</span>
+                <span className="font-black text-slate-900 truncate block">{result.vehicleDetails.brand} {result.vehicleDetails.model}</span>
               </div>
-              <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
-                <span className="block text-[11px] uppercase text-slate-400 font-bold">Año</span>
-                <span className="font-bold text-white">{result.vehicleDetails.year}</span>
+              <div className="bg-white/80 p-2 rounded-xl border border-slate-200">
+                <span className="block text-[11px] uppercase text-slate-500 font-bold">Año</span>
+                <span className="font-bold text-slate-900">{result.vehicleDetails.year}</span>
               </div>
-              <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
-                <span className="block text-[11px] uppercase text-slate-400 font-bold">Color</span>
-                <span className="font-bold text-white">{result.vehicleDetails.color}</span>
+              <div className="bg-white/80 p-2 rounded-xl border border-slate-200">
+                <span className="block text-[11px] uppercase text-slate-500 font-bold">Color</span>
+                <span className="font-bold text-slate-900">{result.vehicleDetails.color}</span>
               </div>
-              <div className="bg-slate-900/60 p-2 rounded-xl border border-slate-800">
-                <span className="block text-[11px] uppercase text-slate-400 font-bold">Tipo</span>
-                <span className="font-bold text-white">{result.vehicleDetails.vehicleType}</span>
+              <div className="bg-white/80 p-2 rounded-xl border border-slate-200">
+                <span className="block text-[11px] uppercase text-slate-500 font-bold">Tipo</span>
+                <span className="font-bold text-slate-900">{result.vehicleDetails.vehicleType}</span>
               </div>
             </div>
           )}
 
           {/* Stolen Details Banner */}
           {result.stolenDetails && (
-            <div className="mt-2.5 p-3 rounded-xl bg-red-900/60 border border-red-500/60 text-xs font-mono space-y-1.5">
-              <div className="flex items-center justify-between text-red-100 font-bold">
+            <div className="mt-2.5 p-3 rounded-xl bg-red-100/80 border border-red-300 text-xs font-mono space-y-1.5">
+              <div className="flex items-center justify-between text-red-900 font-bold">
                 <span>Denuncia: {result.stolenDetails.reportNumber}</span>
                 <span>{result.stolenDetails.policeAgency}</span>
               </div>
-              <p className="text-[11px] text-red-200">
+              <p className="text-[11px] text-red-800">
                 Unidad: {result.stolenDetails.policeStation} • Comuna: {result.stolenDetails.commune}
               </p>
             </div>
@@ -223,9 +223,9 @@ export default function PlateVerificationBadge({
               A-08: escribir en el registro compartido de la red exige confirmación
               explícita (un tap accidental envenenaba la base que consulta toda la red). */}
           {allowManualOverride && result.status !== 'UNKNOWN' && (
-            <div className="mt-3 pt-2.5 border-t border-white/10 space-y-2.5">
+            <div className="mt-3 pt-2.5 border-t border-slate-200 space-y-2.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-mono text-slate-400">
+                <span className="text-[11px] font-mono text-slate-600">
                   Fuente: {result.source}
                 </span>
 
@@ -234,9 +234,9 @@ export default function PlateVerificationBadge({
                     type="button"
                     disabled={isOverriding}
                     onClick={() => setPendingOverride(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-red-600/30 hover:bg-red-600 border border-red-500/50 text-red-200 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
+                    className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-600 border border-red-300 text-red-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
-                    <ShieldAlert className="w-3 h-3 text-red-400" />
+                    <ShieldAlert className="w-3 h-3" />
                     Reportar Robo a la Red
                   </button>
                 )}
@@ -246,23 +246,23 @@ export default function PlateVerificationBadge({
                     type="button"
                     disabled={isOverriding}
                     onClick={() => setPendingOverride(false)}
-                    className="px-2.5 py-1.5 rounded-lg bg-emerald-600/30 hover:bg-emerald-600 border border-emerald-500/50 text-emerald-200 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
+                    className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 border border-emerald-300 text-emerald-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                    <CheckCircle2 className="w-3 h-3" />
                     Marcar Recuperado
                   </button>
                 )}
               </div>
 
               {pendingOverride !== null && (
-                <div className="p-3 rounded-xl bg-slate-900/80 border border-slate-700 space-y-2.5">
-                  <p className="text-[11px] font-mono text-slate-300 leading-relaxed">
+                <div className="p-3 rounded-xl bg-white/90 border border-slate-300 space-y-2.5">
+                  <p className="text-[11px] font-mono text-slate-700 leading-relaxed">
                     {pendingOverride
                       ? `¿Reportar ${result.formattedPlate} como ROBO a la red? Queda visible para todas las automotoras.`
                       : `¿Marcar ${result.formattedPlate} como RECUPERADO? Se quitará el encargo de la red.`}
                   </p>
                   {overrideError && (
-                    <p className="text-[11px] font-mono text-red-300 bg-red-500/10 border border-red-500/30 rounded-lg px-2.5 py-1.5" role="alert">
+                    <p className="text-[11px] font-mono text-red-700 bg-red-50 border border-red-200 rounded-lg px-2.5 py-1.5" role="alert">
                       {overrideError}
                     </p>
                   )}
@@ -281,7 +281,7 @@ export default function PlateVerificationBadge({
                       type="button"
                       disabled={isOverriding}
                       onClick={() => { setPendingOverride(null); setOverrideError(null); }}
-                      className="flex-1 min-h-[40px] px-3 rounded-lg bg-slate-800 border border-slate-700 text-slate-300 hover:text-white text-[11px] font-mono font-bold uppercase tracking-wider transition active:scale-95"
+                      className="flex-1 min-h-[40px] px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider transition active:scale-95"
                     >
                       Cancelar
                     </button>
