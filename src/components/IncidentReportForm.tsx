@@ -414,30 +414,30 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: '100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 300 }}
-            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-red-500/40 bg-slate-950 shadow-[0_0_30px_rgba(239,68,68,0.12)] overflow-hidden"
+            className="relative z-10 w-full max-w-xl max-h-[90vh] sm:max-h-[85vh] flex flex-col rounded-t-[2rem] sm:rounded-2xl border border-red-200 bg-white text-slate-900 shadow-[0_0_30px_rgba(239,68,68,0.12)] overflow-hidden"
           >
             {/* Mobile Sheet Drag Handle */}
             <div className="flex sm:hidden justify-center pt-3 pb-1">
               <div className="w-12 h-1.5 rounded-full bg-red-500/50" />
             </div>
 
-            <div className="p-4 border-b border-red-500/30 bg-gradient-to-r from-red-950/50 via-slate-950 to-slate-950 flex items-center justify-between">
+            <div className="p-4 border-b border-red-200 bg-gradient-to-r from-red-50 via-white to-white flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-red-500/20 border border-red-500/50 flex items-center justify-center text-red-400 shadow-md shadow-red-950">
+                <div className="w-9 h-9 rounded-xl bg-red-50 border border-red-200 flex items-center justify-center text-red-600 shadow-md shadow-red-100">
                   <ShieldAlert className="w-5 h-5" />
                 </div>
                 <div>
-                  <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
+                  <h2 className="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
                     REPORTE DE INCIDENTE
-                    <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/40 font-bold">ALERTA</span>
+                    <span className="text-[11px] font-mono uppercase px-2 py-0.5 rounded bg-red-50 text-red-700 border border-red-200 font-bold">ALERTA</span>
                   </h2>
-                  <p className="text-xs text-red-300/80">Notificación inmediata y verificación de patente</p>
+                  <p className="text-xs text-red-700">Notificación inmediata y verificación de patente</p>
                 </div>
               </div>
               <button
                 onClick={onClose}
                 aria-label="Cerrar reporte de incidente"
-                className="flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+                className="flex items-center justify-center min-h-11 min-w-11 p-2.5 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -446,8 +446,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
             <form onSubmit={handleSubmit} className="p-5 space-y-4 flex-1 min-h-0 overflow-y-auto text-left">
               {/* UX-05: aviso discreto no bloqueante de borrador restaurado */}
               {draftRestored && (
-                <div className="flex items-center justify-between gap-2 rounded-xl border border-sky-500/30 bg-sky-500/10 px-3 py-1.5">
-                  <p className="text-[11px] font-mono text-sky-300 flex items-center gap-1.5">
+                <div className="flex items-center justify-between gap-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5">
+                  <p className="text-[11px] font-mono text-sky-800 flex items-center gap-1.5">
                     <RotateCcw className="w-3 h-3 shrink-0" />
                     Borrador restaurado — revisá y transmití cuando quieras.
                   </p>
@@ -455,7 +455,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     type="button"
                     onClick={() => setDraftRestored(false)}
                     aria-label="Descartar aviso de borrador"
-                    className="p-1.5 rounded-lg text-sky-300/70 hover:text-white hover:bg-sky-500/20 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
+                    className="p-1.5 rounded-lg text-sky-600 hover:text-sky-900 hover:bg-sky-100 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
                   >
                     <X className="w-3.5 h-3.5" />
                   </button>
@@ -463,13 +463,13 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               )}
 
               <div>
-                <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider mb-2 block">
+                <label className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider mb-2 block">
                   Tipo de Evento
                 </label>
                 <div className="grid grid-cols-2 gap-2.5">
                   {[
-                    { id: 'ROBO', label: 'Robo / Asalto', icon: ShieldAlert, border: 'border-red-500/50 bg-red-500/15 text-red-200' },
-                    { id: 'SOSPECHOSO', label: 'Sospechoso / Marcaje', icon: AlertTriangle, border: 'border-amber-500/50 bg-amber-500/15 text-amber-200' }
+                    { id: 'ROBO', label: 'Robo / Asalto', icon: ShieldAlert, border: 'border-red-300 bg-red-50 text-red-700' },
+                    { id: 'SOSPECHOSO', label: 'Sospechoso / Marcaje', icon: AlertTriangle, border: 'border-amber-300 bg-amber-50 text-amber-800' }
                   ].map((item) => (
                     <button
                       key={item.id}
@@ -483,7 +483,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       className={`p-3.5 rounded-xl border transition-all flex items-center gap-3 active:scale-[0.98] ${
                         type === item.id 
                           ? item.border 
-                          : 'border-slate-800 bg-slate-900/60 text-slate-400 hover:border-slate-700 hover:text-slate-200'
+                          : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:text-slate-900'
                       }`}
                     >
                       <item.icon className="w-5 h-5 shrink-0" />
@@ -496,12 +496,12 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               {/* Patente Vehicular & Verificación AutoSeguro */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block flex items-center gap-1.5">
-                    <Car className="w-4 h-4 text-slate-300" />
+                  <label className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider block flex items-center gap-1.5">
+                    <Car className="w-4 h-4 text-slate-600" />
                     Patente del Vehículo (Consulta Nacional)
                   </label>
                   {scanningOcr && (
-                    <span className="text-[11px] font-mono text-sky-400 flex items-center gap-1 animate-pulse">
+                    <span className="text-[11px] font-mono text-sky-700 flex items-center gap-1 animate-pulse">
                       <Sparkles className="w-3 h-3" /> Leyendo patente de foto...
                     </span>
                   )}
@@ -524,14 +524,14 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     autoCapitalize="characters"
                     autoComplete="off"
                     spellCheck={false}
-                    className="w-full bg-slate-900/90 border border-slate-800 rounded-xl py-2.5 px-4 text-base font-mono tracking-widest text-white uppercase placeholder:text-slate-600 focus:border-slate-600 focus:ring-1 focus:ring-slate-500 outline-none transition"
+                    className="w-full bg-white border border-slate-300 rounded-xl py-2.5 px-4 text-base font-mono tracking-widest text-slate-900 uppercase placeholder:text-slate-500 focus:border-slate-500 focus:ring-1 focus:ring-slate-400 outline-none transition"
                   />
                   {plate && (
                     <button
                       type="button"
                       onClick={() => { setPlate(''); setStolenCheckResult(null); setPlateSource(null); setOcrSuggestedPlate(null); setOcrConfidence(null); }}
                       aria-label="Limpiar patente"
-                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-white"
+                      className="absolute right-1.5 top-1/2 -translate-y-1/2 p-2 text-slate-500 hover:text-slate-900"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -539,13 +539,13 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 </div>
 
                 {ocrHint && !scanningOcr && (
-                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                  <p className="text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
                     {ocrHint}
                   </p>
                 )}
 
                 {voiceHint && (
-                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                  <p className="text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
                     {voiceHint}
                   </p>
                 )}
@@ -559,7 +559,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
               </div>
 
               <div className="space-y-3">
-                <label className="text-xs font-mono font-bold text-slate-300 uppercase tracking-wider block">
+                <label className="text-xs font-mono font-bold text-slate-700 uppercase tracking-wider block">
                   Descripción del Hecho
                 </label>
                 <div className="relative">
@@ -570,20 +570,20 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     <div
                       role="status"
                       aria-live="polite"
-                      className="absolute top-2 left-2 z-10 flex items-center gap-2 rounded-full border border-red-500/40 bg-red-500/15 px-3 py-1 backdrop-blur-sm"
+                      className="absolute top-2 left-2 z-10 flex items-center gap-2 rounded-full border border-red-200 bg-red-50 px-3 py-1 backdrop-blur-sm"
                     >
                       <span className="relative flex h-2 w-2">
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-red-400 opacity-75" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-red-500" />
                       </span>
-                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-red-300">
+                      <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-red-700">
                         Grabando…
                       </span>
                     </div>
                   )}
                   <textarea
                     placeholder="Describe los hechos, características de los individuos o dirección de fuga..."
-                    className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-3 pr-10 text-white text-base placeholder:text-slate-600 focus:outline-none focus:border-red-500/60 transition min-h-[85px]"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-3 pr-10 text-slate-900 text-base placeholder:text-slate-500 focus:outline-none focus:border-red-400 transition min-h-[85px]"
                     value={description}
                     onChange={(e) => { setDescription(e.target.value); setVoiceHint(null); }}
                   />
@@ -621,7 +621,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       };
                       recognition.start();
                     }}
-                    className="absolute right-2.5 bottom-3 p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
+                    className="absolute right-2.5 bottom-3 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
@@ -640,8 +640,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       onClick={() => setShowPlateCamera(true)}
                       className={`w-full h-11 flex items-center justify-center gap-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition ${
                         imagePreview
-                          ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-400'
-                          : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                          ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                          : 'bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400'
                       }`}
                     >
                       <Camera className="w-4 h-4" />
@@ -654,8 +654,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     onClick={() => setPickingLocation(!pickingLocation)}
                     className={`w-full h-11 flex items-center justify-center gap-2 rounded-xl border text-xs font-bold uppercase tracking-wider transition ${
                       usingGps 
-                        ? 'bg-sky-500/15 border-sky-500/40 text-sky-400' 
-                        : 'bg-slate-900 border-slate-800 text-slate-400 hover:border-slate-700'
+                        ? 'bg-sky-50 border-sky-300 text-sky-700'
+                        : 'bg-slate-50 border-slate-300 text-slate-600 hover:border-slate-400'
                     }`}
                   >
                     <MapPin className="w-4 h-4" />
@@ -664,7 +664,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 </div>
 
                 {imagePreview && (
-                  <div className="relative rounded-xl overflow-hidden border border-slate-800 h-28 w-full bg-slate-900">
+                  <div className="relative rounded-xl overflow-hidden border border-slate-200 h-28 w-full bg-slate-100">
                     <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     <button
                       type="button"
@@ -688,14 +688,14 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 />
 
                 {!usingGps && !gpsError && (
-                  <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                  <p className="text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5">
                     Ubicación aproximada (centro de Coquimbo): fijá tu GPS o marcá el punto en el mapa antes de transmitir.
                   </p>
                 )}
               </div>
 
               {error && (
-                <div className="p-3 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-xs font-mono flex items-center gap-2">
+                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-mono flex items-center gap-2">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{error}</span>
                 </div>
@@ -720,17 +720,17 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="absolute inset-0 z-30 bg-slate-950 flex flex-col"
+                  className="absolute inset-0 z-30 bg-white text-slate-900 flex flex-col"
                 >
-                  <div className="p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
-                    <h3 className="font-bold text-white text-xs uppercase tracking-wider">
+                  <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50">
+                    <h3 className="font-bold text-slate-900 text-xs uppercase tracking-wider">
                       Toca el mapa para marcar el punto
                     </h3>
                     <button
                       type="button"
                       onClick={() => setPickingLocation(false)}
                       aria-label="Cerrar selector de ubicación"
-                      className="p-1.5 rounded-lg text-slate-400 hover:text-white"
+                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -742,7 +742,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     </MapContainer>
                     {gpsError && (
                       <div className="absolute top-3 left-3 right-3 z-[1000]">
-                        <p className="text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5 backdrop-blur-xl">
+                        <p className="text-[11px] font-mono text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-3 py-1.5 backdrop-blur-xl">
                           GPS no disponible (permiso o señal): marcá el punto manualmente.
                         </p>
                       </div>
@@ -751,7 +751,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       <button
                         type="button"
                         onClick={requestGps}
-                        className="flex-1 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white font-mono text-xs font-bold uppercase flex items-center justify-center gap-1.5 active:scale-95 transition"
+                        className="flex-1 py-2.5 rounded-xl bg-white border border-slate-300 text-slate-700 font-mono text-xs font-bold uppercase flex items-center justify-center gap-1.5 active:scale-95 transition"
                       >
                         <Navigation className="w-3.5 h-3.5" /> Mi GPS
                       </button>
