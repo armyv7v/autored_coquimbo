@@ -524,7 +524,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     autoCapitalize="characters"
                     autoComplete="off"
                     spellCheck={false}
-                    className="w-full bg-white border border-slate-300 rounded-xl py-2.5 px-4 text-base font-mono tracking-widest text-slate-900 uppercase placeholder:text-slate-400 focus:border-slate-500 focus:ring-1 focus:ring-slate-400 outline-none transition"
+                    className="w-full bg-white border border-slate-300 rounded-xl py-2.5 px-4 text-base font-mono tracking-widest text-slate-900 uppercase placeholder:text-slate-500 focus:border-slate-500 focus:ring-1 focus:ring-slate-400 outline-none transition"
                   />
                   {plate && (
                     <button
@@ -583,7 +583,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                   )}
                   <textarea
                     placeholder="Describe los hechos, características de los individuos o dirección de fuga..."
-                    className="w-full bg-white border border-slate-300 rounded-xl p-3 pr-10 text-slate-900 text-base placeholder:text-slate-400 focus:outline-none focus:border-red-400 transition min-h-[85px]"
+                    className="w-full bg-white border border-slate-300 rounded-xl p-3 pr-10 text-slate-900 text-base placeholder:text-slate-500 focus:outline-none focus:border-red-400 transition min-h-[85px]"
                     value={description}
                     onChange={(e) => { setDescription(e.target.value); setVoiceHint(null); }}
                   />

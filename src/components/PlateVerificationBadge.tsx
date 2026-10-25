@@ -158,7 +158,7 @@ export default function PlateVerificationBadge({
                   <span
                     className={`text-[11px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                       result.hasStolenReport
-                        ? 'bg-red-500 text-white animate-bounce shadow-md shadow-red-900'
+                        ? 'bg-red-600 text-white animate-bounce shadow-md shadow-red-900'
                         : result.status === 'UNKNOWN'
                           ? 'bg-amber-100 text-amber-800 border border-amber-300'
                           : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
@@ -225,7 +225,7 @@ export default function PlateVerificationBadge({
           {allowManualOverride && result.status !== 'UNKNOWN' && (
             <div className="mt-3 pt-2.5 border-t border-slate-200 space-y-2.5">
               <div className="flex items-center justify-between gap-2">
-                <span className="text-[11px] font-mono text-slate-500">
+                <span className="text-[11px] font-mono text-slate-600">
                   Fuente: {result.source}
                 </span>
 
@@ -236,7 +236,7 @@ export default function PlateVerificationBadge({
                     onClick={() => setPendingOverride(true)}
                     className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-600 border border-red-300 text-red-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
-                    <ShieldAlert className="w-3 h-3 text-red-600" />
+                    <ShieldAlert className="w-3 h-3" />
                     Reportar Robo a la Red
                   </button>
                 )}
@@ -248,7 +248,7 @@ export default function PlateVerificationBadge({
                     onClick={() => setPendingOverride(false)}
                     className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 border border-emerald-300 text-emerald-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
-                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    <CheckCircle2 className="w-3 h-3" />
                     Marcar Recuperado
                   </button>
                 )}

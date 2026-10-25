@@ -96,6 +96,16 @@ function tagForText(html, tag, text) {
   return matches.at(-1)[0];
 }
 
+function svgTagForButtonText(html, text) {
+  const textOffset = html.indexOf(text);
+  assert.ok(textOffset >= 0, `Missing rendered button text: ${text}`);
+  const buttonOffset = html.lastIndexOf('<button', textOffset);
+  assert.ok(buttonOffset >= 0, `Missing <button> before ${text}`);
+  const svgOffset = html.indexOf('<svg', buttonOffset);
+  assert.ok(svgOffset > buttonOffset && svgOffset < textOffset, `Missing SVG inside button ${text}`);
+  return html.slice(svgOffset, html.indexOf('>', svgOffset) + 1);
+}
+
 function checkClasses(tag, expected, absent = []) {
   const className = tag.match(/class="([^"]*)"/)?.[1] || '';
   const tokens = className.split(/\s+/);
@@ -137,6 +147,12 @@ test('IncidentReportForm uses coherent light surfaces with deliberate dark excep
   checkClasses(tagWith(photoHtml, 'aria-label="Quitar foto"'), ['bg-slate-950/80', 'hover:text-white', 'min-h-11', 'min-w-11']);
 });
 
+test('IncidentReportForm uses readable light-theme placeholders', () => {
+  const html = renderWithStates(IncidentReportForm, incidentProps);
+  checkClasses(tagWith(html, 'placeholder="Ej:'), ['placeholder:text-slate-500'], ['placeholder:text-slate-400']);
+  checkClasses(tagWith(html, 'min-h-[85px]'), ['placeholder:text-slate-500'], ['placeholder:text-slate-400']);
+});
+
 const plateProps = { plate: 'HRGR53', autoCheck: false };
 const vehicleResult = {
   plate: 'HRGR53', formattedPlate: 'HR·GR·53', hasStolenReport: false, status: 'CLEAN',
@@ -147,6 +163,31 @@ const vehicleResult = {
 function renderPlateResult(result, states = {}) {
   return renderWithStates(PlateVerificationBadge, plateProps, { 4: result, 5: result.plate, ...states });
 }
+
+test('PlateVerificationBadge manual action icons inherit the button foreground', () => {
+  const clean = renderPlateResult(vehicleResult);
+  checkClasses(tagForText(clean, 'button', 'Reportar Robo a la Red'), ['text-red-700', 'hover:bg-red-600', 'hover:text-white']);
+  checkClasses(svgTagForButtonText(clean, 'Reportar Robo a la Red'), [], ['text-red-600']);
+
+  const stolen = renderPlateResult({ ...vehicleResult, status: 'STOLEN', hasStolenReport: true });
+  checkClasses(tagForText(stolen, 'button', 'Marcar Recuperado'), ['text-emerald-700', 'hover:bg-emerald-600', 'hover:text-white']);
+  checkClasses(svgTagForButtonText(stolen, 'Marcar Recuperado'), [], ['text-emerald-600']);
+});
+
+test('PlateVerificationBadge uses readable source text on semantic light surfaces', () => {
+  for (const result of [
+    vehicleResult,
+    { ...vehicleResult, status: 'STOLEN', hasStolenReport: true },
+  ]) {
+    const html = renderPlateResult(result);
+    checkClasses(tagForText(html, 'span', 'Fuente:'), ['text-slate-600'], ['text-slate-500']);
+  }
+});
+
+test('PlateVerificationBadge uses a readable stolen status pill', () => {
+  const html = renderPlateResult({ ...vehicleResult, status: 'STOLEN', hasStolenReport: true });
+  checkClasses(tagForText(html, 'span', '¡ENCARGO POR ROBO VIGENTE!'), ['bg-red-600', 'text-white'], ['bg-red-500']);
+});
 
 test('PlateVerificationBadge lightens pending surfaces', () => {
   const manual = renderWithStates(PlateVerificationBadge, plateProps);
