@@ -33,8 +33,8 @@ The application shell uses a light canvas, while the incident modal and plate ba
 - No push, PR, merge, or production deploy is authorized in this block.
 
 ## Checklist
-- [x] T00 — Map reachable internal modals, choose the bounded incident scope and deliberate dark exceptions. Route: delegated exploration. Evidence: delegation `deleg_5651eec1`; initial tracking commit pending.
-- [ ] T01 — Add the focused rendered harness and migrate IncidentReportForm through observed RED to GREEN. Route: delegated writer. Verification: focused test, then full rendered test. Commit evidence pending.
+- [x] T00 — Map reachable internal modals, choose the bounded incident scope and deliberate dark exceptions. Route: delegated exploration. Evidence: delegation `deleg_5651eec1`; tracking commit `df42055`.
+- [x] T01 — Add the focused rendered harness and migrate IncidentReportForm through observed RED to GREEN. Route: delegated writer. Verification: real-markup smoke passed; focused RED failed on missing `bg-white` with the sheet still at `bg-slate-950`; focused GREEN 2/2; full rendered GREEN 2/2; `git diff --check` passed. Commit evidence: this T01 work-unit commit.
 - [ ] T02 — Migrate PlateVerificationBadge through its own observed RED to GREEN and preserve semantic result tones. Route: same delegated writer. Verification: focused test, then full rendered test. Commit evidence pending.
 - [ ] T03 — Run all applicable checks and verify mobile/desktop presentation without submitting data. Record any unavailable authenticated browser checks explicitly. Route: delegated verification as needed. Commit evidence pending.
 
@@ -46,4 +46,6 @@ The application shell uses a light canvas, while the incident modal and plate ba
 
 ## Progress and evidence
 - 2026-10-25: clean `main` at `69ac6a7`; branch created. Exploration found ten candidate UI files for the broader theme, deliberately reduced to this incident slice.
-- Next step: T01 delegated writer.
+- T00 RDD: assessment reported high/unassessable for `df42055`; preflight STATUS returned `immutable_review_transport_unsupported`. No receipt was produced. Continue with high-tier writer self-verification plus an independent verifier; the reviewed boundary remains `69ac6a7`.
+- T01 writer: the initial focused run rendered the real sheet and then failed only the light-surface assertion (`bg-white` absent; `bg-slate-950` present). The corrected focused and full rendered runs each passed 2/2 tests; the final whitespace check passed. T01 is included in this work-unit commit.
+- Next step: T02 delegated writer.
