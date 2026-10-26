@@ -31,8 +31,8 @@ Both surfaces remain dark in current `main` and production. User screenshots con
 - Forecast: likely above 400 authored lines across two slices. Cached delivery choice: `feature-branch-chain`; apply it only if remote delivery is later authorized. Do not shrink tests or code to fit a line target.
 
 ## Checklist
-- [x] T00 — Reuse the prior modal map, confirm the two user-shown dark surfaces in current `main`, and bound this feature to RoadTestForm plus StockAutomotoras. Route: delegated mapping reused; branch created from updated `origin/main`. Initial tracking commit pending.
-- [ ] T01 — Migrate RoadTestForm through observed RED to GREEN, including light photo cards and preserved dark image overlays. Route: delegated writer. Verification: focused and full rendered tests plus diff check. Commit evidence pending.
+- [x] T00 — Reuse the prior modal map, confirm the two user-shown dark surfaces in current `main`, and bound this feature to RoadTestForm plus StockAutomotoras. Route: delegated mapping reused; branch created from updated `origin/main`. Initial tracking commit `85ac0ae`.
+- [x] T01 — Migrate RoadTestForm through observed RED to GREEN, including light photo cards and preserved dark image overlays. Route: delegated writer. Verification: two assertion RED cycles; focused GREEN 2/2; full rendered tests 10/10; `git diff --check` exit 0. Local work-unit commit created; hash pending parent.
 - [ ] T02 — Migrate StockAutomotoras through its own observed RED to GREEN, including filters/select/options, empty state, cards, and publish panel. Route: same writer. Verification: focused and full rendered tests plus diff check. Commit evidence pending.
 - [ ] T03 — Run final lint/build and independently verify mobile/desktop surfaces, hover/focus, contrast, scrolling, and target sizes without credentials or data submissions. Route: fresh independent verifier. Commit evidence pending.
 
@@ -46,4 +46,7 @@ Both surfaces remain dark in current `main` and production. User screenshots con
 ## Progress and evidence
 - 2026-10-25: user confirmed this combined block with `Si avance`. Base `ffa9a66` contains the already merged incident slice; RoadTestForm and StockAutomotoras still contain dark surface classes.
 - Production still serves the previous incident bundle; promotion is a separate unresolved delivery task.
-- Next step: T01 delegated writer.
+- Next step: T02 delegated writer.
+- T01 RED evidence: the sheet/fields/footer test failed on `Missing bg-white` because the real form still had `bg-slate-950`; the photo-card test then failed on `Missing text-slate-700` because the capture heading still had `text-slate-300`. Both were assertion failures from the real component, not harness errors.
+- T01 GREEN evidence: with `NODE_PATH='C:/Users/EnderJavier/Documents/Proyectos WEB/autored/autored_coquimbo/node_modules'`, `node --test --test-name-pattern='RoadTestForm' tests/light-modals.render.test.cjs` passed 2/2; `node --test tests/light-modals.render.test.cjs` passed 10/10, preserving all eight incident/badge tests. `git diff --check` exited 0 with only the existing LF-to-CRLF advisory.
+- T01 runtime boundary: the CommonJS harness rendered the real initial sheet plus seeded photo-preview and error markup; it did not exercise browser hydration, confirmation, GPS, file selection, or submission. Rollback boundary: `src/components/RoadTestForm.tsx`, its RoadTestForm assertions in `tests/light-modals.render.test.cjs`, and this feature document.

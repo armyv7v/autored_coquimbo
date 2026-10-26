@@ -48,9 +48,11 @@ Module._load = function (request, parent, isMain) {
 
 let IncidentReportForm;
 let PlateVerificationBadge;
+let RoadTestForm;
 try {
   IncidentReportForm = require('../src/components/IncidentReportForm').default;
   PlateVerificationBadge = require('../src/components/PlateVerificationBadge').default;
+  RoadTestForm = require('../src/components/RoadTestForm').default;
 } finally {
   Module._load = originalLoad;
   for (const ext of extensions) {
@@ -71,6 +73,7 @@ function renderWithStates(Component, props, states = {}) {
         return [Object.hasOwn(states, index) ? states[index] : initial, () => undefined];
       },
       useEffect() {},
+      useMemo(create) { return create(); },
       useRef(initial) { return { current: initial }; },
       useContext() { return { user: null, profile: null, loading: false }; },
     };
@@ -151,6 +154,59 @@ test('IncidentReportForm uses readable light-theme placeholders', () => {
   const html = renderWithStates(IncidentReportForm, incidentProps);
   checkClasses(tagWith(html, 'placeholder="Ej:'), ['placeholder:text-slate-500'], ['placeholder:text-slate-400']);
   checkClasses(tagWith(html, 'min-h-[85px]'), ['placeholder:text-slate-500'], ['placeholder:text-slate-400']);
+});
+
+const roadTestProps = { isOpen: true, onClose() {} };
+function renderRoadTest(states = {}) {
+  return renderWithStates(RoadTestForm, roadTestProps, states);
+}
+
+test('RoadTestForm renders a light sheet, readable fields, and an amber footer', () => {
+  const html = renderRoadTest();
+  checkClasses(tagWith(html, 'z-[2100]'), ['bg-slate-950/80']);
+  checkClasses(tagWith(html, 'max-w-xl'), ['bg-white', 'text-slate-900', 'border-slate-200'], ['bg-slate-950']);
+  checkClasses(tagForText(html, 'h2', 'PRUEBA EN RUTA'), ['text-slate-900'], ['text-white']);
+  checkClasses(tagForText(html, 'span', 'TEST DRIVE'), ['bg-amber-50', 'text-amber-700', 'border-amber-300']);
+  checkClasses(tagForText(html, 'p', 'Registro fotográfico preventivo'), ['text-amber-700']);
+  checkClasses(tagWith(html, 'min-h-11 min-w-11 p-2.5'), ['text-slate-600', 'hover:bg-slate-100', 'hover:text-slate-900', 'min-h-11', 'min-w-11']);
+  checkClasses(tagForText(html, 'label', 'Patente del Vehículo'), ['text-slate-700']);
+  checkClasses(tagWith(html, 'placeholder="Ej: GKLP42'), ['bg-white', 'border-slate-300', 'text-slate-900', 'placeholder:text-slate-500'], ['bg-slate-900/90', 'text-white']);
+  checkClasses(tagForText(html, 'label', 'Observaciones / Notas'), ['text-slate-700']);
+  checkClasses(tagWith(html, 'placeholder="Ej: Acompañante'), ['bg-white', 'border-slate-300', 'text-slate-900', 'placeholder:text-slate-500'], ['bg-slate-900/80', 'text-white']);
+  const footerTag = html.match(/<footer\b[^>]*>/)?.[0];
+  assert.ok(footerTag, 'Missing rendered footer');
+  checkClasses(footerTag, ['bg-slate-50', 'border-slate-200'], ['bg-slate-950']);
+  checkClasses(tagForText(html, 'button', 'Registrar Salida de Prueba'), ['h-12', 'bg-amber-500', 'border-amber-600', 'text-slate-950', 'disabled:opacity-50']);
+
+  const errorMessage = 'No pudimos registrar la prueba en ruta. Intenta nuevamente.';
+  const errorHtml = renderRoadTest({ 5: errorMessage });
+  checkClasses(tagForText(errorHtml, 'div', errorMessage), ['bg-red-50', 'border-red-200', 'text-red-700']);
+});
+
+test('RoadTestForm lightens photo cards and keeps deliberate dark image controls', () => {
+  const html = renderRoadTest();
+  checkClasses(tagForText(html, 'span', 'Captura Guiada'), ['text-slate-700']);
+  checkClasses(tagForText(html, 'span', '/4 fotos'), ['text-slate-600']);
+  checkClasses(tagWith(html, 'relative rounded-xl border'), ['bg-slate-50', 'border-slate-200'], ['bg-slate-900/50']);
+  checkClasses(tagWith(html, 'w-full h-24'), ['bg-white', 'border-slate-300', 'text-slate-600', 'hover:border-amber-500/60', 'hover:text-amber-700'], ['bg-slate-900']);
+  checkClasses(tagForText(html, 'span', 'Ubicar documento centrado'), ['text-slate-600']);
+  checkClasses(tagForText(html, 'span', 'RUT Delantero'), ['text-slate-900']);
+  checkClasses(tagForText(html, 'span', 'Carnet de conducir frente'), ['text-slate-600']);
+  checkClasses(tagWith(html, 'capture="environment"'), ['hidden']);
+
+  const photoHtml = renderRoadTest({
+    1: {
+      licenseFront: 'data:image/jpeg;base64,AA==',
+      licenseBack: null,
+      driverPhoto: null,
+      vehiclePhoto: null,
+    },
+  });
+  checkClasses(tagWith(photoHtml, 'relative rounded-xl border'), ['bg-slate-50', 'border-slate-200']);
+  checkClasses(tagWith(photoHtml, 'absolute inset-0 bg-black/60'), ['bg-black/60']);
+  checkClasses(tagForText(photoHtml, 'span', 'Cambiar'), ['bg-slate-900/80', 'text-white']);
+  checkClasses(tagWith(photoHtml, 'aria-label="Quitar foto:'), ['bg-slate-950/80', 'text-slate-300', 'hover:text-white', 'border-slate-700', 'min-h-11', 'min-w-11']);
+  checkClasses(tagForText(photoHtml, 'span', 'OK'), ['bg-emerald-500', 'text-slate-950']);
 });
 
 const plateProps = { plate: 'HRGR53', autoCheck: false };
