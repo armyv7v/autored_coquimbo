@@ -315,6 +315,11 @@ test('StockAutomotoras lightens the state-driven publish panel', () => {
   assert.match(html, /Publicar en la Red/);
 });
 
+test('StockAutomotoras applies a local readable foreground to the publish leading icon', () => {
+  const html = renderStock({ 2: false, 7: true });
+  checkClasses(svgTagForButtonText(html, 'Publicar en la Red'), ['text-emerald-100']);
+});
+
 const plateProps = { plate: 'HRGR53', autoCheck: false };
 const vehicleResult = {
   plate: 'HRGR53', formattedPlate: 'HR·GR·53', hasStolenReport: false, status: 'CLEAN',

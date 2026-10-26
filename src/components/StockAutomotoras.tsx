@@ -48,6 +48,10 @@ const priceBands = ['Todos', '< $12M', '$12M - $15M', '> $15M'];
 const formatPrice = (price: number) =>
   new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 }).format(price);
 
+const PublishCarIcon = ({ className = '' }: { className?: string }) => (
+  <Car className={`${className} text-emerald-100`} />
+);
+
 export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasProps) {
   const { profile } = useAuth();
   const [vehicles, setVehicles] = useState<StockVehicle[]>([]);
@@ -307,7 +311,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                   </div>
                   <TacticalSubmitBar
                     type="button"
-                    icon={Car}
+                    icon={PublishCarIcon}
                     label="Publicar en la Red"
                     loading={isSavingVehicle}
                     loadingLabel="Publicando en la Red..."
