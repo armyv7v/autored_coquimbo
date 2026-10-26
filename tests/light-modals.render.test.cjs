@@ -49,10 +49,12 @@ Module._load = function (request, parent, isMain) {
 let IncidentReportForm;
 let PlateVerificationBadge;
 let RoadTestForm;
+let StockAutomotoras;
 try {
   IncidentReportForm = require('../src/components/IncidentReportForm').default;
   PlateVerificationBadge = require('../src/components/PlateVerificationBadge').default;
   RoadTestForm = require('../src/components/RoadTestForm').default;
+  StockAutomotoras = require('../src/components/StockAutomotoras').default;
 } finally {
   Module._load = originalLoad;
   for (const ext of extensions) {
@@ -62,7 +64,7 @@ try {
 }
 
 const internals = React.__CLIENT_INTERNALS_DO_NOT_USE_OR_WARN_USERS_THEY_CANNOT_UPGRADE;
-function renderWithStates(Component, props, states = {}) {
+function renderWithStates(Component, props, states = {}, context = {}) {
   let stateIndex = 0;
   const previousDispatcher = internals.H;
   let tree;
@@ -75,7 +77,7 @@ function renderWithStates(Component, props, states = {}) {
       useEffect() {},
       useMemo(create) { return create(); },
       useRef(initial) { return { current: initial }; },
-      useContext() { return { user: null, profile: null, loading: false }; },
+      useContext() { return { user: null, profile: null, loading: false, ...context }; },
     };
     tree = Component(props);
   } finally {
@@ -207,6 +209,110 @@ test('RoadTestForm lightens photo cards and keeps deliberate dark image controls
   checkClasses(tagForText(photoHtml, 'span', 'Cambiar'), ['bg-slate-900/80', 'text-white']);
   checkClasses(tagWith(photoHtml, 'aria-label="Quitar foto:'), ['bg-slate-950/80', 'text-slate-300', 'hover:text-white', 'border-slate-700', 'min-h-11', 'min-w-11']);
   checkClasses(tagForText(photoHtml, 'span', 'OK'), ['bg-emerald-500', 'text-slate-950']);
+});
+
+const stockProps = { isOpen: true, onClose() {} };
+const stockAdminProfile = {
+  uid: 'admin-1', email: null, role: 'ADMIN', dealershipId: null, displayName: null,
+};
+function renderStock(states = {}, profile = stockAdminProfile) {
+  return renderWithStates(StockAutomotoras, stockProps, states, { profile });
+}
+
+test('StockAutomotoras renders a light isOpen-driven sheet, filters, and empty state', () => {
+  assert.equal(renderWithStates(StockAutomotoras, { ...stockProps, isOpen: false }), '');
+  const html = renderStock({ 2: false });
+  checkClasses(tagWith(html, 'z-[2150]'), ['bg-slate-950/92']);
+  checkClasses(tagWith(html, 'max-w-6xl'), ['bg-white', 'text-slate-900', 'border-slate-200'], ['bg-slate-950']);
+  checkClasses(tagWith(html, 'relative flex flex-wrap'), ['from-emerald-50', 'via-white', 'to-white', 'border-emerald-200']);
+  checkClasses(tagForText(html, 'h2', 'Stock automotoras'), ['text-slate-900'], ['text-white']);
+  checkClasses(tagForText(html, 'button', 'Publicar Vehículo'), ['bg-emerald-50', 'border-emerald-300', 'text-emerald-700', 'hover:bg-emerald-100', 'hover:text-emerald-900']);
+  checkClasses(tagWith(html, 'aria-label="Cerrar stock"'), ['text-slate-600', 'hover:bg-slate-100', 'hover:text-slate-900']);
+  checkClasses(tagWith(html, 'placeholder="Buscador general"'), ['bg-white', 'border-slate-300', 'text-slate-900', 'placeholder:text-slate-500'], ['bg-slate-900/75', 'text-white']);
+  checkClasses(tagWith(html, 'relative border-b'), ['bg-slate-50', 'border-slate-200']);
+  const selectTags = html.match(/<select\b[^>]*>/g) || [];
+  assert.equal(selectTags.length, 2, 'Expected year and price native selects');
+  for (const tag of selectTags) checkClasses(tag, ['bg-white', 'border-slate-300', 'text-slate-900']);
+  const optionTags = html.match(/<option\b[^>]*>/g) || [];
+  assert.equal(optionTags.length, 5, 'Expected all native filter options');
+  for (const tag of optionTags) checkClasses(tag, ['bg-white', 'text-slate-900']);
+  checkClasses(tagForText(html, 'span', 'Año'), ['text-slate-600']);
+  checkClasses(tagForText(html, 'span', 'Precio'), ['text-slate-600']);
+  checkClasses(tagWith(html, 'mx-auto mb-4'), ['text-slate-400']);
+  checkClasses(tagForText(html, 'p', 'Aún no hay vehículos'), ['text-slate-700']);
+  checkClasses(tagForText(html, 'p', 'para agregar el primero'), ['text-slate-600']);
+});
+
+test('StockAutomotoras uses tuteo in visible copy', () => {
+  const source = fs.readFileSync(path.join(srcRoot, 'components', 'StockAutomotoras.tsx'), 'utf8');
+  const copyPairs = [
+    ['Verificá tu conexión.', 'Verifica tu conexión.'],
+    ['Completá la marca y el modelo del vehículo.', 'Completa la marca y el modelo del vehículo.'],
+    ['Seleccioná una automotora.', 'Selecciona una automotora.'],
+    ['Ingresá un precio válido en pesos chilenos.', 'Ingresa un precio válido en pesos chilenos.'],
+    ['avisá al administrador de la red.', 'avisa al administrador de la red.'],
+    ['Usá “Publicar Vehículo”', 'Usa “Publicar Vehículo”'],
+  ];
+  for (const [, tuteo] of copyPairs) assert.ok(source.includes(tuteo), `Missing tuteo copy: ${tuteo}`);
+  for (const [voseo] of copyPairs) assert.ok(!source.includes(voseo), `Unexpected voseo copy: ${voseo}`);
+  const html = renderStock({ 2: false });
+  assert.match(html, /Usa “Publicar Vehículo” para agregar el primero/);
+  assert.doesNotMatch(html, /Usá/);
+});
+
+test('StockAutomotoras lightens vehicle and status cards without losing semantics', () => {
+  const vehicles = [
+    {
+      id: 'vehicle-1', dealershipId: 'dealer-1', dealershipName: 'Automotora Norte',
+      brand: 'Toyota', model: 'Corolla', year: 2022, price: 16490000,
+      status: 'DISPONIBLE', createdByUid: 'owner-1',
+    },
+    {
+      id: 'vehicle-2', dealershipId: 'dealer-1', dealershipName: 'Automotora Norte',
+      brand: 'Kia', model: 'Rio', year: 2021, price: 12990000,
+      status: 'NEGOCIACION', createdByUid: 'owner-2',
+    },
+    {
+      id: 'vehicle-3', dealershipId: 'dealer-1', dealershipName: 'Automotora Norte',
+      brand: 'Chevrolet', model: 'Sail', year: 2020, price: 8990000,
+      status: 'VENDIDO', createdByUid: 'owner-3',
+    },
+  ];
+  const html = renderStock({ 0: vehicles, 2: false });
+  checkClasses(tagWith(html, 'group overflow-hidden'), ['bg-white', 'border-slate-200', 'hover:border-emerald-300', 'hover:bg-slate-50'], ['bg-white/[.045]']);
+  checkClasses(tagWith(html, 'relative grid aspect-[4/3]'), ['from-slate-100', 'to-slate-200']);
+  checkClasses(tagForText(html, 'span', 'Disponible'), ['bg-emerald-50', 'text-emerald-700', 'ring-emerald-200']);
+  checkClasses(tagForText(html, 'span', 'En negociación'), ['bg-amber-50', 'text-amber-700', 'ring-amber-200']);
+  checkClasses(tagForText(html, 'span', 'Vendido'), ['bg-slate-100', 'text-slate-600', 'ring-slate-200']);
+  checkClasses(tagWith(html, 'aria-label="Eliminar Toyota'), ['bg-white/90', 'text-slate-500', 'ring-slate-200', 'hover:bg-red-50', 'hover:text-red-700']);
+  checkClasses(tagForText(html, 'p', 'Automotora Norte'), ['text-slate-600']);
+  checkClasses(tagWith(html, 'text-base font-black'), ['text-slate-900'], ['text-white']);
+  checkClasses(tagForText(html, 'span', '2022'), ['text-slate-600']);
+  checkClasses(tagForText(html, 'span', 'En red'), ['text-emerald-700']);
+  checkClasses(tagForText(html, 'p', 'Precio red'), ['text-slate-600']);
+  checkClasses(tagForText(html, 'p', '16.490.000'), ['text-slate-900'], ['text-white']);
+});
+
+test('StockAutomotoras lightens the state-driven publish panel', () => {
+  const errorCopy = 'No se pudo publicar el vehículo. Intenta nuevamente.';
+  const html = renderStock({
+    1: [{ id: 'dealer-1', name: 'Automotora Norte' }],
+    2: false,
+    3: errorCopy,
+    7: true,
+  });
+  checkClasses(tagWith(html, 'space-y-3'), ['bg-slate-50', 'border-slate-200'], ['bg-slate-900/60']);
+  checkClasses(tagForText(html, 'span', 'Sede'), ['text-slate-600']);
+  checkClasses(tagForText(html, 'select', 'Seleccionar automotora…'), ['bg-white', 'border-slate-300', 'text-slate-900']);
+  checkClasses(tagForText(html, 'option', 'Seleccionar automotora…'), ['bg-white', 'text-slate-900']);
+  for (const placeholder of ['Toyota', 'Corolla Cross', '2022', '16490000']) {
+    checkClasses(tagWith(html, `placeholder="${placeholder}"`), ['bg-white', 'border-slate-300', 'text-slate-900', 'placeholder:text-slate-500']);
+  }
+  checkClasses(tagWith(html, 'flex items-center gap-1'), ['bg-slate-100', 'border-slate-200']);
+  checkClasses(tagForText(html, 'button', 'Disponible'), ['bg-emerald-100', 'text-emerald-800']);
+  checkClasses(tagForText(html, 'button', 'En negociación'), ['text-slate-600', 'hover:bg-white', 'hover:text-slate-900']);
+  checkClasses(tagForText(html, 'div', errorCopy), ['bg-red-50', 'border-red-200', 'text-red-700']);
+  assert.match(html, /Publicar en la Red/);
 });
 
 const plateProps = { plate: 'HRGR53', autoCheck: false };
