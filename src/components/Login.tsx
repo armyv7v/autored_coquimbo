@@ -376,7 +376,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setAccessOpen(true)}
-            className="xl:hidden px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
+            className="xl:hidden px-4 min-h-11 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
           >
             <Lock className="w-3.5 h-3.5" />
             Acceso a la Red
@@ -719,14 +719,14 @@ export default function Login() {
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('admin@alertadealers.cl', 'ADMIN')}
-                        className="py-2.5 px-3 rounded-xl bg-transparent hover:bg-[#E20B17]/10 border border-[#E20B17]/60 text-red-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
+                        className="min-h-11 px-3 rounded-xl bg-transparent hover:bg-[#E20B17]/10 border border-[#E20B17]/60 text-red-300 font-mono text-xs font-bold uppercase transition active:scale-95 flex items-center justify-center text-center"
                       >
                         Acceso Administrador
                       </button>
                       <button
                         type="button"
                         onClick={() => handleDemoLogin('seguridad@alertadealers.cl', 'SECURITY')}
-                        className="py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 text-center"
+                        className="min-h-11 px-3 rounded-xl bg-slate-800 hover:bg-slate-750 border border-slate-700 text-slate-300 font-mono text-xs font-bold uppercase transition active:scale-95 flex items-center justify-center text-center"
                       >
                         Acceso Operador
                       </button>
