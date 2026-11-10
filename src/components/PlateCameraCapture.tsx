@@ -246,7 +246,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
       <div className="shrink-0 border-t border-slate-800 bg-slate-950 px-4 pt-3 pb-5 space-y-3">
         {zoomRange && zoom !== null && (
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono font-bold uppercase text-slate-500 w-8">Zoom</span>
+            <span className="text-[11px] font-mono font-bold uppercase text-slate-500 w-10">Zoom</span>
             <input
               type="range"
               min={zoomRange.min}
