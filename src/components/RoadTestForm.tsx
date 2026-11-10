@@ -303,7 +303,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                   onChange={(event) => setNotes(event.target.value)}
                   placeholder="Ej: Acompañante presente, ruta fijada hacia La Herradura..."
                   rows={2}
-                  className="w-full rounded-xl border border-slate-300 bg-white p-3 text-xs text-slate-900 placeholder:text-slate-500 outline-none focus:border-amber-500/60 transition"
+                  className="w-full rounded-xl border border-slate-300 bg-white p-3 text-base text-slate-900 placeholder:text-slate-500 outline-none focus:border-amber-500/60 transition"
                 />
               </div>
 
