@@ -455,9 +455,9 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     type="button"
                     onClick={() => setDraftRestored(false)}
                     aria-label="Descartar aviso de borrador"
-                    className="p-1.5 rounded-lg text-sky-600 hover:text-sky-900 hover:bg-sky-100 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
+                    className="flex items-center justify-center min-h-11 min-w-11 -my-1.5 -mr-1.5 rounded-lg text-sky-600 hover:text-sky-900 hover:bg-sky-100 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-sky-400"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               )}
@@ -730,7 +730,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       type="button"
                       onClick={() => setPickingLocation(false)}
                       aria-label="Cerrar selector de ubicación"
-                      className="p-1.5 rounded-lg text-slate-500 hover:text-slate-900"
+                      className="flex items-center justify-center min-h-11 min-w-11 -my-1 -mr-1 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-200/60 transition focus:outline-none focus-visible:ring-1 focus-visible:ring-slate-400"
                     >
                       <X className="w-4 h-4" />
                     </button>
