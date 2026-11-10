@@ -24,6 +24,28 @@
   outline-offset: 2px !important;
 }
 
+/* El preflight de Tailwind v4 ya no aplica cursor:pointer a los controles:
+   restaurarlo globalmente (checklist ui-ux-pro-max: cursor-pointer). */
+button:not(:disabled),
+select:not(:disabled),
+summary,
+input[type="checkbox"]:not(:disabled),
+input[type="radio"]:not(:disabled),
+input[type="range"]:not(:disabled),
+[role="button"]:not(:disabled),
+[role="switch"]:not(:disabled),
+[role="tab"]:not(:disabled),
+[role="option"],
+label:has(input:not(:disabled)) {
+  cursor: pointer;
+}
+
+button:disabled,
+select:disabled,
+[role="button"]:disabled {
+  cursor: not-allowed;
+}
+
 html, body, #root {
   min-height: 100%;
 }
@@ -151,6 +173,8 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(15, 23, 42, 0.72);
   padding: 0.875rem 1rem 0.875rem 3rem;
+  /* 16px evita el auto-zoom de Safari iOS al enfocar (readable-font-size) */
+  font-size: 16px;
   color: white;
   outline: none;
   transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
