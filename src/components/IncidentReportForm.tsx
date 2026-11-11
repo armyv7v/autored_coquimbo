@@ -621,7 +621,8 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                       };
                       recognition.start();
                     }}
-                    className="absolute right-2.5 bottom-3 p-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
+                    aria-label="Dictar por voz"
+                    className="absolute right-1.5 bottom-1.5 flex items-center justify-center min-h-11 min-w-11 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 transition active:scale-95 focus:outline-none focus-visible:ring-1 focus-visible:ring-red-400"
                   >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
