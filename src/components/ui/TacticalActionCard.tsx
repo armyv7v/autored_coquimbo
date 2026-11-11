@@ -22,7 +22,7 @@ const TONES: Record<TacticalTone, ToneTokens> = {
   red: {
     card: 'border-red-500/70 hover:border-red-400 bg-gradient-to-br from-red-950/45 via-slate-900/90 to-slate-950 shadow-[0_0_20px_rgba(239,68,68,0.2)] hover:shadow-[0_0_30px_rgba(239,68,68,0.4)]',
     iconBox: 'bg-red-500/20 border-red-500/60 text-red-400 group-hover:border-red-400 shadow-red-950',
-    eyebrow: 'text-red-400',
+    eyebrow: 'text-red-200',
     arrow: 'bg-red-500/10 border-red-500/30 text-red-400 group-hover:bg-red-500 group-hover:text-white group-hover:border-red-400 group-hover:shadow-[0_0_12px_rgba(239,68,68,0.5)]',
   },
   amber: {
@@ -34,13 +34,13 @@ const TONES: Record<TacticalTone, ToneTokens> = {
   sky: {
     card: 'border-sky-500/70 hover:border-sky-400 bg-gradient-to-br from-sky-950/45 via-slate-900/90 to-slate-950 shadow-[0_0_20px_rgba(14,165,233,0.2)] hover:shadow-[0_0_30px_rgba(14,165,233,0.4)]',
     iconBox: 'bg-sky-500/20 border-sky-500/60 text-sky-400 group-hover:border-sky-400 shadow-sky-950',
-    eyebrow: 'text-sky-400',
+    eyebrow: 'text-sky-300',
     arrow: 'bg-sky-500/10 border-sky-500/30 text-sky-400 group-hover:bg-sky-500 group-hover:text-slate-950 group-hover:border-sky-400 group-hover:shadow-[0_0_12px_rgba(14,165,233,0.5)]',
   },
   emerald: {
     card: 'border-emerald-500/70 hover:border-emerald-400 bg-gradient-to-br from-emerald-950/45 via-slate-900/90 to-slate-950 shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)]',
     iconBox: 'bg-emerald-500/20 border-emerald-500/60 text-emerald-400 group-hover:border-emerald-400 shadow-emerald-950',
-    eyebrow: 'text-emerald-400',
+    eyebrow: 'text-emerald-300',
     arrow: 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400 group-hover:bg-emerald-500 group-hover:text-slate-950 group-hover:border-emerald-400 group-hover:shadow-[0_0_12px_rgba(16,185,129,0.5)]',
   },
   slate: {
