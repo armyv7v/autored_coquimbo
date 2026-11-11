@@ -684,7 +684,7 @@ export default function Login() {
                         <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-1 transition-transform" />
                       </div>
                       <p className="text-sm font-black">Iniciar Sesión</p>
-                      <p className="text-[11px] text-white/80 font-normal mt-0.5">Credenciales activas</p>
+                      <p className="text-[11px] text-white font-normal mt-0.5">Credenciales activas</p>
                     </button>
 
                     <button
@@ -951,7 +951,7 @@ function BrandHeader({ compact = false }: { compact?: boolean }) {
         className={`${compact ? 'h-10' : 'h-12 sm:h-14'} w-auto shrink-0`}
       />
       <div className={`${compact ? '' : 'hidden sm:block'} border-l border-slate-300 pl-3 sm:pl-4`}>
-        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-500 font-mono font-bold leading-tight">
+        <p className="text-[10px] sm:text-[11px] uppercase tracking-[.28em] text-slate-600 font-mono font-bold leading-tight">
           Red Privada<br />entre Automotoras
         </p>
       </div>
