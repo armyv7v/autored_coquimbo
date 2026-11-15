@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { Suspense, lazy, useState } from 'react';
+import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { auth } from './lib/firebase';
@@ -115,7 +115,25 @@ function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainL
 }
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<TabType>('PANEL');
+  // A-29: la pestaña vive en la URL (?tab=FEED|HISTORIAL) — compartible y
+  // sobrevive al relogueo tras un deep link expirado. PANEL queda sin param.
+  const [activeTab, setActiveTab] = useState<TabType>(() => {
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    return tab === 'FEED' || tab === 'HISTORIAL' ? (tab as TabType) : 'PANEL';
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === activeTab) return;
+    // se preservan los demás query params (p. ej. ?incident= del deep link)
+    if (activeTab === 'PANEL') {
+      params.delete('tab');
+    } else {
+      params.set('tab', activeTab);
+    }
+    const qs = params.toString();
+    window.history.replaceState(null, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`);
+  }, [activeTab]);
 
   const handleTriggerAlert = (armed?: boolean) => {
     window.dispatchEvent(new CustomEvent('open-flash-report', { detail: { armed: Boolean(armed) } }));

@@ -375,7 +375,13 @@ export default function Login() {
         <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
-            onClick={() => setAccessOpen(true)}
+            onClick={() => {
+              // A-24 residual: en móvil el form no vive detrás del paso intro
+              // (dos taps para lo único que la mayoría viene a hacer). El intro
+              // queda al alcance con el botón "Volver al menú".
+              setMode('login');
+              setAccessOpen(true);
+            }}
             className="xl:hidden px-4 min-h-11 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
           >
             <Lock className="w-3.5 h-3.5" />

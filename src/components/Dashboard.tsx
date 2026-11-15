@@ -402,6 +402,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     };
   }, []);
 
+  // A-27 residual: el id crudo (ej. TEMP_ID de datos sembrados) no es un
+  // nombre de sede — lo legible o lo honesto, nunca el identificador interno.
+  const dealershipName = (id?: string) => {
+    if (!id) return 'Central Coquimbo';
+    return dealerships.find(dealer => dealer.id === id)?.name || 'Sede sin identificar';
+  };
+
   const filteredIncidents = incidents.filter(incident => {
     const matchesType = typeFilter.includes(incident.type);
     const matchesStatus = statusFilter.includes(incident.status || 'OPEN');
@@ -786,9 +793,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           {/* Stats Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             {[
-              { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
-              { label: 'Incidentes Registrados', value: incidents.length, icon: ShieldAlert, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
-              { label: 'Nodos en Red', value: dealerships.length, icon: Users, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              // N-D5: durante la carga no hay base de cálculo — "0" era un cero falso
+              { label: 'Alertas Activas', value: loading ? '—' : openIncidentsCount, icon: AlertCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Incidentes Registrados', value: loading ? '—' : incidents.length, icon: ShieldAlert, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Nodos en Red', value: loading ? '—' : dealerships.length, icon: Users, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
               // N-D5: sin nodos no hay base de cálculo — "100%" era dividir por cero
               { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '—', icon: TrendingUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
             ].map((stat, idx) => (
@@ -1270,7 +1278,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <div className="mt-3.5 pt-3 border-t border-slate-800/70 flex flex-wrap items-center justify-between gap-2 text-[11px] font-mono text-slate-400">
                         <div className="flex items-center gap-1.5 truncate max-w-full sm:max-w-none">
                           <Users className="w-3.5 h-3.5 shrink-0 text-slate-500" />
-                          <span className="truncate">Sede: <strong className="text-slate-200">{incident.dealershipId || 'Central Coquimbo'}</strong></span>
+                          <span className="truncate">Sede: <strong className="text-slate-200">{dealershipName(incident.dealershipId)}</strong></span>
                         </div>
                         {incident.imageUrl && (
                           <div className="flex items-center gap-1 text-slate-300 font-bold shrink-0">
@@ -1557,7 +1565,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </div>
                       <div className="bg-slate-800/50 p-4 rounded-2xl border border-white/5 shadow-inner">
                         <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 font-mono">Sede / Dealership</p>
-                        <p className="text-xs font-mono text-white truncate">{selectedIncident.dealershipId || 'Central Coquimbo'}</p>
+                        <p className="text-xs font-mono text-white truncate">{dealershipName(selectedIncident.dealershipId)}</p>
                       </div>
                     </div>
 
