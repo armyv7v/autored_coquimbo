@@ -1,8 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { getToken, onMessage } from 'firebase/messaging';
 import { arrayUnion, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { messaging, db, auth } from '../lib/firebase';
+import { db, auth, getFirebaseMessaging } from '../lib/firebase';
 import { showForegroundNotification } from '../lib/notifications';
+
+// Perf: firebase/messaging es carga diferida (ver src/lib/firebase.ts). Este
+// helper resuelve la instancia y los helpers del SDK en un solo punto.
+const loadMessaging = async () => {
+  const messaging = await getFirebaseMessaging();
+  const { getToken, onMessage } = await import('firebase/messaging');
+  return { messaging, getToken, onMessage };
+};
 
 // Helper seguro para chequear si las notificaciones están soportadas por el navegador
 const isNotificationSupported = () => {
@@ -51,6 +58,7 @@ export function usePushNotifications() {
         const vapidKey = (import.meta as any).env?.VITE_FCM_VAPID_KEY || '';
         if (!vapidKey || vapidKey.includes('PLACEHOLDER')) return;
 
+        const { messaging, getToken } = await loadMessaging();
         const currentToken = await getToken(messaging, { vapidKey });
         if (currentToken && !cancelled) {
           await saveToken(currentToken);
@@ -80,6 +88,7 @@ export function usePushNotifications() {
       if (status === 'granted') {
         const vapidKey = (import.meta as any).env?.VITE_FCM_VAPID_KEY || '';
         if (vapidKey && !vapidKey.includes('PLACEHOLDER')) {
+          const { messaging, getToken } = await loadMessaging();
           const currentToken = await getToken(messaging, { vapidKey });
           if (currentToken) {
             await saveToken(currentToken);
@@ -104,24 +113,28 @@ export function usePushNotifications() {
 
     if (!foregroundListenerBound) {
       foregroundListenerBound = true;
-      try {
-        onMessage(messaging, (payload) => {
-          console.log('Message received in foreground: ', payload);
-          if (!payload.notification) return;
-          // El dispatcher envía data.incidentId: al tocar la notificación el
-          // operador aterriza en el mapa con el incidente seleccionado. El
-          // deep link lo resuelve el notificationclick del SW.
-          const incidentId = payload.data?.incidentId;
-          showForegroundNotification(payload.notification.title || 'Nueva Alerta', {
-            body: payload.notification.body,
-            icon: '/favicon.ico',
-            tag: incidentId ? `incident-${incidentId}` : undefined,
-            data: incidentId ? { url: `/map?incident=${incidentId}` } : { url: '/' },
+      // Mensajería bajo demanda: sin permiso concedido no se carga el SDK.
+      loadMessaging()
+        .then(({ messaging, onMessage }) => {
+          onMessage(messaging, (payload) => {
+            console.log('Message received in foreground: ', payload);
+            if (!payload.notification) return;
+            // El dispatcher envía data.incidentId: al tocar la notificación el
+            // operador aterriza en el mapa con el incidente seleccionado. El
+            // deep link lo resuelve el notificationclick del SW.
+            const incidentId = payload.data?.incidentId;
+            showForegroundNotification(payload.notification.title || 'Nueva Alerta', {
+              body: payload.notification.body,
+              icon: '/favicon.ico',
+              tag: incidentId ? `incident-${incidentId}` : undefined,
+              data: incidentId ? { url: `/map?incident=${incidentId}` } : { url: '/' },
+            });
           });
+        })
+        .catch((err) => {
+          foregroundListenerBound = false;
+          console.warn('No se pudo suscribir al onMessage de Firebase Messaging:', err);
         });
-      } catch (err) {
-        console.warn('No se pudo suscribir al onMessage de Firebase Messaging:', err);
-      }
     }
 
     return () => {

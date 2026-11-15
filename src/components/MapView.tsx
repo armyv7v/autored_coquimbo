@@ -5,8 +5,8 @@ import L from 'leaflet';
 import 'leaflet.heat';
 import { useSearchParams } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { db, auth, storage } from '../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth } from '../lib/firebase';
+import { uploadFileToStorage } from '../lib/storageClient';
 import { ShieldAlert, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight, Settings2, Sparkles, Car } from 'lucide-react';
 import { COQUIMBO_CENTER, getGeohash } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
@@ -432,9 +432,7 @@ export default function MapView() {
         // N-S10: la evidencia va comprimida — 3-8 MB por foto en datos móviles
         // era el coste real de "reportar desde el mapa" sin compresión.
         const compressed = await compressImageFile(reportImage);
-        const storageRef = ref(storage, `incidents/${safeUUID()}-${compressed.name}`);
-        const uploadResult = await uploadBytes(storageRef, compressed);
-        imageUrl = await getDownloadURL(uploadResult.ref);
+        imageUrl = await uploadFileToStorage(`incidents/${safeUUID()}-${compressed.name}`, compressed);
       }
 
       const geohash = getGeohash(reportLocation[0], reportLocation[1]);

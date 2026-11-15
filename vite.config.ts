@@ -20,8 +20,10 @@ export default defineConfig(() => {
       rollupOptions: {
         output: {
           // Separa vendors pesados en chunks estables (mejor caching, main más liviano).
+          // messaging y storage NO van aquí: se cargan bajo demanda vía dynamic
+          // import (src/lib/firebase.ts) y Vite genera sus chunks async solos.
           manualChunks: {
-            firebase: ['firebase/app', 'firebase/firestore', 'firebase/storage', 'firebase/auth', 'firebase/messaging'],
+            firebase: ['firebase/app', 'firebase/firestore', 'firebase/auth'],
             leaflet: ['leaflet', 'react-leaflet', 'leaflet.heat'],
             charts: ['recharts'],
             motion: ['motion'],

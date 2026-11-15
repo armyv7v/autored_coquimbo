@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ShieldAlert, ShieldCheck, Search, Loader2, AlertTriangle, Car, ExternalLink, RefreshCw, CheckCircle2, Shield, PlusCircle } from 'lucide-react';
-import { checkStolenVehiclePlate, setPlateStolenStatus, StolenVehicleCheckResult } from '../services/stolenVehicleService';
+import { checkStolenVehiclePlate, setPlateStolenStatus, isNetworkDeclaredReport, StolenVehicleCheckResult } from '../services/stolenVehicleService';
 import { validateChileanPlate } from '../lib/chileanPlates';
 import { sound } from '../lib/soundEngine';
 
@@ -62,17 +62,12 @@ export default function PlateVerificationBadge({
     setIsOverriding(true);
     setOverrideError(null);
     try {
+      // A-08: sin datos fabricados — el servicio escribe la declaración con
+      // origen honesto (sin comisaría ni número de caso oficial).
       await setPlateStolenStatus(
         result.plate,
         markAsStolen,
-        result.vehicleDetails,
-        markAsStolen
-          ? {
-              policeStation: 'Comisaría de Carabineros / Portal AutoSeguro',
-              reportNumber: `ALERTA-${result.plate}`,
-              commune: 'Región Metropolitana / Coquimbo',
-            }
-          : undefined
+        result.vehicleDetails
       );
       setPendingOverride(null);
       // Re-check to update UI from live Firestore state
@@ -86,7 +81,7 @@ export default function PlateVerificationBadge({
       setOverrideError(
         err?.code === 'permission-denied'
           ? 'Solo Encargados de Seguridad (SECURITY/ADMIN) pueden declarar o levantar encargos por robo en el registro de la red.'
-          : 'No se pudo escribir en el registro de la red. Revisá tu conexión e intentá de nuevo.'
+          : 'No se pudo escribir en el registro de la red. Revisa tu conexión e intenta de nuevo.'
       );
     } finally {
       setIsOverriding(false);
@@ -170,7 +165,9 @@ export default function PlateVerificationBadge({
                           : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                     }`}
                   >
-                    {result.hasStolenReport ? '¡ENCARGO POR ROBO VIGENTE!' : result.status === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
+                    {result.hasStolenReport
+                      ? isNetworkDeclaredReport(result) ? '¡ENCARGO DECLARADO EN RED!' : '¡ENCARGO POR ROBO VIGENTE!'
+                      : result.status === 'UNKNOWN' ? 'NO VERIFICADO' : 'SIN ENCARGO'}
                   </span>
                 </div>
                 <p className="text-xs font-mono font-bold mt-0.5 text-slate-700">
@@ -212,17 +209,30 @@ export default function PlateVerificationBadge({
             </div>
           )}
 
-          {/* Stolen Details Banner */}
+          {/* Stolen Details Banner — A-08: una declaración de operador de la
+              red no se presenta como denuncia oficial. */}
           {result.stolenDetails && (
-            <div className="mt-2.5 p-3 rounded-xl bg-red-100/80 border border-red-300 text-xs font-mono space-y-1.5">
-              <div className="flex items-center justify-between text-red-900 font-bold">
-                <span>Denuncia: {result.stolenDetails.reportNumber}</span>
-                <span>{result.stolenDetails.policeAgency}</span>
+            isNetworkDeclaredReport(result) ? (
+              <div className="mt-2.5 p-3 rounded-xl bg-amber-100/80 border border-amber-300 text-xs font-mono space-y-1.5">
+                <div className="flex items-center justify-between text-amber-900 font-bold">
+                  <span>Declarado en la red: {result.stolenDetails.reportNumber}</span>
+                  <span>NO OFICIAL</span>
+                </div>
+                <p className="text-[11px] text-amber-800">
+                  Reporte interno de un operador de la red — sin denuncia policial asociada (sin unidad ni comuna informada). Verifícalo con la fuente oficial antes de despachar.
+                </p>
               </div>
-              <p className="text-[11px] text-red-800">
-                Unidad: {result.stolenDetails.policeStation} • Comuna: {result.stolenDetails.commune}
-              </p>
-            </div>
+            ) : (
+              <div className="mt-2.5 p-3 rounded-xl bg-red-100/80 border border-red-300 text-xs font-mono space-y-1.5">
+                <div className="flex items-center justify-between text-red-900 font-bold">
+                  <span>Denuncia: {result.stolenDetails.reportNumber}</span>
+                  <span>{result.stolenDetails.policeAgency}</span>
+                </div>
+                <p className="text-[11px] text-red-800">
+                  Unidad: {result.stolenDetails.policeStation} • Comuna: {result.stolenDetails.commune}
+                </p>
+              </div>
+            )
           )}
 
           {/* Manual Operator Action Toolbar — oculta si la consulta no se pudo completar.
@@ -240,7 +250,7 @@ export default function PlateVerificationBadge({
                     type="button"
                     disabled={isOverriding}
                     onClick={() => setPendingOverride(true)}
-                    className="px-2.5 py-1.5 rounded-lg bg-red-50 hover:bg-red-600 border border-red-300 text-red-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
+                    className="px-3 min-h-11 rounded-lg bg-red-50 hover:bg-red-600 border border-red-300 text-red-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
                     <ShieldAlert className="w-3 h-3" />
                     Reportar Robo a la Red
@@ -252,7 +262,7 @@ export default function PlateVerificationBadge({
                     type="button"
                     disabled={isOverriding}
                     onClick={() => setPendingOverride(false)}
-                    className="px-2.5 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-600 border border-emerald-300 text-emerald-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
+                    className="px-3 min-h-11 rounded-lg bg-emerald-50 hover:bg-emerald-600 border border-emerald-300 text-emerald-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
                     <CheckCircle2 className="w-3 h-3" />
                     Marcar Recuperado

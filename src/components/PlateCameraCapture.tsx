@@ -98,7 +98,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
         if (cancelled) return;
         console.warn('getUserMedia falló, se cae a galería:', err);
         setCameraError(
-          'No se pudo abrir la cámara (permiso denegado o navegador sin soporte). Usá una foto de la galería.'
+          'No se pudo abrir la cámara (permiso denegado o navegador sin soporte). Usa una foto de la galería.'
         );
       } finally {
         if (!cancelled) setStarting(false);
@@ -188,7 +188,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
       if (abortedRef.current) return;
 
       if (frames.length === 0) {
-        setCameraError('No se pudo capturar ningún frame — intentá de nuevo o usá la galería.');
+        setCameraError('No se pudo capturar ningún frame — intenta de nuevo o usa la galería.');
         setScanning(false);
         return;
       }
@@ -202,7 +202,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
     } catch (err) {
       if (abortedRef.current) return;
       console.error('Error en captura de patente:', err);
-      setCameraError('Falló el análisis de la captura — intentá de nuevo.');
+      setCameraError('Falló el análisis de la captura — intenta de nuevo.');
       setScanning(false);
     }
   };

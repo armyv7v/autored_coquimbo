@@ -132,11 +132,11 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
     const dealershipName = dealerships.find(d => d.id === dealershipId)?.name || dealershipId;
 
     if (!brand.trim() || !model.trim()) {
-      setStockError('Completá la marca y el modelo del vehículo.');
+      setStockError('Completa la marca y el modelo del vehículo.');
       return;
     }
     if (!dealershipId) {
-      setStockError('No se pudo determinar la sede. Seleccioná una automotora.');
+      setStockError('No se pudo determinar la sede. Selecciona una automotora.');
       return;
     }
     if (Number.isNaN(parsedYear) || parsedYear < 1950 || parsedYear > 2030) {
@@ -144,7 +144,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
       return;
     }
     if (Number.isNaN(parsedPrice) || parsedPrice <= 0) {
-      setStockError('Ingresá un precio válido en pesos chilenos.');
+      setStockError('Ingresa un precio válido en pesos chilenos.');
       return;
     }
 
@@ -165,7 +165,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
       setIsPublishing(false);
     } catch (error) {
       console.error('Error publishing vehicle:', error);
-      setStockError('No se pudo publicar el vehículo. Si el problema persiste, avisá al administrador de la red.');
+      setStockError('No se pudo publicar el vehículo. Si el problema persiste, avisa al administrador de la red.');
     } finally {
       setIsSavingVehicle(false);
     }
@@ -351,7 +351,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                         {vehicles.length === 0 ? 'Aún no hay vehículos publicados en la red.' : 'Ningún vehículo coincide con los filtros.'}
                       </p>
                       {vehicles.length === 0 && canPublish && (
-                        <p className="mt-2 text-xs text-slate-500">Usá “Publicar Vehículo” para agregar el primero.</p>
+                        <p className="mt-2 text-xs text-slate-500">Usa “Publicar Vehículo” para agregar el primero.</p>
                       )}
                     </div>
                   </div>

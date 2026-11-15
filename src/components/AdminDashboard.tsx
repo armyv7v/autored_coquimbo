@@ -201,7 +201,7 @@ export default function AdminDashboard() {
       setTimeout(() => setActionOk(null), 3000);
     } catch (error) {
       console.error('Admin user action error:', error);
-      setActionError('No se pudo actualizar el usuario. Revisá tu conexión e intentá de nuevo.');
+      setActionError('No se pudo actualizar el usuario. Revisa tu conexión e intenta de nuevo.');
       setTimeout(() => setActionError(null), 5000);
     }
   };

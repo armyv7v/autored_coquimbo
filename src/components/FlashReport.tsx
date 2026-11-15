@@ -2,9 +2,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Share2, Copy, ExternalLink } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
-import { db, auth, storage } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
 import { collection, doc, setDoc, writeBatch, serverTimestamp } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { uploadFileToStorage } from '../lib/storageClient';
 import { getGeohash, COQUIMBO_CENTER } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
@@ -123,9 +123,7 @@ export default function FlashReport() {
     try {
       let imageUrl = '';
       if (image) {
-        const storageRef = ref(storage, `incidents/${safeUUID()}-${image.name}`);
-        const uploadResult = await uploadBytes(storageRef, image);
-        imageUrl = await getDownloadURL(uploadResult.ref);
+        imageUrl = await uploadFileToStorage(`incidents/${safeUUID()}-${image.name}`, image);
       }
 
       const geohash = getGeohash(location[0], location[1]);

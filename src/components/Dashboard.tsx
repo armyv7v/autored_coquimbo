@@ -1,7 +1,7 @@
 import React, { Suspense, lazy, useEffect, useState, useRef } from 'react';
 import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, where, updateDoc, serverTimestamp } from 'firebase/firestore';
-import { db, auth, storage } from '../lib/firebase';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { db, auth } from '../lib/firebase';
+import { uploadFileToStorage } from '../lib/storageClient';
 import { safeUUID } from '../lib/uuid';
 import { ShieldAlert, Users, TrendingUp, AlertCircle, Clock, Info, Sparkles, Filter, Calendar, ChevronDown, Search, X, Activity, ListFilter, History, Bell, BellOff, CheckCircle, Ban, AlertTriangle, MapPin, Plus, Camera, Loader2, Save, ArrowRight, Pencil } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
@@ -493,7 +493,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
       setTimeout(() => setStatusJustUpdated(null), 3000);
     } catch (error) {
       console.error("Error updating incident status:", error);
-      setStatusUpdateError('No se pudo actualizar el estado. Revisá tu conexión e intentá de nuevo.');
+      setStatusUpdateError('No se pudo actualizar el estado. Revisa tu conexión e intenta de nuevo.');
     } finally {
       setIsUpdatingStatus(null);
     }
@@ -552,9 +552,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     try {
       let imageUrl = selectedIncident.imageUrl || '';
       if (editImage) {
-        const storageRef = ref(storage, `incidents/${safeUUID()}-${editImage.name}`);
-        const uploadResult = await uploadBytes(storageRef, editImage);
-        imageUrl = await getDownloadURL(uploadResult.ref);
+        imageUrl = await uploadFileToStorage(`incidents/${safeUUID()}-${editImage.name}`, editImage);
       } else if (editImagePreview === null) {
         imageUrl = '';
       }

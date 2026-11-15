@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Navigation, Car, Search, Sparkles, RotateCcw } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
-import { db, auth, storage } from '../lib/firebase';
+import { db, auth } from '../lib/firebase';
+import { uploadFileToStorage } from '../lib/storageClient';
 import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { getGeohash, COQUIMBO_CENTER } from '../lib/geoutils';
@@ -12,7 +13,7 @@ import { safeUUID } from '../lib/uuid';
 import { MapContainer, TileLayer, Marker, useMapEvents } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import PlateVerificationBadge from './PlateVerificationBadge';
-import { StolenVehicleCheckResult } from '../services/stolenVehicleService';
+import { StolenVehicleCheckResult, isNetworkDeclaredReport } from '../services/stolenVehicleService';
 import { normalizePlate, validateChileanPlate } from '../lib/chileanPlates';
 import { scanLicensePlateFromImage, preloadPlateOcrWorker, OCR_AUTO_FILL_HIGH, OCR_AUTO_FILL_MEDIUM, type OcrPlateResult } from '../lib/ocrPlateScanner';
 import { compressImageFile } from '../lib/imageUtils';
@@ -202,11 +203,11 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
       setPlateSource('OCR');
       setOcrSuggestedPlate(ocr.detectedPlate);
       setOcrConfidence(Math.round(ocr.confidence * 100));
-      setOcrHint(`Lectura de baja confianza (${Math.round(ocr.confidence * 100)}%) — corregí la patente a mano si no coincide.`);
+      setOcrHint(`Lectura de baja confianza (${Math.round(ocr.confidence * 100)}%) — corrige la patente a mano si no coincide.`);
       sound.playNodePulse(false);
     } else {
       setOcrHint(ocr.candidates.length > 0
-        ? 'No hubo consenso en la lectura — escríbela manualmente (revisá la foto de apoyo).'
+        ? 'No hubo consenso en la lectura — escríbela manualmente (revisa la foto de apoyo).'
         : 'No se detectó patente en la foto — escríbela manualmente.');
     }
   };
@@ -274,7 +275,11 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
       // Auto populate description if empty
       setDescription((prev) => {
         if (prev.trim()) return prev;
-        return `Vehículo con ENCARGO POR ROBO VIGENTE detectado: ${res.vehicleDetails?.brand || ''} ${res.vehicleDetails?.model || ''} (${res.formattedPlate}). Denuncia: ${res.stolenDetails?.reportNumber || 'S/N'}.`;
+        // A-08: la descripción hereda la procedencia honesta del check — una
+        // declaración de red no se redacta como denuncia oficial.
+        return isNetworkDeclaredReport(res)
+          ? `Vehículo con encargo DECLARADO EN LA RED por un operador (no oficial): ${res.vehicleDetails?.brand || ''} ${res.vehicleDetails?.model || ''} (${res.formattedPlate}). Ref. interna: ${res.stolenDetails?.reportNumber || 'S/R'}.`
+          : `Vehículo con ENCARGO POR ROBO VIGENTE detectado: ${res.vehicleDetails?.brand || ''} ${res.vehicleDetails?.model || ''} (${res.formattedPlate}). Denuncia: ${res.stolenDetails?.reportNumber || 'S/N'}.`;
       });
     }
   };
@@ -292,9 +297,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
         // misma evidencia a menor latencia y costo de Storage. Si la compresión
         // falla, compressImageFile devuelve el original.
         const uploadFile = await compressImageFile(image);
-        const storageRef = ref(storage, `incidents/${safeUUID()}-${uploadFile.name}`);
-        const uploadResult = await uploadBytes(storageRef, uploadFile);
-        imageUrl = await getDownloadURL(uploadResult.ref);
+        imageUrl = await uploadFileToStorage(`incidents/${safeUUID()}-${uploadFile.name}`, uploadFile);
       }
 
       const geohash = getGeohash(location[0], location[1]);
@@ -464,7 +467,7 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                 <div className="flex items-center justify-between gap-2 rounded-xl border border-sky-200 bg-sky-50 px-3 py-1.5">
                   <p className="text-[11px] font-mono text-sky-800 flex items-center gap-1.5">
                     <RotateCcw className="w-3 h-3 shrink-0" />
-                    Borrador restaurado — revisá y transmití cuando quieras.
+                    Borrador restaurado — revisa y transmite cuando quieras.
                   </p>
                   <button
                     type="button"

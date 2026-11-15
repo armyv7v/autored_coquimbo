@@ -34,7 +34,7 @@ export interface StolenVehicleCheckResult {
   };
   stolenDetails?: {
     reportDate: string;
-    policeAgency: 'CARABINEROS DE CHILE' | 'POLICÍA DE INVESTIGACIONES (PDI)' | 'RED NACIONAL AUTOSROBADOS';
+    policeAgency: 'CARABINEROS DE CHILE' | 'POLICÍA DE INVESTIGACIONES (PDI)' | 'RED NACIONAL AUTOSROBADOS' | 'RED ALERTA DEALERS — REPORTE INTERNO (NO OFICIAL)';
     policeStation: string;
     commune: string;
     reportNumber: string;
@@ -490,30 +490,37 @@ export async function setPlateStolenStatus(
 
   try {
     const docRef = doc(db, 'stolenVehiclesRegistry', validation.normalized);
+    // A-08: lo que escribe esta función es una DECLARACIÓN de un operador de
+    // la red, no una denuncia oficial. Los datos son honestos en origen y la
+    // UI los presenta como internos (ver isNetworkDeclaredReport): sin
+    // comisaría, sin unidad policial y con referencia interna RED-*, nunca un
+    // número de caso que parezca de Carabineros/PDI.
+    const now = new Date();
+    const refStamp = `${String(now.getFullYear()).slice(2)}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}-${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}`;
     await setDoc(docRef, {
       plate: validation.normalized,
       formattedPlate: validation.formatted,
       hasStolenReport: isStolen,
       statusText: isStolen ? 'ENCARGO POR ROBO VIGENTE (REGISTRADO EN RED)' : 'SIN ENCARGO POR ROBO REGISTRADO',
       vehicleDetails: vehicleDetails || {
-        brand: 'VEHÍCULO REGISTRADO',
-        model: 'EN RED ALERTA DEALERS',
-        year: 2024,
-        color: 'A CONFIRMAR',
+        brand: 'SIN DATOS',
+        model: 'DECLARADO POR OPERADOR DE LA RED',
+        year: 'S/D',
+        color: 'S/D',
         vehicleType: 'VEHÍCULO MOTORIZADO',
       },
       stolenDetails: isStolen
         ? {
-            reportDate: new Date().toLocaleString('es-CL'),
-            policeAgency: 'CARABINEROS DE CHILE',
-            policeStation: stolenDetails?.policeStation || 'Comisaría de Carabineros',
-            commune: stolenDetails?.commune || 'Santiago / Coquimbo',
-            reportNumber: stolenDetails?.reportNumber || `REG-${validation.normalized}`,
+            reportDate: now.toLocaleString('es-CL'),
+            policeAgency: 'RED ALERTA DEALERS — REPORTE INTERNO (NO OFICIAL)',
+            policeStation: 'No aplica — declaración de operador de la red',
+            commune: 'No indicada por el operador',
+            reportNumber: stolenDetails?.reportNumber || `RED-${validation.normalized}-${refStamp}`,
             riskLevel: 'CRÍTICO',
           }
         : null,
       updatedAt: serverTimestamp(),
-      source: 'AutoSeguro / Registro Nacional Red Alerta Dealers',
+      source: 'Declaración manual de operador — Red Alerta Dealers (no oficial)',
     });
 
     // Invalidate local runtime cache
@@ -521,4 +528,11 @@ export async function setPlateStolenStatus(
   } catch (err) {
     console.warn('Could not save to remote Firestore registry, fallback local:', err);
   }
+}
+
+// A-08: distingue un encargo DECLARADO por un operador de la red (no oficial)
+// de uno con denuncia real (API oficial o seed demo). La UI lo usa para no
+// presentar datos internos como si fueran una comisaría o un caso oficial.
+export function isNetworkDeclaredReport(result: Pick<StolenVehicleCheckResult, 'source'>): boolean {
+  return result.source.startsWith('Declaración manual de operador');
 }

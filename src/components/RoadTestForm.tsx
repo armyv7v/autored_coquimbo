@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { uploadFileToStorage } from '../lib/storageClient';
 import { Camera, Check, FileText, Loader2, Route, ShieldCheck, X, Car, Image as ImageIcon } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { auth, db, storage } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
 import { safeUUID } from '../lib/uuid';
 import PlateVerificationBadge from './PlateVerificationBadge';
@@ -113,9 +113,8 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
           if (!file) return [key, ''];
           // N-R3: el uid del uploader va en el path para que Storage pueda
           // dar lectura solo a él sin consultar Firestore.
-          const storageRef = ref(storage, `road-tests/${auth.currentUser.uid}/${roadTestId}/${key}-${safeUUID()}-${file.name}`);
-          const result = await uploadBytes(storageRef, file);
-          return [key, await getDownloadURL(result.ref)];
+          const url = await uploadFileToStorage(`road-tests/${auth.currentUser.uid}/${roadTestId}/${key}-${safeUUID()}-${file.name}`, file);
+          return [key, url];
         })
       );
 
