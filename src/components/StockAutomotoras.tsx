@@ -239,7 +239,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                         <select
                           value={formDealershipId}
                           onChange={(e) => setFormDealershipId(e.target.value)}
-                          className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-xs font-bold text-white outline-none transition focus:border-emerald-500/60"
+                          className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-base font-bold text-white outline-none transition focus:border-emerald-500/60"
                         >
                           <option value="">Seleccionar automotora…</option>
                           {dealerships.map(d => (
@@ -255,7 +255,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                         onChange={(e) => setBrand(e.target.value)}
                         placeholder="Toyota"
                         autoCapitalize="words"
-                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-sm font-bold text-white outline-none transition focus:border-emerald-500/60"
+                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-base font-bold text-white outline-none transition focus:border-emerald-500/60"
                       />
                     </label>
                     <label className="relative block">
@@ -265,7 +265,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                         onChange={(e) => setModel(e.target.value)}
                         placeholder="Corolla Cross"
                         autoCapitalize="words"
-                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-sm font-bold text-white outline-none transition focus:border-emerald-500/60"
+                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-base font-bold text-white outline-none transition focus:border-emerald-500/60"
                       />
                     </label>
                     <label className="relative block">
@@ -275,7 +275,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                         onChange={(e) => setFormYear(e.target.value.replace(/[^\d]/g, '').slice(0, 4))}
                         placeholder="2022"
                         inputMode="numeric"
-                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-sm font-bold text-white outline-none transition focus:border-emerald-500/60"
+                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-base font-bold text-white outline-none transition focus:border-emerald-500/60"
                       />
                     </label>
                     <label className="relative block">
@@ -285,7 +285,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                         onChange={(e) => setFormPrice(e.target.value.replace(/[^\d]/g, '').slice(0, 10))}
                         placeholder="16490000"
                         inputMode="numeric"
-                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-sm font-bold text-white outline-none transition focus:border-emerald-500/60"
+                        className="h-12 w-full rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-base font-bold text-white outline-none transition focus:border-emerald-500/60"
                       />
                     </label>
                   </div>
@@ -418,7 +418,7 @@ function Select({ value, onChange, options, label }: { value: string; onChange: 
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-xs font-bold text-white outline-none transition focus:border-emerald-500/60"
+        className="h-12 w-full appearance-none rounded-2xl border border-white/10 bg-slate-900/75 px-4 pt-3.5 text-base font-bold text-white outline-none transition focus:border-emerald-500/60"
       >
         {options.map((opt) => (
           <option key={opt} value={opt} className="bg-slate-900 text-white">

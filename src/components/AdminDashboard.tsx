@@ -474,9 +474,9 @@ export default function AdminDashboard() {
                     { label: 'Acierto Implícito', value: ocrIncidents.length > 0 ? `${ocrAccuracy}%` : '—', hint: 'sin corrección del operador', color: ocrAccuracy >= 90 ? 'text-emerald-400' : 'text-amber-400' },
                   ].map((stat, i) => (
                     <div key={i} className="bg-slate-800/40 border border-slate-800 p-4 rounded-2xl">
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                      <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
                       <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-                      <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.hint}</p>
+                      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.hint}</p>
                     </div>
                   ))}
                 </div>
@@ -579,10 +579,10 @@ export default function AdminDashboard() {
                             </div>
                           </td>
                           <td className="p-6">
-                            <select 
+                            <select
                               value={user.role}
                               onChange={(e) => handleUpdateRole(user.uid, e.target.value)}
-                              className="bg-slate-800 text-xs font-black text-white px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-slate-600 uppercase tracking-widest transition-all cursor-pointer"
+                              className="bg-slate-800 text-sm font-black text-white px-3 py-1.5 rounded-lg border border-slate-700 focus:outline-none focus:border-slate-600 uppercase tracking-widest transition-all cursor-pointer"
                             >
                               <option value="ADMIN">ADMIN</option>
                               <option value="OWNER">PROPIETARIO</option>
@@ -683,7 +683,7 @@ export default function AdminDashboard() {
                         <span className="text-sm font-black font-mono text-white tracking-wider uppercase">
                           {test.vehiclePlate || 'S/PATENTE'}
                         </span>
-                        <span className="text-[10px] font-bold text-slate-500 font-mono uppercase">
+                        <span className="text-[11px] font-bold text-slate-500 font-mono uppercase">
                           {fmtDate(test.createdAt)}
                         </span>
                       </div>
@@ -691,11 +691,11 @@ export default function AdminDashboard() {
                         {test.notes || 'Sin observaciones.'}
                       </p>
                       <div className="flex items-center gap-2 mt-2">
-                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                        <span className="text-[11px] font-black text-slate-500 uppercase tracking-widest">
                           {test.dealershipId || '—'}
                         </span>
                         {test.status && (
-                          <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
+                          <span className="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400">
                             {test.status}
                           </span>
                         )}
@@ -723,17 +723,17 @@ export default function AdminDashboard() {
                       <div className="flex items-center justify-between gap-3 mb-2">
                         <div className="flex flex-wrap gap-1.5">
                           {(alert.agencies || []).map((agency) => (
-                            <span key={agency} className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
+                            <span key={agency} className="text-[11px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400">
                               {agency}
                             </span>
                           ))}
                         </div>
-                        <span className="text-[10px] font-bold text-slate-500 font-mono uppercase">
+                        <span className="text-[11px] font-bold text-slate-500 font-mono uppercase">
                           {fmtDate(alert.createdAt)}
                         </span>
                       </div>
                       <p className="text-xs text-slate-400 leading-relaxed">{alert.message || 'Sin detalle.'}</p>
-                      <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest mt-2">
+                      <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mt-2">
                         {alert.dealershipId || '—'}
                       </p>
                     </div>

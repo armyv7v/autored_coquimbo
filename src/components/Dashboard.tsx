@@ -702,7 +702,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               <BellOff className="w-4 h-4 shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
-                <p className="text-xs text-slate-500">Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
+                <p className="text-xs text-slate-400">Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
               </div>
             </div>
             {/* N-S6: iOS PWA rechaza requestPermission sin gesto — el permiso
@@ -768,7 +768,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   <Activity className="w-4 h-4 text-slate-500" />
                   ACCIONES OPERATIVAS
                 </h2>
-                <p className="text-xs text-slate-500">Módulos tácticos de gestión y seguridad en patio</p>
+                <p className="text-xs text-slate-600">Módulos tácticos de gestión y seguridad en patio</p>
               </div>
               <button
                 type="button"
@@ -811,7 +811,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   <stat.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase font-mono text-slate-400 tracking-wider leading-none mb-1.5">{stat.label}</p>
+                  <p className="text-[11px] uppercase font-mono text-slate-300 tracking-wider leading-none mb-1.5">{stat.label}</p>
                   <h3 className="text-xl font-bold tabular-nums text-white tracking-tight">{stat.value}</h3>
                 </div>
               </motion.div>
@@ -864,7 +864,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </button>
               <button
                 onClick={() => setActiveTab('HISTORIAL')}
-                className="text-xs text-slate-500 hover:text-slate-300 transition-all uppercase font-bold tracking-widest"
+                className="text-xs text-slate-600 hover:text-slate-800 transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
               </button>
