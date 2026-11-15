@@ -56,18 +56,21 @@ function checkRateLimit(uid) {
 let adminCache = null;
 async function getAdmin() {
   if (adminCache) return adminCache;
-  const { default: admin } = await import('firebase-admin');
+  // firebase-admin v14: la credencial se arma con cert() del index raíz y el
+  // auth se importa por subpath (el index raíz ya no cuelga admin.auth()).
+  const admin = await import('firebase-admin');
+  const { getAuth } = await import('firebase-admin/auth');
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT || '';
-  if (!raw) throw new Error('NO_CREDENTIALS');
+  if (!raw) throw Error('NO_CREDENTIALS');
   if (!raw.trim().startsWith('{')) {
     raw = Buffer.from(raw, 'base64').toString('utf8');
   }
-  const cert = JSON.parse(raw);
-  if (!admin.apps.length) {
-    admin.initializeApp({ credential: admin.credential.cert(cert) });
+  const serviceAccount = JSON.parse(raw);
+  if (!admin.getApps().length) {
+    admin.initializeApp({ credential: admin.cert(serviceAccount) });
   }
-  adminCache = admin;
-  return admin;
+  adminCache = { auth: getAuth() };
+  return adminCache;
 }
 
 export default async function handler(req, res) {
@@ -81,21 +84,30 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'INVALID_PLATE' });
   }
 
-  // 1. Autenticación de la sesión (N-S2).
-  let uid = null;
+  // 1. Autenticación de la sesión (N-S2). Un fallo del Admin SDK es problema
+  // de config del servidor (503); un fallo verificando el token es del cliente
+  // (401) — no mezclarlos en el mismo catch.
+  let admin;
   try {
-    const admin = await getAdmin();
-    const header = req.headers.authorization || '';
-    const idToken = header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : '';
-    if (!idToken) {
-      return res.status(401).json({ error: 'UNAUTHENTICATED' });
-    }
-    const decoded = await admin.auth().verifyIdToken(idToken);
+    admin = await getAdmin();
+  } catch (err) {
+    const reason = String(err?.message || err).slice(0, 200);
+    console.error('vehicle-plate: Admin SDK no inicializó:', reason);
+    return res.status(503).json({
+      error: reason === 'NO_CREDENTIALS' ? 'AUTH_PROXY_MISCONFIGURED' : 'AUTH_PROXY_INIT_ERROR',
+    });
+  }
+
+  let uid = null;
+  const header = req.headers.authorization || '';
+  const idToken = header.startsWith('Bearer ') ? header.slice('Bearer '.length).trim() : '';
+  if (!idToken) {
+    return res.status(401).json({ error: 'UNAUTHENTICATED' });
+  }
+  try {
+    const decoded = await admin.auth.verifyIdToken(idToken);
     uid = decoded.uid;
   } catch (err) {
-    if (String(err?.message || err) === 'NO_CREDENTIALS') {
-      return res.status(503).json({ error: 'AUTH_PROXY_MISCONFIGURED' });
-    }
     return res.status(401).json({ error: 'UNAUTHENTICATED' });
   }
 

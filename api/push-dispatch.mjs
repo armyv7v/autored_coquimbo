@@ -34,18 +34,26 @@ const DEAD_TOKEN_CODES = new Set([
 let adminCache = null;
 async function getAdmin() {
   if (adminCache) return adminCache;
-  const { default: admin } = await import('firebase-admin');
+  // firebase-admin v14: la credencial se arma con cert() del index raíz y los
+  // servicios se importan por subpath (el index raíz ya no los cuelga de admin).
+  const admin = await import('firebase-admin');
+  const { getFirestore, FieldValue } = await import('firebase-admin/firestore');
+  const { getMessaging } = await import('firebase-admin/messaging');
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT || '';
   if (!raw) throw new Error('NO_CREDENTIALS');
   if (!raw.trim().startsWith('{')) {
     raw = Buffer.from(raw, 'base64').toString('utf8');
   }
-  const cert = JSON.parse(raw);
-  if (!admin.apps.length) {
-    admin.initializeApp({ credential: admin.credential.cert(cert) });
+  const serviceAccount = JSON.parse(raw);
+  if (!admin.getApps().length) {
+    admin.initializeApp({ credential: admin.cert(serviceAccount) });
   }
-  adminCache = admin;
-  return admin;
+  adminCache = {
+    db: getFirestore(),
+    messaging: getMessaging(),
+    fieldRemove: FieldValue.arrayRemove,
+  };
+  return adminCache;
 }
 
 /**
@@ -130,11 +138,16 @@ export default async function handler(req, res) {
   try {
     admin = await getAdmin();
   } catch (err) {
-    return res.status(503).json({ status: 'NO_CREDENTIALS' });
+    // Sin credencial es config esperada; cualquier otro fallo de init es
+    // credencial rota y tiene que verse en los logs de runtime.
+    const reason = String(err?.message || err).slice(0, 200);
+    console.error('push-dispatch: Admin SDK no inicializó:', reason);
+    return res.status(503).json({
+      status: reason === 'NO_CREDENTIALS' ? 'NO_CREDENTIALS' : 'ADMIN_INIT_ERROR',
+    });
   }
 
-  const db = admin.firestore();
-  const messaging = admin.messaging();
+  const { db, messaging, fieldRemove } = admin;
   const summary = { processed: 0, sent: 0, failed: 0, skipped: 0, poisoned: 0, tokensCleaned: 0, errors: [] };
 
   try {
@@ -203,7 +216,7 @@ export default async function handler(req, res) {
       }
 
       if (deadPairs.length) {
-        await cleanupDeadTokens(db, admin.firestore.FieldValue.arrayRemove, deadPairs);
+        await cleanupDeadTokens(db, fieldRemove, deadPairs);
         summary.tokensCleaned += deadPairs.length;
       }
 
