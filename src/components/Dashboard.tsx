@@ -146,7 +146,23 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
   const [isDigestOpen, setIsDigestOpen] = useState(false);
   const [copiedIncidentWhatsApp, setCopiedIncidentWhatsApp] = useState(false);
   const [dbOffline, setDbOffline] = useState(false);
-  const { permission } = usePushNotifications();
+  // N-D2: los listeners vivos no fallan al caer la red — sin navigator.onLine
+  // el Panel congela los últimos datos como si estuvieran frescos.
+  const [netOffline, setNetOffline] = useState(
+    typeof navigator !== 'undefined' ? !navigator.onLine : false
+  );
+  const { permission, requestPermission } = usePushNotifications();
+
+  useEffect(() => {
+    const goOnline = () => setNetOffline(false);
+    const goOffline = () => setNetOffline(true);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
   const { profile } = useAuth();
   const navigate = useNavigate();
 
@@ -394,17 +410,22 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     let matchesDate = true;
     if (dateRange.start || dateRange.end) {
       const incidentDate = parseIncidentDate(incident.createdAt);
-      if (dateRange.start) {
-        const start = new Date(dateRange.start);
-        matchesDate = matchesDate && incidentDate >= start;
-      }
-      if (dateRange.end) {
-        const end = new Date(dateRange.end);
-        end.setHours(23, 59, 59, 999);
-        matchesDate = matchesDate && incidentDate <= end;
+      // N-D4: fecha desconocida no calza en ningún rango.
+      if (!incidentDate) {
+        matchesDate = false;
+      } else {
+        if (dateRange.start) {
+          const start = new Date(dateRange.start);
+          matchesDate = matchesDate && incidentDate >= start;
+        }
+        if (dateRange.end) {
+          const end = new Date(dateRange.end);
+          end.setHours(23, 59, 59, 999);
+          matchesDate = matchesDate && incidentDate <= end;
+        }
       }
     }
-    
+
     return matchesType && matchesStatus && matchesDealership && matchesDate;
   });
 
@@ -415,13 +436,18 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     let matchesDate = true;
     if (timelineDate.start || timelineDate.end) {
       const incidentDate = parseIncidentDate(incident.createdAt);
-      if (timelineDate.start) {
-        matchesDate = matchesDate && incidentDate >= new Date(timelineDate.start);
-      }
-      if (timelineDate.end) {
-        const end = new Date(timelineDate.end);
-        end.setHours(23, 59, 59, 999);
-        matchesDate = matchesDate && incidentDate <= end;
+      // N-D4: fecha desconocida no calza en ningún rango.
+      if (!incidentDate) {
+        matchesDate = false;
+      } else {
+        if (timelineDate.start) {
+          matchesDate = matchesDate && incidentDate >= new Date(timelineDate.start);
+        }
+        if (timelineDate.end) {
+          const end = new Date(timelineDate.end);
+          end.setHours(23, 59, 59, 999);
+          matchesDate = matchesDate && incidentDate <= end;
+        }
       }
     }
     
@@ -650,21 +676,37 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
       {/* Alert Banner System */}
       <div className="space-y-3">
-        <ConnectionBanner show={dbOffline} />
+        {netOffline ? (
+          <ConnectionBanner
+            show
+            label="Sin conexión de red — los datos en pantalla pueden estar desactualizados"
+          />
+        ) : (
+          <ConnectionBanner show={dbOffline} />
+        )}
 
         {permission !== 'granted' && (
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-slate-400"
+            className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-3 text-slate-400"
           >
             <div className="flex items-center gap-3">
               <BellOff className="w-4 h-4 shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
-                <p className="text-xs text-slate-500">Habilitá las notificaciones del navegador. Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
+                <p className="text-xs text-slate-500">Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
               </div>
             </div>
+            {/* N-S6: iOS PWA rechaza requestPermission sin gesto — el permiso
+                se pide desde este botón, no al montar. */}
+            <button
+              type="button"
+              onClick={() => { requestPermission(); }}
+              className="shrink-0 px-4 min-h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition active:scale-95"
+            >
+              Activar
+            </button>
           </motion.div>
         )}
 
@@ -685,18 +727,20 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               )}
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
                   Estado Operativo de la Red
                 </h2>
-                <span className={`text-[11px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-500/10 text-slate-300/90 border border-slate-500/20' : openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
+                {/* N-D6: nowrap + contenedor wrap — la píldora ya no se parte
+                    en dos líneas a 360/375px. */}
+                <span className={`whitespace-nowrap text-[11px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-500/10 text-slate-300/90 border border-slate-500/20' : openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
                   {loading ? 'Conectando…' : openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
                 </span>
               </div>
               <p className="text-xs text-slate-400 mt-0.5">Telemetría y cobertura activa en automotoras de Coquimbo y La Serena</p>
             </div>
           </div>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center gap-3 sm:gap-6 shrink-0">
             <div className="text-right">
               <p className="text-[12px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
               <p className={`text-xl font-bold tabular-nums ${loading ? 'text-slate-500' : openIncidentsCount > 0 ? 'text-red-300/90' : 'text-emerald-300/90'}`}>
@@ -745,7 +789,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               { label: 'Alertas Activas', value: openIncidentsCount, icon: AlertCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
               { label: 'Incidentes Registrados', value: incidents.length, icon: ShieldAlert, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
               { label: 'Nodos en Red', value: dealerships.length, icon: Users, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
-              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '100%', icon: TrendingUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
+              // N-D5: sin nodos no hay base de cálculo — "100%" era dividir por cero
+              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '—', icon: TrendingUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
             ].map((stat, idx) => (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -795,7 +840,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   <span className="w-2 h-2 rounded-full bg-slate-500" />
                 )}
               </button>
-              <button 
+              <button
                 onClick={() => {
                   const blob = new Blob([JSON.stringify(incidents, null, 2)], { type: 'application/json' });
                   const url = URL.createObjectURL(blob);
@@ -803,6 +848,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   a.href = url;
                   a.download = `reporte-seguridad-${new Date().toISOString().split('T')[0]}.json`;
                   a.click();
+                  URL.revokeObjectURL(url);
                 }}
                 className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition-all uppercase font-bold tracking-widest"
               >
@@ -1127,10 +1173,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   className="bg-transparent border-none text-base font-mono text-white focus:ring-0 w-32 p-0 outline-none"
                 />
                 {(timelineDate.start || timelineDate.end) && (
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setTimelineDate({ start: '', end: '' })}
-                    className="p-1 hover:bg-slate-800 rounded-md text-slate-400 hover:text-white"
+                    aria-label="Limpiar filtro de fecha"
+                    className="p-2 min-w-11 min-h-11 flex items-center justify-center hover:bg-slate-800 rounded-md text-slate-400 hover:text-white"
                   >
                     <X className="w-3 h-3" />
                   </button>
@@ -1202,7 +1249,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                               <><Info className="w-4 h-4 text-slate-400 shrink-0" /> Reporte de Seguridad</>
                             )}
                           </h3>
-                          <p className="text-[11px] font-mono text-slate-500 uppercase tracking-wider mt-0.5">
+                          {/* A-22 residual: slate-500 era ilegible sobre slate-900 */}
+                          <p className="text-[11px] font-mono text-slate-400 uppercase tracking-wider mt-0.5">
                             #{incident.id.slice(0, 12)}
                           </p>
                         </div>
@@ -1277,7 +1325,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <textarea
                         value={editDescription}
                         onChange={(e) => setEditDescription(e.target.value)}
-                        className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-sm focus:outline-none focus:border-slate-600 focus:bg-white/[0.07] transition-all min-h-[120px]"
+                        className="w-full bg-white/5 border border-white/5 rounded-3xl p-5 text-white text-base focus:outline-none focus:border-slate-600 focus:bg-white/[0.07] transition-all min-h-[120px]"
                         placeholder="Describe lo ocurrido..."
                       />
                     </div>
@@ -1570,7 +1618,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                                   type="button"
                                   disabled={isUpdatingStatus !== null}
                                   onClick={() => { setConfirmFalseAlarm(false); handleUpdateStatus('FALSE_ALARM'); }}
-                                  className="min-h-9 px-3.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400 flex items-center gap-1.5"
+                                  className="min-h-11 px-3.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400 flex items-center gap-1.5"
                                 >
                                   {isUpdatingStatus === 'FALSE_ALARM' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
                                   {isUpdatingStatus === 'FALSE_ALARM' ? 'Marcando...' : 'Sí, Marcar'}
@@ -1579,7 +1627,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                                   type="button"
                                   disabled={isUpdatingStatus !== null}
                                   onClick={() => setConfirmFalseAlarm(false)}
-                                  className="min-h-9 px-3.5 rounded-lg border border-slate-600 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
+                                  className="min-h-11 px-3.5 rounded-lg border border-slate-600 bg-slate-800/60 hover:bg-slate-700 text-slate-300 hover:text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400"
                                 >
                                   No
                                 </button>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { collection, query, orderBy, limit, onSnapshot, where, addDoc, serverTimestamp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { showForegroundNotification } from '../lib/notifications';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -140,11 +141,13 @@ export default function NotificationManager() {
   const triggerAlert = async (incident: Incident, dealerName: string) => {
     setActiveAlert(incident);
 
-    // Browser Notification (Generic)
+    // Browser Notification (N-S1: vía ServiceWorker — `new Notification()`
+    // lanza TypeError en Chrome Android y cortaba el flujo antes de encolar)
     if (Notification.permission === "granted") {
-      new Notification("🚨 ALERTA DE SEGURIDAD", {
+      showForegroundNotification("🚨 ALERTA DE SEGURIDAD", {
         body: `${incident.type}: ${incident.description} cerca de ${dealerName}`,
-        icon: "/vite.svg" 
+        icon: "/favicon.ico",
+        data: { url: `/map?incident=${incident.id}` },
       });
     }
 
@@ -237,7 +240,7 @@ export default function NotificationManager() {
                     <button
                       onClick={() => setActiveAlert(null)}
                       aria-label="Descartar alerta"
-                      className="p-1.5 text-slate-500 hover:text-white transition-colors"
+                      className="p-2 min-w-11 min-h-11 -m-1 flex items-center justify-center text-slate-500 hover:text-white transition-colors"
                     >
                       <X className="w-4 h-4" />
                     </button>

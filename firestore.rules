@@ -13,17 +13,44 @@ service cloud.firestore {
 
     // --- User Profiles ---
     match /users/{userId} {
+      // N-R4: el get sigue entre autenticados porque el feed atribuye cada
+      // reporte leyendo users/{reporterId} de cualquier sede (Dashboard).
+      // El dato sensible (fcmTokens) salió del perfil a fcm_tokens/{uid}.
       allow get: if isSignedIn();
       allow list: if isAdmin();
-      allow create: if isAdmin() || (isSignedIn() && request.auth.uid == userId && isValidUser(request.resource.data));
-      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin()) && isValidUser(request.resource.data);
-      
+      // N-R2: el perfil nace por aprobación de un ADMIN (adminAccess.ts) o del
+      // login demo (dev-only, sobre cuentas que ya son ADMIN). Sin
+      // auto-creación en producción: una cuenta suspendida no puede
+      // recrearse a sí misma.
+      allow create: if isAdmin() && isValidUser(request.resource.data);
+      // N-R2: el dueño del perfil solo toca contacto; role, status y
+      // dealershipId exige ADMIN.
+      allow update: if isSignedIn()
+        && (
+          (isAdmin() && isValidUser(request.resource.data))
+          || (request.auth.uid == userId && isSafeSelfUpdate())
+        );
+
       function isValidUser(data) {
         return data.keys().hasAll(['uid', 'email', 'role', 'createdAt'])
           && data.uid == userId
           && data.role in ['ADMIN', 'OWNER', 'SECURITY']
           && data.email is string;
       }
+      function isSafeSelfUpdate() {
+        return request.resource.data
+          .diff(resource.data)
+          .affectedKeys()
+          .hasOnly(['displayName', 'phone', 'updatedAt']);
+      }
+    }
+
+    // --- Tokens FCM (separados del perfil: N-R4) ---
+    // El cliente solo escribe el suyo (nunca lee); el envío lee vía Admin SDK,
+    // que bypasea estas reglas.
+    match /fcm_tokens/{ownerUid} {
+      allow read: if false;
+      allow create, update: if isSignedIn() && request.auth.uid == ownerUid;
     }
 
     // --- Dealerships ---
@@ -83,9 +110,13 @@ service cloud.firestore {
       allow create: if isSignedIn();
     }
 
-    // --- Road Tests ---
+    // --- Road Tests (N-R3) ---
+    // Los datos de clientes de test-drive (patente, notas) solo los lee un
+    // ADMIN; la pestaña Registros es la única lectora. Crear/actualizar sigue
+    // abierto a la red: es la operación de terreno.
     match /roadTests/{roadTestId} {
-      allow get, list, create, update: if isSignedIn();
+      allow get, list: if isAdmin();
+      allow create, update: if isSignedIn();
     }
 
     // --- Stock de Vehículos de la Red ---
@@ -105,8 +136,20 @@ service cloud.firestore {
 
     // --- Stolen Vehicles Registry (AutoSeguro / AutoRed) ---
     match /stolenVehiclesRegistry/{plate} {
-      allow get, list: if true;
-      allow create, update: if isSignedIn();
+      // N-R4: la verificación ocurre siempre en sesión; sin autenticación no
+      // hay lectura ni enumeración del registro.
+      allow get, list: if isSignedIn();
+      // N-R4: declarar un encargo por robo exige SECURITY/ADMIN (la denuncia
+      // la fabricaba cualquier operador, residual A-08). La caché de
+      // resultados LIMPIOS de la API oficial queda abierta para no romper el
+      // ahorro de cuota compartida entre terminales.
+      allow create, update: if isSecurity()
+        || (
+          isSignedIn()
+          && request.resource.data.keys().hasOnly(['plate', 'formattedPlate', 'hasStolenReport', 'statusText', 'vehicleDetails', 'stolenDetails', 'source', 'cachedAt'])
+          && request.resource.data.hasStolenReport == false
+          && request.resource.data.source is string
+        );
       allow delete: if isAdmin();
     }
 
@@ -114,13 +157,44 @@ service cloud.firestore {
     // El cliente SOLO encola docs (addDoc sin sentAt); el envío y el marcado
     // de sentAt/deliveredTo lo hace api/push-dispatch.mjs vía Admin SDK, que
     // bypasea estas reglas. El cliente no necesita leer la cola.
+    // N-R1: ya no es un buzón abierto. Una entrada válida retransmite un
+    // incidente ROBO/SOSPECHOSO real y fresco (creado hace <10 min), con
+    // título y cuerpo derivados del incidente — no hay texto libre que
+    // se haga pasar por otra sede.
     match /push_notifications/{notificationId} {
-      allow create: if isSignedIn();
+      function validPushEnvelope() {
+        let d = request.resource.data;
+        return d.keys().hasAll(['recipientDealerId', 'title', 'body', 'incidentId', 'type', 'createdAt', 'sentVia'])
+          && d.keys().hasOnly(['recipientDealerId', 'title', 'body', 'incidentId', 'type', 'createdAt', 'sentVia'])
+          && d.type == 'INCIDENT_ALERT'
+          && d.recipientDealerId is string
+          && d.recipientDealerId.size() > 0
+          && d.recipientDealerId.size() <= 128
+          && d.incidentId is string
+          && d.incidentId.size() > 0
+          && d.incidentId.size() <= 128
+          && d.title is string
+          && d.title.size() > 0
+          && d.title.size() <= 200
+          && d.body is string
+          && d.body.size() <= 1000
+          && d.sentVia == 'FCM_GATEWAY';
+      }
+      function isFreshIncidentRelay() {
+        let inc = get(/databases/$(database)/documents/incidents/$(request.resource.data.incidentId)).data;
+        return inc.type in ['ROBO', 'SOSPECHOSO']
+          && inc.createdAt != null
+          && request.time - inc.createdAt < duration.value(10, 'm')
+          && request.resource.data.title == '⚠️ ALERTA: ' + inc.type
+          && request.resource.data.body == inc.description;
+      }
+      allow create: if isSignedIn() && validPushEnvelope() && isFreshIncidentRelay();
     }
 
     // --- Alertas de Fiscalización ---
     match /inspectionAlerts/{alertId} {
-      allow get, list, create, update: if isSignedIn();
+      allow get, list: if isAdmin();
+      allow create, update: if isSignedIn();
     }
   }
 }

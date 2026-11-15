@@ -77,11 +77,17 @@ export default function PlateVerificationBadge({
       setPendingOverride(null);
       // Re-check to update UI from live Firestore state
       await performCheck(result.plate);
-    } catch (err) {
+    } catch (err: any) {
       console.error('Error overriding stolen status:', err);
       // A-08: el fallo de escritura no puede quedar solo en consola — el
-      // operador debe saber que el registro NO se actualizó.
-      setOverrideError('No se pudo escribir en el registro de la red. Revisá tu conexión e intentá de nuevo.');
+      // operador debe saber que el registro NO se actualizó. Con las reglas
+      // N-R4, la causa más común para un operador es falta de permiso
+      // (declarar encargos es de SECURITY/ADMIN), no de conexión.
+      setOverrideError(
+        err?.code === 'permission-denied'
+          ? 'Solo Encargados de Seguridad (SECURITY/ADMIN) pueden declarar o levantar encargos por robo en el registro de la red.'
+          : 'No se pudo escribir en el registro de la red. Revisá tu conexión e intentá de nuevo.'
+      );
     } finally {
       setIsOverriding(false);
     }

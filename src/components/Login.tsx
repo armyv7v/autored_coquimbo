@@ -376,7 +376,7 @@ export default function Login() {
           <button
             type="button"
             onClick={() => setAccessOpen(true)}
-            className="xl:hidden px-4 py-2 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
+            className="xl:hidden px-4 min-h-11 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
           >
             <Lock className="w-3.5 h-3.5" />
             Acceso a la Red
@@ -454,7 +454,9 @@ export default function Login() {
                 </AnimatePresence>
               </div>
 
-              {/* Progress indicators */}
+              {/* Progress indicators — N-S11: eran botones de 6px de alto
+                  (64×6px, interacción muerta en táctil); el área de toque
+                  ahora es ≥44px sin cambiar el visual de la barra. */}
               <div className="flex items-center gap-2 mt-3.5">
                 {capabilityCards.map((card, i) => (
                   <button
@@ -462,17 +464,19 @@ export default function Login() {
                     type="button"
                     onClick={() => setActiveCapability(i)}
                     aria-label={`Ver ${card.title}`}
-                    className="relative h-1.5 flex-1 max-w-16 rounded-full bg-slate-300/70 overflow-hidden transition-colors hover:bg-slate-400/80"
+                    className="relative min-h-11 flex-1 max-w-16 flex items-center"
                   >
-                    {i === activeCapability && (
-                      <motion.span
-                        key={`fill-${activeCapability}-${capPaused}`}
-                        className="absolute inset-y-0 left-0 bg-slate-900 rounded-full"
-                        initial={{ width: capPaused ? '100%' : '0%' }}
-                        animate={{ width: '100%' }}
-                        transition={{ duration: capPaused ? 0.2 : 5.5, ease: 'linear' }}
-                      />
-                    )}
+                    <span className="relative h-1.5 w-full rounded-full bg-slate-300/70 overflow-hidden transition-colors hover:bg-slate-400/80">
+                      {i === activeCapability && (
+                        <motion.span
+                          key={`fill-${activeCapability}-${capPaused}`}
+                          className="absolute inset-y-0 left-0 bg-slate-900 rounded-full"
+                          initial={{ width: capPaused ? '100%' : '0%' }}
+                          animate={{ width: '100%' }}
+                          transition={{ duration: capPaused ? 0.2 : 5.5, ease: 'linear' }}
+                        />
+                      )}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -597,7 +601,7 @@ export default function Login() {
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
                 {selectedNode
                   ? `Nodo ${selectedNode.name} seleccionado. Transmite ráfagas de telemetría directamente al núcleo de seguridad.`
-                  : 'Explorá la red: tocá un nodo para inspeccionarlo o transmití una ráfaga general de telemetría.'}
+                  : 'Explora la red: toca un nodo para inspeccionarlo o transmite una ráfaga general de telemetría.'}
               </p>
               <button
                 type="button"

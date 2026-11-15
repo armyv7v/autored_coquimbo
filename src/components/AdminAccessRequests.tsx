@@ -434,7 +434,7 @@ export default function AdminAccessRequests() {
                             onChange={(e) => setReason(e.target.value)}
                             placeholder="Motivo del rechazo (opcional)..."
                             rows={2}
-                            className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-xs text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/50 transition-all"
+                            className="w-full bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-2.5 text-base text-white placeholder:text-slate-600 focus:outline-none focus:border-red-500/50 transition-all"
                           />
                           <button
                             disabled={busy}

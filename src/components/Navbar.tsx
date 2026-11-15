@@ -4,12 +4,14 @@ import { Shield, ShieldCheck, User, Bell, BellOff, LogOut, Search, Command } fro
 import { auth } from '../lib/firebase';
 import { sound } from '../lib/soundEngine';
 import { useAuth } from '../hooks/useAuth';
+import { useLongPress } from '../hooks/useLongPress';
+import { clearIncidentDraft } from '../lib/incidentDraft';
 import { NAV_ITEMS, TabType } from '../lib/navigation';
 
 interface NavbarProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
-  onTriggerAlert: () => void;
+  onTriggerAlert: (armed?: boolean) => void;
 }
 
 export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: NavbarProps) {
@@ -17,6 +19,19 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
   const [notificationsEnabled, setNotificationsEnabled] = useState(!sound.getIsMuted());
   const navigate = useNavigate();
   const location = useLocation();
+
+  // N-D1: long-press en ALERTA arma la cuenta regresiva directamente; el tap
+  // normal solo abre el sheet en estado "listo".
+  const alertLongPress = useLongPress({
+    durationMs: 1500,
+    onComplete: () => onTriggerAlert(true),
+  });
+
+  const handleSignOut = () => {
+    // N-S7: el borrador no puede sobrevivir a la sesión (dispositivo compartido).
+    clearIncidentDraft();
+    auth.signOut();
+  };
 
   const toggleNotifications = () => {
     const muted = sound.toggleMute();
@@ -106,7 +121,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
 
           <button
             onClick={() => {
-              if (window.confirm('¿Cerrar sesión de la red de seguridad?')) auth.signOut();
+              if (window.confirm('¿Cerrar sesión de la red de seguridad?')) handleSignOut();
             }}
             aria-label="Cerrar Sesión"
             className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 active:scale-95 transition-all"
@@ -126,9 +141,14 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
             return (
               <button
                 key={item.id}
-                onClick={onTriggerAlert}
-                className="flex items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-all active:scale-95"
-                title="Disparar Alerta Máxima"
+                {...alertLongPress.handlers}
+                onClick={(e) => {
+                  // Long-press completado: el click de soltar no re-abre sin armar.
+                  alertLongPress.guardClick(e);
+                  onTriggerAlert();
+                }}
+                className="flex items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-all active:scale-95 touch-none"
+                title="Mantén presionado para armar la Alerta Máxima"
               >
                 <Icon className="w-4 h-4" />
                 {item.label}

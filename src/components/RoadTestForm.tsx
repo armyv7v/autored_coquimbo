@@ -111,7 +111,9 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
         photoFields.map(async ({ key }) => {
           const file = files[key];
           if (!file) return [key, ''];
-          const storageRef = ref(storage, `road-tests/${roadTestId}/${key}-${safeUUID()}-${file.name}`);
+          // N-R3: el uid del uploader va en el path para que Storage pueda
+          // dar lectura solo a él sin consultar Firestore.
+          const storageRef = ref(storage, `road-tests/${auth.currentUser.uid}/${roadTestId}/${key}-${safeUUID()}-${file.name}`);
           const result = await uploadBytes(storageRef, file);
           return [key, await getDownloadURL(result.ref)];
         })
@@ -303,7 +305,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                   onChange={(event) => setNotes(event.target.value)}
                   placeholder="Ej: Acompañante presente, ruta fijada hacia La Herradura..."
                   rows={2}
-                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-xs text-white placeholder:text-slate-600 outline-none focus:border-amber-500/60 transition"
+                  className="w-full rounded-xl border border-slate-800 bg-slate-900/80 p-3 text-base text-white placeholder:text-slate-600 outline-none focus:border-amber-500/60 transition"
                 />
               </div>
 

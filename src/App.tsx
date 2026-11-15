@@ -4,7 +4,7 @@
  */
 
 import React, { Suspense, lazy, useState } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { auth } from './lib/firebase';
 import { XCircle, Loader2 } from 'lucide-react';
@@ -30,8 +30,13 @@ function PageLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white">Cargando...</div>;
-  if (!user) return <Navigate to="/login" />;
+  if (!user) {
+    // N-S4: preservar la URL completa (deep link /map?incident=…) para que,
+    // tras reloguear por sesión expirada, el operador vuelva a la alerta.
+    return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
+  }
   if (profile?.status === 'SUSPENDED') {
     return (
       <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950 text-white p-6 text-center">
@@ -47,8 +52,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function GuestRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <div className="h-screen w-screen flex items-center justify-center bg-slate-950 text-white">Cargando...</div>;
-  if (user) return <Navigate to="/" replace />;
+  if (user) {
+    // N-S4: volver al destino original (deep link), no siempre a '/'.
+    const from = (location.state as { from?: string } | null)?.from || '/';
+    return <Navigate to={from} replace />;
+  }
   return <>{children}</>;
 }
 
@@ -65,7 +75,8 @@ import CommandPalette from './components/CommandPalette';
 interface MainLayoutProps {
   activeTab: TabType;
   setActiveTab: (tab: TabType) => void;
-  onTriggerAlert: () => void;
+  /** armed=true solo desde un long-press deliberado en el botón ALERTA (N-D1). */
+  onTriggerAlert: (armed?: boolean) => void;
   children: React.ReactNode;
 }
 
@@ -106,8 +117,8 @@ function MainLayout({ activeTab, setActiveTab, onTriggerAlert, children }: MainL
 export default function App() {
   const [activeTab, setActiveTab] = useState<TabType>('PANEL');
 
-  const handleTriggerAlert = () => {
-    window.dispatchEvent(new CustomEvent('open-flash-report'));
+  const handleTriggerAlert = (armed?: boolean) => {
+    window.dispatchEvent(new CustomEvent('open-flash-report', { detail: { armed: Boolean(armed) } }));
   };
 
   return (

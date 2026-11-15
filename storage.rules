@@ -12,12 +12,14 @@ service firebase.storage {
                     && request.resource.contentType.matches('image/.*');
     }
 
-    match /road-tests/{roadTestId}/{allPaths=**} {
-      // Fotos del test drive (licencia, conductor, vehículo): mismas garantías
-      // que las evidencias de incidentes. Sin esta regla el submit entero de
-      // RoadTestForm falla en el upload, antes de escribir el documento.
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
+    match /road-tests/{uploaderUid}/{roadTestId}/{allPaths=**} {
+      // N-R3: fotos del test drive (licencia, conductor, vehículo) solo las
+      // lee quien las subió (el getDownloadURL posterior a la subida). El
+      // admin consulta el metadato en Firestore (roadTests, solo ADMIN);
+      // nadie más necesita la imagen. El uid del uploader va en el path
+      // porque Storage no puede consultar Firestore.
+      allow read, write: if request.auth != null
+                    && request.auth.uid == uploaderUid
                     && request.resource.size < 10 * 1024 * 1024
                     && request.resource.contentType.matches('image/.*');
     }
