@@ -126,7 +126,7 @@ export default function AlertConfirmationModal({
       }, 2200);
     } catch (err) {
       console.error('Error in dispatchPanicAlert:', err);
-      setSendError('La alerta no pudo enviarse. Verificá tu conexión y tocá Reintentar.');
+      setSendError('La alerta no pudo enviarse. Verifica tu conexión y toca Reintentar.');
       try {
         handleFirestoreError(err, OperationType.WRITE, 'incidents');
       } catch {

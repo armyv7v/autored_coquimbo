@@ -82,7 +82,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
       },
       (error) => {
         console.error('Error loading stock:', error);
-        setStockError('No se pudo cargar el stock de la red. Verificá tu conexión.');
+        setStockError('No se pudo cargar el stock de la red. Verifica tu conexión.');
         setLoading(false);
       }
     );
