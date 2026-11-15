@@ -54,6 +54,8 @@ export default function FlashReport() {
   const [sentSuccess, setSentSuccess] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [copiedWhatsApp, setCopiedWhatsApp] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const [panicAutoArm, setPanicAutoArm] = useState(false);
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -95,10 +97,16 @@ export default function FlashReport() {
     }, profile?.displayName || profile?.email);
   };
 
-  const handleCopyWhatsApp = () => {
-    navigator.clipboard.writeText(getPreviewText());
-    setCopiedWhatsApp(true);
-    setTimeout(() => setCopiedWhatsApp(false), 2500);
+  const handleCopyWhatsApp = async () => {
+    try {
+      await navigator.clipboard.writeText(getPreviewText());
+      setCopiedWhatsApp(true);
+      setTimeout(() => setCopiedWhatsApp(false), 2500);
+    } catch {
+      // Sin HTTPS o permiso denegado: el "Copiado" no puede ser mentira.
+      setCopyError(true);
+      setTimeout(() => setCopyError(false), 3000);
+    }
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -194,7 +202,13 @@ export default function FlashReport() {
   };
 
   useEffect(() => {
-    const handleOpen = () => setShowAlertConfirm(true);
+    const handleOpen = (e: Event) => {
+      // N-D1: solo un long-press (detail.armed) abre el sheet con la cuenta
+      // regresiva corriendo; el tap normal abre en estado "listo".
+      const armed = Boolean((e as CustomEvent).detail?.armed);
+      setShowAlertConfirm(true);
+      setPanicAutoArm(armed);
+    };
     window.addEventListener('open-flash-report', handleOpen);
     return () => window.removeEventListener('open-flash-report', handleOpen);
   }, []);
@@ -373,10 +387,18 @@ export default function FlashReport() {
                     <button
                       type="button"
                       onClick={handleCopyWhatsApp}
-                      className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
+                      className={`text-[11px] font-mono hover:underline flex items-center gap-1 ${
+                        copyError ? 'text-red-400' : 'text-emerald-400'
+                      }`}
                     >
-                      {copiedWhatsApp ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
-                      {copiedWhatsApp ? 'Copiado' : 'Copiar Texto'}
+                      {copyError ? (
+                        'No se pudo copiar — copia manualmente'
+                      ) : (
+                        <>
+                          {copiedWhatsApp ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                          {copiedWhatsApp ? 'Copiado' : 'Copiar Texto'}
+                        </>
+                      )}
                     </button>
                   </div>
                   <pre className="text-[11px] font-mono text-slate-400 whitespace-pre-wrap max-h-20 overflow-y-auto leading-relaxed">
@@ -506,6 +528,7 @@ export default function FlashReport() {
 
       <AlertConfirmationModal
         isOpen={showAlertConfirm}
+        autoArm={panicAutoArm}
         onClose={() => setShowAlertConfirm(false)}
         onOpenDetailedReport={() => {
           setShowAlertConfirm(false);

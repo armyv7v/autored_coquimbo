@@ -2,32 +2,130 @@
  * Consumidor de la cola push_notifications (A-05).
  * El cliente encola cada alerta como doc con sentAt == null; esta función
  * la reclama, resuelve los tokens FCM del dealership destinatario (users
- * donde dealershipId == recipientDealerId) y envía vía FCM HTTP v1.
+ * donde dealershipId == recipientDealerId, tokens en fcm_tokens/{uid}) y
+ * envía vía FCM HTTP v1.
  *
  * Trigger: el cliente la invoca (POST) justo después de encolar — sin cron,
  * funciona en plan Hobby. Idempotente: se puede invocar N veces sin duplicar.
+ *
+ * N-S5: el reclamo antes era un update no transaccional (dos POST paralelos
+ * → envío doble), los docs con >500 tokens se reintentaban eternamente y los
+ * tokens unregistered nunca se limpiaban. Ahora:
+ *  - Reclamo con runTransaction (atómico; verificado contra sentAt fresco).
+ *  - Lotes troceados a 500 tokens (límite de sendEachForMulticast).
+ *  - Tokens muertos (unregistered/invalid) se remueven de fcm_tokens/{uid}.
+ *  - Tope de intentos por doc (MAX_ATTEMPTS): un doc venenoso no gira eterno.
+ *  - deliveredTo refleja envíos reales; NO_TOKENS ya no se lee como entregada.
  *
  * Credenciales (env de Vercel, SIN placeholder en código):
  *  - FIREBASE_SERVICE_ACCOUNT: JSON completo del service account (o su base64).
  *    Si falta, responde 503 NO_CREDENTIALS y no hace nada más.
  */
 const CLAIM_STALE_MS = 5 * 60 * 1000;
+const MAX_ATTEMPTS = 10;
+const FCM_BATCH_SIZE = 500;
+
+// Códigos FCM que implican token muerto: reintentar es inútil, hay que limpiar.
+const DEAD_TOKEN_CODES = new Set([
+  'messaging/registration-token-not-registered',
+  'messaging/invalid-registration-token',
+]);
 
 let adminCache = null;
 async function getAdmin() {
   if (adminCache) return adminCache;
-  const { default: admin } = await import('firebase-admin');
+  // firebase-admin v14: la credencial se arma con cert() del index raíz y los
+  // servicios se importan por subpath (el index raíz ya no los cuelga de admin).
+  const admin = await import('firebase-admin');
+  const { getFirestore, FieldValue } = await import('firebase-admin/firestore');
+  const { getMessaging } = await import('firebase-admin/messaging');
   let raw = process.env.FIREBASE_SERVICE_ACCOUNT || '';
   if (!raw) throw new Error('NO_CREDENTIALS');
   if (!raw.trim().startsWith('{')) {
     raw = Buffer.from(raw, 'base64').toString('utf8');
   }
-  const cert = JSON.parse(raw);
-  if (!admin.apps.length) {
-    admin.initializeApp({ credential: admin.credential.cert(cert) });
+  const serviceAccount = JSON.parse(raw);
+  if (!admin.getApps().length) {
+    admin.initializeApp({ credential: admin.cert(serviceAccount) });
   }
-  adminCache = admin;
-  return admin;
+  adminCache = {
+    db: getFirestore(),
+    messaging: getMessaging(),
+    fieldRemove: FieldValue.arrayRemove,
+  };
+  return adminCache;
+}
+
+/**
+ * Reclamo transaccional del doc. Devuelve:
+ *  - 'CLAIMED': esta invocación puede enviar.
+ *  - 'SKIP': otro worker lo tiene fresco o ya lo envió.
+ *  - 'POISON': superó MAX_ATTEMPTS; queda marcado sin sentAt==null.
+ */
+async function claimNotification(db, docRef) {
+  return db.runTransaction(async (tx) => {
+    const snap = await tx.get(docRef);
+    if (!snap.exists) return 'SKIP';
+    const notif = snap.data();
+    if (notif.sentAt) return 'SKIP';
+
+    const claimedAt = notif.claimedAt?.toMillis?.() || 0;
+    if (claimedAt && Date.now() - claimedAt < CLAIM_STALE_MS) return 'SKIP';
+
+    const attempts = notif.attempts || 0;
+    if (attempts >= MAX_ATTEMPTS) {
+      tx.update(docRef, {
+        sentAt: new Date(),
+        sendResult: 'MAX_ATTEMPTS_EXCEEDED',
+        deliveredTo: 0,
+      });
+      return 'POISON';
+    }
+
+    tx.update(docRef, {
+      claimedAt: new Date(),
+      attempts: attempts + 1,
+    });
+    return 'CLAIMED';
+  });
+}
+
+/**
+ * Tokens FCM del dealership destinatario: mapa token → uid. Los tokens viven
+ * en fcm_tokens/{uid} (reglas N-R4); se mantiene fallback al fcmTokens dentro
+ * de users/{uid} escrito por bundles anteriores a esta versión.
+ */
+async function resolveDealershipTokens(db, recipientDealerId) {
+  const usersSnap = await db
+    .collection('users')
+    .where('dealershipId', '==', recipientDealerId)
+    .get();
+
+  const tokenToUid = new Map();
+  for (const userDoc of usersSnap.docs) {
+    const tokenDoc = await db.collection('fcm_tokens').doc(userDoc.id).get();
+    const fresh = tokenDoc.exists ? tokenDoc.data().fcmTokens || [] : [];
+    fresh.forEach((t) => {
+      if (!tokenToUid.has(t)) tokenToUid.set(t, userDoc.id);
+    });
+    // Legado (pre-N-R4): tokens dentro del perfil de usuario.
+    (userDoc.data().fcmTokens || []).forEach((t) => {
+      if (!tokenToUid.has(t)) tokenToUid.set(t, userDoc.id);
+    });
+  }
+  return tokenToUid;
+}
+
+/** Limpia del perfil fcm_tokens/{uid} los tokens que FCM reportó muertos. */
+async function cleanupDeadTokens(db, fieldRemove, deadPairs) {
+  for (const { uid, token } of deadPairs) {
+    try {
+      await db.collection('fcm_tokens').doc(uid).update({ fcmTokens: fieldRemove(token) });
+    } catch (err) {
+      // Sin doc fcm_tokens (token legado en users): nada que limpiar acá.
+      console.warn(`cleanupDeadTokens: no se pudo limpiar token de ${uid}:`, String(err?.message || err).slice(0, 120));
+    }
+  }
 }
 
 export default async function handler(req, res) {
@@ -40,12 +138,17 @@ export default async function handler(req, res) {
   try {
     admin = await getAdmin();
   } catch (err) {
-    return res.status(503).json({ status: 'NO_CREDENTIALS' });
+    // Sin credencial es config esperada; cualquier otro fallo de init es
+    // credencial rota y tiene que verse en los logs de runtime.
+    const reason = String(err?.message || err).slice(0, 200);
+    console.error('push-dispatch: Admin SDK no inicializó:', reason);
+    return res.status(503).json({
+      status: reason === 'NO_CREDENTIALS' ? 'NO_CREDENTIALS' : 'ADMIN_INIT_ERROR',
+    });
   }
 
-  const db = admin.firestore();
-  const messaging = admin.messaging();
-  const summary = { processed: 0, sent: 0, failed: 0, skipped: 0, errors: [] };
+  const { db, messaging, fieldRemove } = admin;
+  const summary = { processed: 0, sent: 0, failed: 0, skipped: 0, poisoned: 0, tokensCleaned: 0, errors: [] };
 
   try {
     const pending = await db
@@ -55,25 +158,25 @@ export default async function handler(req, res) {
       .get();
 
     for (const docSnap of pending.docs) {
-      const notif = docSnap.data();
-      const claimedAt = notif.claimedAt?.toMillis?.() || 0;
-      if (claimedAt && Date.now() - claimedAt < CLAIM_STALE_MS) {
-        summary.skipped++;
+      const claim = await claimNotification(db, docSnap.ref);
+      if (claim !== 'CLAIMED') {
+        if (claim === 'POISON') summary.poisoned++;
+        else summary.skipped++;
         continue;
       }
 
-      // Reclamo: evita doble envío si dos invocaciones corren en paralelo.
-      await docSnap.ref.update({ claimedAt: new Date() });
+      const notif = docSnap.data();
+      summary.processed++;
 
-      const usersSnap = await db
-        .collection('users')
-        .where('dealershipId', '==', notif.recipientDealerId)
-        .get();
+      let tokenToUid;
+      try {
+        tokenToUid = await resolveDealershipTokens(db, notif.recipientDealerId);
+      } catch (err) {
+        summary.errors.push(`tokens: ${String(err?.message || err).slice(0, 150)}`);
+        continue; // sin sentAt: se reintenta en la próxima invocación
+      }
 
-      const tokens = new Set();
-      usersSnap.forEach((u) => (u.data().fcmTokens || []).forEach((t) => tokens.add(t)));
-
-      if (tokens.size === 0) {
+      if (tokenToUid.size === 0) {
         summary.skipped++;
         await docSnap.ref.update({
           sentAt: new Date(),
@@ -83,25 +186,55 @@ export default async function handler(req, res) {
         continue;
       }
 
-      try {
-        const resp = await messaging.sendEachForMulticast({
-          tokens: [...tokens],
-          notification: { title: String(notif.title || 'Alerta Dealers'), body: String(notif.body || '') },
-          data: notif.incidentId ? { incidentId: String(notif.incidentId) } : undefined,
-        });
-        summary.sent += resp.successCount;
-        summary.failed += resp.failureCount;
-        await docSnap.ref.update({
-          sentAt: new Date(),
-          sendResult: resp.failureCount === 0 ? 'OK' : 'PARTIAL',
-          deliveredTo: resp.successCount,
-        });
-      } catch (sendErr) {
-        summary.failed++;
-        summary.errors.push(String(sendErr?.message || sendErr).slice(0, 200));
-        await docSnap.ref.update({ sendError: String(sendErr?.message || sendErr).slice(0, 500) });
+      const tokens = [...tokenToUid.keys()];
+      const deadPairs = [];
+      let sentCount = 0;
+      let failCount = 0;
+      let sendThrew = null;
+
+      // Troceado a 500: sendEachForMulticast rechaza lotes mayores y antes
+      // un doc multi-sede grande reintentaba eternamente (doc venenoso).
+      for (let i = 0; i < tokens.length && !sendThrew; i += FCM_BATCH_SIZE) {
+        const batch = tokens.slice(i, i + FCM_BATCH_SIZE);
+        try {
+          const resp = await messaging.sendEachForMulticast({
+            tokens: batch,
+            notification: { title: String(notif.title || 'Alerta Dealers'), body: String(notif.body || '') },
+            data: notif.incidentId ? { incidentId: String(notif.incidentId) } : undefined,
+          });
+          sentCount += resp.successCount;
+          failCount += resp.failureCount;
+          resp.responses.forEach((r, idx) => {
+            const code = r.error?.code || r.error?.errorInfo?.code;
+            if (!r.success && code && DEAD_TOKEN_CODES.has(code)) {
+              deadPairs.push({ uid: tokenToUid.get(batch[idx]), token: batch[idx] });
+            }
+          });
+        } catch (sendErr) {
+          sendThrew = String(sendErr?.message || sendErr).slice(0, 500);
+        }
       }
-      summary.processed++;
+
+      if (deadPairs.length) {
+        await cleanupDeadTokens(db, fieldRemove, deadPairs);
+        summary.tokensCleaned += deadPairs.length;
+      }
+
+      if (sendThrew) {
+        summary.failed++;
+        summary.errors.push(sendThrew);
+        await docSnap.ref.update({ sendError: sendThrew });
+        continue; // sin sentAt: se reintenta (hasta MAX_ATTEMPTS)
+      }
+
+      summary.sent += sentCount;
+      summary.failed += failCount;
+      await docSnap.ref.update({
+        sentAt: new Date(),
+        sendResult: failCount === 0 ? 'OK' : 'PARTIAL',
+        deliveredTo: sentCount,
+        deadTokensRemoved: deadPairs.length,
+      });
     }
 
     return res.status(200).json({ status: 'OK', ...summary });

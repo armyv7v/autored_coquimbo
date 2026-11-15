@@ -49,15 +49,64 @@ const DIGIT_FOR_LETTER: Record<string, string> = { O: '0', Q: '0', I: '1', L: '1
 
 // ---------- Worker compartido (se carga una vez por sesión) ----------
 let workerPromise: Promise<TesseractWorker> | null = null;
+let activeWorker: TesseractWorker | null = null;
 
 function getWorker(): Promise<TesseractWorker> {
   if (!workerPromise) {
-    workerPromise = createWorker(OCR_LANG, OEM.LSTM_ONLY, { logger: () => {} }).catch((err) => {
-      workerPromise = null; // permitir reintento en el próximo escaneo
+    const promise = createWorker(OCR_LANG, OEM.LSTM_ONLY, { logger: () => {} }).then((worker) => {
+      if (workerPromise !== promise) {
+        // El worker quedó huérfano (un abort lo descartó mientras cargaba):
+        // terminarlo para no dejar un WASM vivo colgando.
+        worker.terminate();
+        throw new Error('Worker OCR descartado mientras cargaba');
+      }
+      activeWorker = worker;
+      return worker;
+    });
+    workerPromise = promise.catch((err) => {
+      if (workerPromise === promise) {
+        workerPromise = null; // permitir reintento en el próximo escaneo
+        activeWorker = null;
+      }
       throw err;
     });
   }
   return workerPromise;
+}
+
+/**
+ * Mata el worker en curso: el único modo real de cortar un `recognize` en
+ * vuelo (tesseract.js no acepta AbortSignal). El próximo escaneo crea uno
+ * fresco — el WASM y el modelo quedan cacheados, así que la recarga es breve.
+ */
+function discardWorker(): void {
+  const worker = activeWorker;
+  workerPromise = null;
+  activeWorker = null;
+  worker?.terminate().catch(() => undefined);
+}
+
+function throwIfAborted(signal: AbortSignal): void {
+  if (signal.aborted) throw new Error('Escaneo de patente cancelado');
+}
+
+/**
+ * Timeout que además aborta: al vencer marca el signal (cada frontera de await
+ * del pipeline corta ahí) y termina el worker (el `recognize` en vuelo muere
+ * con él). Antes de esto la respuesta volvía a la UI pero Tesseract seguía
+ * quemando CPU como zombi detrás (N-S13).
+ */
+function armScanTimeout(ms: number): { signal: AbortSignal; cancel: () => void } {
+  const controller = new AbortController();
+  controller.signal.addEventListener('abort', discardWorker, { once: true });
+  const timer = setTimeout(() => controller.abort(), ms);
+  return {
+    signal: controller.signal,
+    cancel: () => {
+      clearTimeout(timer);
+      controller.signal.removeEventListener('abort', discardWorker);
+    },
+  };
 }
 
 // Los escaneos se serializan: el worker es único y Tesseract no es concurrente.
@@ -470,16 +519,21 @@ interface ScanHits {
  */
 export async function scanLicensePlateFromImage(imageFile: Blob): Promise<OcrPlateResult> {
   return enqueue(async () => {
+    // El operador en la calle no puede esperar un OCR trabado: si en 15s no
+    // hay lectura, se devuelve vacío y la UI muestra el hint de carga manual.
+    // N-S13: el timeout aborta el trabajo en curso, no solo la espera.
+    const timeout = armScanTimeout(SCAN_TIMEOUT_MS);
     try {
-      // El operador en la calle no puede esperar un OCR trabado: si en 15s no
-      // hay lectura, se devuelve vacío y la UI muestra el hint de carga manual.
-      return await Promise.race([
-        runPlateScan(imageFile),
-        new Promise<OcrPlateResult>((resolve) => setTimeout(() => resolve(EMPTY_RESULT), SCAN_TIMEOUT_MS)),
-      ]);
+      return await runPlateScan(imageFile, timeout.signal);
     } catch (err) {
-      console.warn('Plate OCR scanning error:', err);
+      if (timeout.signal.aborted) {
+        console.warn('Plate OCR: escaneo abortado por timeout');
+      } else {
+        console.warn('Plate OCR scanning error:', err);
+      }
       return EMPTY_RESULT;
+    } finally {
+      timeout.cancel();
     }
   });
 }
@@ -495,19 +549,27 @@ export async function scanLicensePlatesFromFrames(frames: Blob[]): Promise<OcrPl
   if (frames.length === 0) return EMPTY_RESULT;
   if (frames.length === 1) return scanLicensePlateFromImage(frames[0]);
 
-  return enqueue(async () => {
-    const perFrame: ScanHits[] = [];
-    let preview: string | undefined;
-    for (const frame of frames) {
-      try {
-        const hits = await runPlateScanHits(frame);
-        perFrame.push(hits);
-        preview ??= hits.dataUrl;
-      } catch (err) {
-        console.warn('Frame OCR error (se descarta el frame):', err);
+  // N-S3: el timeout de 15s solo cubría la foto única — el ciclo multi-frame
+  // (N frames × regiones × pasadas) podía pasar de 30s en gama baja y dejar
+  // al operador atrapado. N-S13: el plazo aborta el trabajo en curso (signal
+  // entre frames y worker terminado), no queda zombi detrás de la respuesta.
+  const timeout = armScanTimeout(Math.min(SCAN_TIMEOUT_MS * frames.length, 30000));
+  try {
+    return await enqueue(async () => {
+      const perFrame: ScanHits[] = [];
+      let preview: string | undefined;
+      for (const frame of frames) {
+        try {
+          throwIfAborted(timeout.signal);
+          const hits = await runPlateScanHits(frame, timeout.signal);
+          perFrame.push(hits);
+          preview ??= hits.dataUrl;
+        } catch (err) {
+          if (timeout.signal.aborted) throw err;
+          console.warn('Frame OCR error (se descarta el frame):', err);
+        }
       }
-    }
-    if (perFrame.length === 0) return EMPTY_RESULT;
+      if (perFrame.length === 0) return EMPTY_RESULT;
 
     // Un frame vota una vez por patente (lectura directa o corregida); el
     // score suma las lecturas directas (las corregidas pesan 0.7). Gana la
@@ -554,11 +616,20 @@ export async function scanLicensePlatesFromFrames(frames: Blob[]): Promise<OcrPl
       processedImagePreview: preview,
       rawOcrText: Array.from(new Set(rawTexts)).join('\n---\n').trim(),
     };
-  });
+    });
+  } catch (err) {
+    if (timeout.signal.aborted) {
+      console.warn('Plate OCR multi-frame: cancelado por timeout');
+      return EMPTY_RESULT;
+    }
+    throw err;
+  } finally {
+    timeout.cancel();
+  }
 }
 
-async function runPlateScan(imageFile: Blob): Promise<OcrPlateResult> {
-  const hits = await runPlateScanHits(imageFile);
+async function runPlateScan(imageFile: Blob, signal: AbortSignal): Promise<OcrPlateResult> {
+  const hits = await runPlateScanHits(imageFile, signal);
   const { directHits, correctedHits, rawTexts } = hits;
 
   // Ranking: los hits directos ganan sobre los corregidos; dentro de cada
@@ -575,8 +646,9 @@ async function runPlateScan(imageFile: Blob): Promise<OcrPlateResult> {
   };
 }
 
-async function runPlateScanHits(imageFile: Blob): Promise<ScanHits & { dataUrl: string }> {
+async function runPlateScanHits(imageFile: Blob, signal: AbortSignal): Promise<ScanHits & { dataUrl: string }> {
   const { canvas, dataUrl } = await preprocessPlateImage(imageFile);
+  throwIfAborted(signal);
   const worker = await getWorker();
 
   const rawTexts: string[] = [];
@@ -599,6 +671,7 @@ async function runPlateScanHits(imageFile: Blob): Promise<ScanHits & { dataUrl: 
   const crops: { crop: HTMLCanvasElement; confidence: number }[] = [];
   let bestConfidence = 0;
   for (const region of regions) {
+    throwIfAborted(signal);
     const crop = cropRegion(canvas, region);
     if (!crop) continue;
     const { text, confidence } = await readCanvas(worker, crop, PSM.SINGLE_LINE);
@@ -611,6 +684,7 @@ async function runPlateScanHits(imageFile: Blob): Promise<ScanHits & { dataUrl: 
   //    otra segmentación (SINGLE_BLOCK) — cada modo rescata caracteres que el
   //    otro rompe, y la validación por formato decide cuál lectura sirve.
   if (regions.length > 0 && bestConfidence < RETRY_CONFIDENCE) {
+    throwIfAborted(signal);
     const best = crops.sort((a, b) => b.confidence - a.confidence)[0];
     const { text, confidence } = await readCanvas(worker, best.crop, PSM.SINGLE_BLOCK);
     collect(text, confidence, 1);

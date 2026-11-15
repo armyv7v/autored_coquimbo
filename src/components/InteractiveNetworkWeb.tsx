@@ -102,6 +102,9 @@ export default function InteractiveNetworkWeb({
   const hoverNodeRef = useRef<WebNode | null>(null);
   const stormActiveRef = useRef(stormActive);
   const coreShieldImgRef = useRef<HTMLImageElement | null>(null);
+  // A-25: el canvas deja de renderizar fuera de pantalla o con la pestaña oculta
+  const visibleRef = useRef(true);
+  const startRenderRef = useRef<(() => void) | null>(null);
 
   // Escudo oficial para el núcleo de la telaraña
   useEffect(() => {
@@ -202,6 +205,8 @@ export default function InteractiveNetworkWeb({
 
     // Auto organic pulse generator (Silent background ambiance)
     const interval = setInterval(() => {
+      // A-25: nada de pulsos mientras el canvas no esté a la vista
+      if (!visibleRef.current) return;
       const outerNodes = NODES.filter((n) => !n.isCore);
       const randNode = outerNodes[Math.floor(Math.random() * outerNodes.length)];
       spawnPulse(randNode.id, 0.007, false, false);
@@ -288,6 +293,7 @@ export default function InteractiveNetworkWeb({
       ctx.restore();
     };
 
+    let rendering = false;
     const render = () => {
       time += 0.016;
       ctx.clearRect(0, 0, width, height);
@@ -585,19 +591,54 @@ export default function InteractiveNetworkWeb({
         ctx.restore();
       }
 
-      animId = requestAnimationFrame(render);
+      // A-25: sin pestaña oculta ni canvas fuera de pantalla no hay frame siguiente
+      if (visibleRef.current) {
+        animId = requestAnimationFrame(render);
+      } else {
+        rendering = false;
+      }
     };
 
-    render();
+    const startRender = () => {
+      if (!rendering && visibleRef.current) {
+        rendering = true;
+        render();
+      }
+    };
+    startRenderRef.current = startRender;
+    startRender();
 
     return () => {
       cancelAnimationFrame(animId);
       clearInterval(interval);
       window.removeEventListener('resize', resize);
+      startRenderRef.current = null;
     };
   }, [spawnPulse, selectedNodeId]);
 
-  const handleMouseMove = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  // A-25: reanuda el bucle cuando el canvas vuelve a ser visible
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const wake = () => startRenderRef.current?.();
+    const observer = new IntersectionObserver((entries) => {
+      visibleRef.current = entries[0]?.isIntersecting ?? true;
+      wake();
+    });
+    observer.observe(canvas);
+    const onVisibility = () => {
+      visibleRef.current = document.visibilityState === 'visible';
+      wake();
+    };
+    document.addEventListener('visibilitychange', onVisibility);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener('visibilitychange', onVisibility);
+    };
+  }, []);
+
+  // A-25: pointer events cubren mouse y táctil — el canvas era mouse-only
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!interactive || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -620,13 +661,13 @@ export default function InteractiveNetworkWeb({
     hoverNodeRef.current = found;
   };
 
-  const handleMouseLeave = () => {
+  const handlePointerLeave = () => {
     mousePosRef.current.x = -1000;
     mousePosRef.current.y = -1000;
     hoverNodeRef.current = null;
   };
 
-  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!interactive || !canvasRef.current) return;
     const rect = canvasRef.current.getBoundingClientRect();
     const mx = e.clientX - rect.left;
@@ -661,9 +702,9 @@ export default function InteractiveNetworkWeb({
     <div className={`relative overflow-hidden ${className}`}>
       <canvas
         ref={canvasRef}
-        onMouseMove={handleMouseMove}
-        onMouseLeave={handleMouseLeave}
-        onClick={handleClick}
+        onPointerMove={handlePointerMove}
+        onPointerLeave={handlePointerLeave}
+        onPointerDown={handlePointerDown}
         className={`w-full h-full block ${interactive ? 'cursor-crosshair' : ''}`}
       />
     </div>

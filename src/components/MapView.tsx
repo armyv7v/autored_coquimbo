@@ -11,6 +11,7 @@ import { ShieldAlert, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Cloc
 import { COQUIMBO_CENTER, getGeohash } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
+import { compressImageFile } from '../lib/imageUtils';
 import { motion, AnimatePresence, useMotionValue, useSpring, useTransform, useMotionTemplate } from 'motion/react';
 import { safeUUID } from '../lib/uuid';
 import { formatTimeCL, formatDateCL, formatFullDateTimeCL } from '../lib/dateUtils';
@@ -148,43 +149,65 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<SearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
+  // N-S16: debounce + AbortController — sin ellos, escribir rápido encolaba
+  // consultas sin ordenar y la respuesta tardía pisaba a la última.
+  const abortRef = useRef<AbortController | null>(null);
+  const debounceRef = useRef<number | null>(null);
 
-  const handleSearch = async (val: string) => {
+  useEffect(() => () => {
+    if (abortRef.current) abortRef.current.abort();
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+  }, []);
+
+  const handleSearch = (val: string) => {
     setQuery(val);
+    if (debounceRef.current) window.clearTimeout(debounceRef.current);
+    if (abortRef.current) abortRef.current.abort();
+
     if (val.length < 3) {
       setResults([]);
+      setIsSearching(false);
       return;
     }
 
+    const localResults: SearchResult[] = dealerships
+      .filter((d) => d.name.toLowerCase().includes(val.toLowerCase()))
+      .map((d) => ({
+        display_name: d.name,
+        lat: d.latitude ?? d.location?.lat ?? COQUIMBO_CENTER[0],
+        lon: d.longitude ?? d.location?.lng ?? COQUIMBO_CENTER[1],
+        type: 'dealership',
+        id: d.id,
+      }));
+    setResults(localResults);
+
     setIsSearching(true);
-    try {
-      const localResults: SearchResult[] = dealerships
-        .filter((d) => d.name.toLowerCase().includes(val.toLowerCase()))
-        .map((d) => ({
-          display_name: d.name,
-          lat: d.latitude ?? d.location?.lat ?? COQUIMBO_CENTER[0],
-          lon: d.longitude ?? d.location?.lng ?? COQUIMBO_CENTER[1],
-          type: 'dealership',
-          id: d.id,
+    debounceRef.current = window.setTimeout(async () => {
+      const controller = new AbortController();
+      abortRef.current = controller;
+      try {
+        const response = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val + ' Coquimbo Chile')}&limit=5`,
+          { signal: controller.signal }
+        );
+        const data = await response.json();
+        if (controller.signal.aborted) return;
+        const apiResults: SearchResult[] = data.map((item: any) => ({
+          display_name: item.display_name,
+          lat: parseFloat(item.lat),
+          lon: parseFloat(item.lon),
+          type: 'address',
         }));
 
-      const response = await fetch(
-        `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(val + ' Coquimbo Chile')}&limit=5`
-      );
-      const data = await response.json();
-      const apiResults: SearchResult[] = data.map((item: any) => ({
-        display_name: item.display_name,
-        lat: parseFloat(item.lat),
-        lon: parseFloat(item.lon),
-        type: 'address',
-      }));
-
-      setResults([...localResults, ...apiResults]);
-    } catch (error) {
-      console.error('Search error:', error);
-    } finally {
-      setIsSearching(false);
-    }
+        setResults([...localResults, ...apiResults]);
+      } catch (error: any) {
+        if (error?.name !== 'AbortError') {
+          console.error('Search error:', error);
+        }
+      } finally {
+        if (!controller.signal.aborted) setIsSearching(false);
+      }
+    }, 400);
   };
 
   const selectResult = (result: SearchResult) => {
@@ -248,9 +271,17 @@ export default function MapView() {
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showDealerships, setShowDealerships] = useState(true);
   const [dbOffline, setDbOffline] = useState(false);
+  // N-D2: la caída de red no produce error de listener — sin este estado, el
+  // mapa congela los últimos datos como si estuvieran vivos.
+  const [netOffline, setNetOffline] = useState(
+    typeof navigator !== 'undefined' ? !navigator.onLine : false
+  );
+  const [incidentsLoaded, setIncidentsLoaded] = useState(false);
   const [flashMessage, setFlashMessage] = useState<string | null>(null);
   const [searchParams] = useSearchParams();
   const selectedIncidentId = searchParams.get('incident');
+  // N-S16: el popup del deep link se abre UNA vez por selección, no en cada snapshot.
+  const popupOpenedFor = useRef<string | null>(null);
   const { profile } = useAuth();
 
   // Reporting State
@@ -272,17 +303,31 @@ export default function MapView() {
     return () => clearInterval(timer);
   }, []);
 
+  // N-D2: red real del dispositivo (no solo errores de Firestore).
+  useEffect(() => {
+    const goOnline = () => setNetOffline(false);
+    const goOffline = () => setNetOffline(true);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+    };
+  }, []);
+
   useEffect(() => {
     const unsubIncidents = onSnapshot(
       collection(db, 'incidents'),
       (snapshot) => {
         setDbOffline(false);
+        setIncidentsLoaded(true);
         const data = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })) as Incident[];
         setIncidents(data);
       },
       (err) => {
         console.error('Firestore incidents error:', err);
         setDbOffline(true);
+        setIncidentsLoaded(true);
       }
     );
 
@@ -332,9 +377,17 @@ export default function MapView() {
     }
   };
 
-  const handleShare = (incidentId: string) => {
+  // N-S10: copiar con await + feedback — antes un TypeError (sin HTTPS o
+  // permiso denegado) se tragaba en silencio y el operador creía que quedó.
+  const handleShare = async (incidentId: string) => {
     const url = `${window.location.origin}/map?incident=${incidentId}`;
-    navigator.clipboard.writeText(url);
+    try {
+      await navigator.clipboard.writeText(url);
+      setFlashMessage('Enlace del incidente copiado');
+    } catch {
+      setFlashMessage('No se pudo copiar el enlace');
+    }
+    setTimeout(() => setFlashMessage(null), 2500);
   };
 
   const handleUpdateDealerStatus = async (dealerId: string, newStatus: 'online' | 'offline') => {
@@ -376,8 +429,11 @@ export default function MapView() {
     try {
       let imageUrl = '';
       if (reportImage) {
-        const storageRef = ref(storage, `incidents/${safeUUID()}-${reportImage.name}`);
-        const uploadResult = await uploadBytes(storageRef, reportImage);
+        // N-S10: la evidencia va comprimida — 3-8 MB por foto en datos móviles
+        // era el coste real de "reportar desde el mapa" sin compresión.
+        const compressed = await compressImageFile(reportImage);
+        const storageRef = ref(storage, `incidents/${safeUUID()}-${compressed.name}`);
+        const uploadResult = await uploadBytes(storageRef, compressed);
         imageUrl = await getDownloadURL(uploadResult.ref);
       }
 
@@ -538,10 +594,30 @@ export default function MapView() {
           {isReportingMode && !reportLocation && (
             <div className="px-4 py-2.5 rounded-xl bg-red-950/90 border border-red-500/50 text-red-200 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5" />
-              Tocá el mapa para ubicar el incidente (Esc cancela)
+              {/* N-S12: lenguaje de teclado solo en desktop */}
+              <span>Toca el mapa para ubicar el incidente</span>
+              <span className="hidden sm:inline">(Esc cancela)</span>
             </div>
           )}
-          <ConnectionBanner show={dbOffline} />
+          {netOffline ? (
+            <ConnectionBanner
+              show
+              label="Sin conexión de red — el mapa puede mostrar datos desactualizados"
+            />
+          ) : (
+            <ConnectionBanner show={dbOffline} />
+          )}
+          {/* N-S4: deep link a un incidente que no existe o no llegó — sin
+              estado de fallo, el operador veía el mapa sin marcador ni motivo. */}
+          {selectedIncidentId && incidentsLoaded && !incidents.some((i) => i.id === selectedIncidentId) && (
+            <div
+              className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl flex items-center gap-2 pointer-events-none"
+              role="alert"
+            >
+              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              Incidente no encontrado (puede haber sido eliminado) — revisa el Historial en el Panel
+            </div>
+          )}
           <AnimatePresence>
             {flashMessage && (
               <motion.div
@@ -717,7 +793,10 @@ export default function MapView() {
                       iconAnchor: [12, 12],
                     })}
                     ref={(ref) => {
-                      if (ref && isSelected) {
+                      // N-S16: solo la primera vez que esta selección aparece —
+                      // reabrirlo en cada snapshot lo hacía inasible.
+                      if (ref && isSelected && popupOpenedFor.current !== incident.id) {
+                        popupOpenedFor.current = incident.id;
                         ref.openPopup();
                       }
                     }}

@@ -48,7 +48,8 @@ interface IncidentReportFormProps {
 
 // UX-05: borrador persistente. sessionStorage muere al cerrar la pestaña,
 // así que no extiende la vida de los datos más allá de la sesión activa.
-const DRAFT_KEY = 'alerta-dealers:incident-draft';
+// La clave vive en lib/incidentDraft.ts para que el logout también la limpie.
+import { INCIDENT_DRAFT_KEY as DRAFT_KEY } from '../lib/incidentDraft';
 
 export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFormProps) {
   const [type, setType] = useState<'ROBO' | 'SOSPECHOSO' | 'MARCAJE' | 'OTRO' | null>(null);
@@ -79,6 +80,9 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const { profile } = useAuth();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const recognitionRef = useRef<any>(null);
+  // N-S13: object URL del preview de captura en vivo, para revocarlo al
+  // reemplazarlo o al resetear el formulario.
+  const objectUrlRef = useRef<string | null>(null);
 
   // UX-05: restauración al montar. Este componente vive montado bajo Dashboard
   // (el sheet solo condiciona el JSX), así que el montaje real ocurre al cargar
@@ -236,7 +240,13 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
   const handlePlateCaptured = (file: File, ocr: OcrPlateResult) => {
     setShowPlateCamera(false);
     setImage(file);
-    setImagePreview(URL.createObjectURL(file));
+    // N-S13: el object URL anterior se revoca para no acumular blobs por captura.
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+    }
+    const url = URL.createObjectURL(file);
+    objectUrlRef.current = url;
+    setImagePreview(url);
     setScanningOcr(false);
     applyOcrResult(ocr);
   };
@@ -385,6 +395,11 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
     setPlate('');
     setStolenCheckResult(null);
     setImage(null);
+    // N-S13: revocar el object URL del preview para no filtrar blobs.
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
     setImagePreview(null);
     setLocation(COQUIMBO_CENTER);
     setUsingGps(false);
@@ -514,9 +529,18 @@ export default function IncidentReportForm({ isOpen, onClose }: IncidentReportFo
                     onChange={(e) => {
                       // Cualquier tipeo del operador invalida la atribución al
                       // OCR (aunque sea corregir un carácter): la métrica debe
-                      // reflejar quién escribió la patente final.
-                      setPlate(e.target.value.toUpperCase());
-                      setPlateSource('MANUAL');
+                      // reflejar quién escribió la patente final. N-S15: si el
+                      // operador re-escribe la MISMA patente sugerida (mayús-
+                      // culas/formato), el OCR no se degrada a MANUAL.
+                      const next = e.target.value.toUpperCase();
+                      setPlate(next);
+                      setPlateSource((prev) =>
+                        prev === 'OCR' &&
+                        ocrSuggestedPlate &&
+                        normalizePlate(next) === normalizePlate(ocrSuggestedPlate)
+                          ? prev
+                          : 'MANUAL'
+                      );
                     }}
                     placeholder="Ej: GKLP42 o AB1234 (Opcional)"
                     maxLength={10}

@@ -32,6 +32,9 @@ const FRAME_MAX_DIM = 1600;
 export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallbackGallery }: PlateCameraCaptureProps) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  // N-S3: si el operador cancela durante el análisis, el OCR en curso no debe
+  // disparar onCapture cuando termine (zombi que reabre el flujo cerrado).
+  const abortedRef = useRef(false);
   const [starting, setStarting] = useState(true);
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
@@ -112,11 +115,22 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
   useEffect(() => {
     if (!isOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && !scanning) onClose();
+      if (e.key === 'Escape') handleCancel();
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, scanning, onClose]);
+
+  // N-S3: cancelar SIEMPRE es posible — durante el análisis pide confirmación
+  // (el operador solo quería la foto) y descarta el resultado pendiente.
+  const handleCancel = () => {
+    if (scanning) {
+      if (!window.confirm('¿Cancelar el análisis? La captura no se cargará al formulario.')) return;
+      abortedRef.current = true;
+    }
+    onClose();
+  };
 
   const toggleTorch = async () => {
     const track = streamRef.current?.getVideoTracks()[0];
@@ -159,6 +173,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
   const handleShutter = async () => {
     if (scanning) return;
     setScanning(true);
+    abortedRef.current = false;
     try {
       const frames: Blob[] = [];
       for (let i = 0; i < FRAME_COUNT; i++) {
@@ -170,6 +185,8 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
       }
       stopStream();
 
+      if (abortedRef.current) return;
+
       if (frames.length === 0) {
         setCameraError('No se pudo capturar ningún frame — intentá de nuevo o usá la galería.');
         setScanning(false);
@@ -177,11 +194,13 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
       }
 
       const ocr = await scanLicensePlatesFromFrames(frames);
+      if (abortedRef.current) return;
       // El último frame es el más estable (el operador ya acomodó el encuadre).
       const last = frames[frames.length - 1];
       const file = new File([last], `patente-${Date.now()}.jpg`, { type: 'image/jpeg' });
       onCapture(file, ocr);
     } catch (err) {
+      if (abortedRef.current) return;
       console.error('Error en captura de patente:', err);
       setCameraError('Falló el análisis de la captura — intentá de nuevo.');
       setScanning(false);
@@ -312,11 +331,10 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
 
         <button
           type="button"
-          onClick={onClose}
-          disabled={scanning}
-          className="w-full h-9 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 hover:text-white transition disabled:opacity-40"
+          onClick={handleCancel}
+          className="w-full min-h-11 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider text-slate-500 hover:text-white transition"
         >
-          Cancelar
+          {scanning ? 'Cancelar análisis' : 'Cancelar'}
         </button>
       </div>
     </motion.div>

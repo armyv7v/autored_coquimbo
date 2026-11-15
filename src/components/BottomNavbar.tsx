@@ -1,13 +1,14 @@
 import React from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import { NAV_ITEMS, TabType } from '../lib/navigation';
+import { useLongPress } from '../hooks/useLongPress';
 
 export type { TabType } from '../lib/navigation';
 
 interface BottomNavbarProps {
   activeTab?: TabType;
   setActiveTab?: (tab: TabType) => void;
-  onTriggerAlert?: () => void;
+  onTriggerAlert?: (armed?: boolean) => void;
 }
 
 export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTriggerAlert }: BottomNavbarProps) {
@@ -18,6 +19,13 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
     if (setActiveTab) setActiveTab(tab);
     if (location.pathname !== '/') navigate('/');
   };
+
+  // N-D1: el tap abre el sheet sin armar la cuenta regresiva; mantener
+  // presionado 1,5 s la arma directamente (gesto deliberado del operador).
+  const alertLongPress = useLongPress({
+    durationMs: 1500,
+    onComplete: () => onTriggerAlert?.(true),
+  });
 
   return (
     <nav
@@ -36,13 +44,19 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
               <div className="absolute -top-3 w-16 h-10 bg-slate-950 border-t border-x border-red-500/20 rounded-t-full shadow-2xl shadow-red-950/30 -z-10" />
 
               <button
-                onClick={() => {
+                {...alertLongPress.handlers}
+                onClick={(e) => {
+                  // Long-press completado: el click de soltar no re-abre sin armar.
+                  alertLongPress.guardClick(e);
                   if (onTriggerAlert) onTriggerAlert();
                 }}
-                className="group flex flex-col items-center justify-center active:scale-90 transition-transform cursor-pointer"
-                title="Disparar Alerta Máxima"
+                className="group flex flex-col items-center justify-center active:scale-90 transition-transform cursor-pointer touch-none"
+                title="Mantén presionado para armar la Alerta Máxima"
               >
-                <div className="w-14 h-14 rounded-full bg-gradient-to-tr from-red-700 to-red-500 p-0.5 shadow-lg shadow-red-900/40 border-2 border-slate-950 flex items-center justify-center group-hover:scale-105 transition-transform">
+                <div
+                  className="w-14 h-14 rounded-full bg-gradient-to-tr from-red-700 to-red-500 p-0.5 shadow-lg shadow-red-900/40 border-2 border-slate-950 flex items-center justify-center group-hover:scale-105 transition-transform"
+                  aria-label="Alerta máxima"
+                >
                   <div className="w-full h-full rounded-full bg-red-600 flex items-center justify-center text-white">
                     <Icon className="w-7 h-7 text-white" />
                   </div>

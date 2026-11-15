@@ -2,26 +2,36 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ShieldAlert, X, Send, AlertTriangle, FileText, Loader2, Check, Radio } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, auth } from '../lib/firebase';
-import { collection, doc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { getGeohash, COQUIMBO_CENTER } from '../lib/geoutils';
 import { safeUUID } from '../lib/uuid';
 import { useAuth } from '../hooks/useAuth';
+import { useLongPress } from '../hooks/useLongPress';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
 
 interface AlertConfirmationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onOpenDetailedReport?: () => void;
+  /**
+   * N-D1: armar la cuenta regresiva al abrir. Solo es true cuando el operador
+   * mantuvo presionado el botón ALERTA de la navegación (gesto deliberado);
+   * un tap normal abre el sheet en estado "listo", sin bomba de 10 s.
+   */
+  autoArm?: boolean;
 }
 
 const COUNTDOWN_SECONDS = 10;
+const ARM_PRESS_MS = 1500;
 
 export default function AlertConfirmationModal({
   isOpen,
   onClose,
   onOpenDetailedReport,
+  autoArm = false,
 }: AlertConfirmationModalProps) {
   const [countdown, setCountdown] = useState(COUNTDOWN_SECONDS);
+  const [isArmed, setIsArmed] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [sentSuccess, setSentSuccess] = useState(false);
   const [sendError, setSendError] = useState<string | null>(null);
@@ -30,10 +40,18 @@ export default function AlertConfirmationModal({
   const { profile } = useAuth();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
+  const armCountdown = () => {
+    setSendError(null);
+    setIsArmed(true);
+  };
+
+  const armHandlers = useLongPress({ durationMs: ARM_PRESS_MS, onComplete: armCountdown });
+
   // Capture GPS on open
   useEffect(() => {
     if (isOpen) {
       setCountdown(COUNTDOWN_SECONDS);
+      setIsArmed(Boolean(autoArm));
       setIsSending(false);
       setSentSuccess(false);
       setSendError(null);
@@ -55,7 +73,7 @@ export default function AlertConfirmationModal({
         setGpsFailed(true);
       }
     }
-  }, [isOpen]);
+  }, [isOpen, autoArm]);
 
   const dispatchAlert = async () => {
     if (isSending || sentSuccess) return;
@@ -119,9 +137,11 @@ export default function AlertConfirmationModal({
     }
   };
 
-  // Countdown timer logic
+  // Countdown timer logic: SOLO corre con el botón armado (N-D1). Abrir el
+  // sheet con un tap deja el tiempo detenido hasta que el operador mantenga
+  // presionado "ACTIVAR".
   useEffect(() => {
-    if (!isOpen || isSending || sentSuccess) {
+    if (!isOpen || !isArmed || isSending || sentSuccess) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -140,7 +160,7 @@ export default function AlertConfirmationModal({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isOpen, isSending, sentSuccess, location, profile]);
+  }, [isOpen, isArmed, isSending, sentSuccess, location, profile]);
 
   const handleCancel = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -173,10 +193,12 @@ export default function AlertConfirmationModal({
           initial={{ scale: 0.85, y: 20 }}
           animate={{ scale: 1, y: 0 }}
           exit={{ scale: 0.85, y: 20 }}
-          className="bg-slate-950 border-2 border-red-500 w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-[0_0_80px_rgba(220,38,38,0.5)] relative overflow-hidden"
+          className={`bg-slate-950 border-2 w-full max-w-sm rounded-[2.5rem] p-6 text-center shadow-[0_0_80px_rgba(220,38,38,0.5)] relative overflow-hidden ${
+            isArmed ? 'border-red-500' : 'border-slate-700'
+          }`}
         >
           {/* Pulsing red ambient aura */}
-          <div className="absolute inset-0 bg-gradient-to-b from-red-600/20 via-transparent to-red-950/40 pointer-events-none animate-pulse" />
+          <div className={`absolute inset-0 pointer-events-none ${isArmed ? 'bg-gradient-to-b from-red-600/20 via-transparent to-red-950/40 animate-pulse' : 'bg-gradient-to-b from-slate-800/20 via-transparent to-slate-950/40'}`} />
 
           {sentSuccess ? (
             <div className="py-6 space-y-4 relative z-10">
@@ -189,6 +211,76 @@ export default function AlertConfirmationModal({
               <p className="text-xs text-slate-300 font-mono">
                 El reporte quedó registrado en la red. Los nodos con la app abierta lo están recibiendo ahora.
               </p>
+            </div>
+          ) : !isArmed ? (
+            /* Estado LISTO (N-D1): sin cuenta regresiva — armar exige un
+               long-press deliberado de 1,5 s. */
+            <div className="space-y-5 relative z-10">
+              <div className="w-20 h-20 mx-auto rounded-full bg-red-500/10 border-2 border-red-500/40 flex items-center justify-center text-red-400">
+                <ShieldAlert className="w-10 h-10" />
+              </div>
+
+              <div>
+                <h2 className="text-lg font-black text-white uppercase tracking-tight">
+                  Botón de Pánico Listo
+                </h2>
+                <p className="text-xs text-slate-400 mt-1.5 leading-relaxed">
+                  Al activar, se transmite la emergencia a toda la red en 10 segundos. Mantén presionado el botón para armarlo.
+                </p>
+                {gpsFailed && (
+                  <p className="mt-2 text-[11px] font-mono text-amber-300 bg-amber-500/10 border border-amber-500/30 rounded-xl px-3 py-1.5">
+                    Sin GPS: se enviará la ubicación aproximada (centro de Coquimbo).
+                  </p>
+                )}
+              </div>
+
+              {/* Activation Buttons */}
+              <div className="space-y-2.5 pt-1">
+                <button
+                  type="button"
+                  {...armHandlers.handlers}
+                  aria-label="Mantener presionado para armar el botón de pánico"
+                  className="relative w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 text-white font-mono text-xs font-black uppercase tracking-wider shadow-xl shadow-red-950 flex items-center justify-center gap-2 overflow-hidden touch-none active:scale-[0.98] transition-transform"
+                >
+                  {/* Relleno de progreso del long-press */}
+                  <span
+                    className="absolute inset-y-0 left-0 bg-gradient-to-r from-rose-700 to-red-400 transition-none"
+                    style={{ width: `${armHandlers.progress * 100}%` }}
+                  />
+                  <span className="relative flex items-center gap-2">
+                    {armHandlers.pressing ? (
+                      <>
+                        <Radio className="w-4 h-4 animate-pulse" />
+                        Sigue presionando…
+                      </>
+                    ) : (
+                      <>
+                        <AlertTriangle className="w-4 h-4" />
+                        Mantener para activar
+                      </>
+                    )}
+                  </span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleCancel}
+                  className="w-full py-3 px-4 rounded-2xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 transition active:scale-[0.98]"
+                >
+                  <X className="w-4 h-4 text-slate-500" />
+                  Cancelar (Falsa Alarma)
+                </button>
+
+                {onOpenDetailedReport && (
+                  <button
+                    type="button"
+                    onClick={handleOpenReport}
+                    className="w-full py-2 text-[11px] font-mono text-slate-400 hover:text-white transition underline underline-offset-4"
+                  >
+                    Detallar reporte (Foto / Info)
+                  </button>
+                )}
+              </div>
             </div>
           ) : (
             <div className="space-y-5 relative z-10">

@@ -111,7 +111,9 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
         photoFields.map(async ({ key }) => {
           const file = files[key];
           if (!file) return [key, ''];
-          const storageRef = ref(storage, `road-tests/${roadTestId}/${key}-${safeUUID()}-${file.name}`);
+          // N-R3: el uid del uploader va en el path para que Storage pueda
+          // dar lectura solo a él sin consultar Firestore.
+          const storageRef = ref(storage, `road-tests/${auth.currentUser.uid}/${roadTestId}/${key}-${safeUUID()}-${file.name}`);
           const result = await uploadBytes(storageRef, file);
           return [key, await getDownloadURL(result.ref)];
         })

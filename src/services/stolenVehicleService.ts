@@ -4,8 +4,9 @@
  */
 
 import { validateChileanPlate, normalizePlate } from '../lib/chileanPlates';
-import { db } from '../lib/firebase';
+import { auth, db } from '../lib/firebase';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
+import { getIdToken } from 'firebase/auth';
 
 // A-02: la clave NUNCA vive en el bundle. TODA consulta oficial pasa por el
 // proxy /api/vehicle-plate (función serverless de Vercel con la clave en
@@ -241,11 +242,22 @@ async function queryBoostrVehicleApi(cleanPlate: string): Promise<Partial<Stolen
     return null;
   };
 
-  // Proxy server-side (única vía): la clave no viaja al cliente.
+  // Proxy server-side (única vía): la clave no viaja al cliente. N-S2: el
+  // proxy exige Firebase ID token (Authorization Bearer) — sin sesión la
+  // verificación oficial no puede salir, y el badge lo muestra como NO
+  // VERIFICADO (AUTH) en vez de alimentar un endpoint anónimo.
   try {
+    const headers: Record<string, string> = { Accept: 'application/json' };
+    if (auth.currentUser) {
+      try {
+        headers.Authorization = `Bearer ${await getIdToken(auth.currentUser)}`;
+      } catch {
+        // Token no obtenible (sesión caducando): el proxy responderá 401.
+      }
+    }
     const response = await fetch(`/api/vehicle-plate?plate=${encodeURIComponent(cleanPlate)}`, {
       method: 'GET',
-      headers: { Accept: 'application/json' },
+      headers,
     });
     const isJson = (response.headers.get('content-type') || '').includes('application/json');
     if (isJson) {
@@ -377,21 +389,27 @@ export async function checkStolenVehiclePlate(rawPlate: string): Promise<StolenV
     };
     RUNTIME_VEHICLE_CACHE.set(cleanPlate, result);
 
-    // Auto cache to Firestore so other terminals can access without hitting Boostr quota
-    try {
-      const docRef = doc(db, 'stolenVehiclesRegistry', cleanPlate);
-      setDoc(docRef, {
-        plate: cleanPlate,
-        formattedPlate: validation.formatted,
-        hasStolenReport: result.hasStolenReport,
-        statusText: result.statusText,
-        vehicleDetails: result.vehicleDetails,
-        stolenDetails: result.stolenDetails || null,
-        source: result.source,
-        cachedAt: serverTimestamp(),
-      });
-    } catch (cacheErr) {
-      console.warn('No se pudo cachear la consulta en Firestore (cuota de Boostr compartida se resiente):', cacheErr);
+    // Auto cache to Firestore so other terminals can access without hitting
+    // Boostr quota. N-R4: solo se cachean resultados LIMPIOS — un encargo por
+    // robo lo declara SECURITY/ADMIN vía setPlateStolenStatus (la denuncia la
+    // escribía cualquier operador). El await es obligatorio: sin él, el
+    // permission-denied queda como promesa sin manejar.
+    if (!result.hasStolenReport) {
+      try {
+        const docRef = doc(db, 'stolenVehiclesRegistry', cleanPlate);
+        await setDoc(docRef, {
+          plate: cleanPlate,
+          formattedPlate: validation.formatted,
+          hasStolenReport: false,
+          statusText: result.statusText,
+          vehicleDetails: result.vehicleDetails,
+          stolenDetails: null,
+          source: result.source,
+          cachedAt: serverTimestamp(),
+        });
+      } catch (cacheErr) {
+        console.warn('No se pudo cachear la consulta en Firestore (cuota de Boostr compartida se resiente):', cacheErr);
+      }
     }
 
     return result;

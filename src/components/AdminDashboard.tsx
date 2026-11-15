@@ -25,9 +25,11 @@ import {
   Inbox,
   ScanLine,
   Route,
-  Eye
+  Eye,
+  Loader2
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import ConnectionBanner from './ConnectionBanner';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import AdminAccessRequests from './AdminAccessRequests';
 
@@ -89,6 +91,8 @@ export default function AdminDashboard() {
   const [pendingCount, setPendingCount] = useState(0);
   const [actionError, setActionError] = useState<string | null>(null);
   const [actionOk, setActionOk] = useState<string | null>(null);
+  // N-S9: un fallo de Firestore no puede leerse como "sin registros aún".
+  const [dbOffline, setDbOffline] = useState(false);
 
   // Search & Filters
   const [searchTerm, setSearchTerm] = useState('');
@@ -103,26 +107,57 @@ export default function AdminDashboard() {
     if (!profile || profile.role !== 'ADMIN') return;
 
     // Fetch Users
-    const unsubUsers = onSnapshot(collection(db, 'users'), (snapshot) => {
-      setUsers(snapshot.docs.map(doc => doc.data() as UserProfile));
-    });
+    const unsubUsers = onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        setDbOffline(false);
+        setUsers(snapshot.docs.map(doc => doc.data() as UserProfile));
+      },
+      (err) => {
+        console.error('Admin users error:', err);
+        setDbOffline(true);
+      }
+    );
 
     // Fetch Incidents for Stats
-    const unsubIncidents = onSnapshot(collection(db, 'incidents'), (snapshot) => {
-      setIncidents(snapshot.docs.map(doc => doc.data() as Incident));
-      setLoading(false);
-    });
+    const unsubIncidents = onSnapshot(
+      collection(db, 'incidents'),
+      (snapshot) => {
+        setDbOffline(false);
+        setIncidents(snapshot.docs.map(doc => doc.data() as Incident));
+        setLoading(false);
+      },
+      (err) => {
+        console.error('Admin incidents error:', err);
+        setDbOffline(true);
+        setLoading(false);
+      }
+    );
 
     // Fetch pending access requests count
-    const unsubRequests = onSnapshot(collection(db, 'accessRequests'), (snapshot) => {
-      const count = snapshot.docs.filter(doc => doc.data()?.status === 'PENDING').length;
-      setPendingCount(count);
-    });
+    const unsubRequests = onSnapshot(
+      collection(db, 'accessRequests'),
+      (snapshot) => {
+        const count = snapshot.docs.filter(doc => doc.data()?.status === 'PENDING').length;
+        setPendingCount(count);
+      },
+      (err) => {
+        console.error('Admin accessRequests error:', err);
+        setDbOffline(true);
+      }
+    );
 
     // Sedes reales para la métrica (A-27: antes era un "12" hardcodeado)
-    const unsubDealerships = onSnapshot(collection(db, 'dealerships'), (snapshot) => {
-      setDealerships(snapshot.docs.map(doc => ({ id: doc.id, name: (doc.data() as any)?.name })));
-    });
+    const unsubDealerships = onSnapshot(
+      collection(db, 'dealerships'),
+      (snapshot) => {
+        setDealerships(snapshot.docs.map(doc => ({ id: doc.id, name: (doc.data() as any)?.name })));
+      },
+      (err) => {
+        console.error('Admin dealerships error:', err);
+        setDbOffline(true);
+      }
+    );
 
     // Registros operativos: test drives y avisos de fiscalización (antes
     // colecciones huérfanas: se escribían y nadie las leía).
@@ -130,12 +165,20 @@ export default function AdminDashboard() {
       query(collection(db, 'roadTests'), orderBy('createdAt', 'desc'), limit(30)),
       (snapshot) => {
         setRoadTests(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<RoadTestDoc, 'id'>) })));
+      },
+      (err) => {
+        console.error('Admin roadTests error:', err);
+        setDbOffline(true);
       }
     );
     const unsubInspections = onSnapshot(
       query(collection(db, 'inspectionAlerts'), orderBy('createdAt', 'desc'), limit(30)),
       (snapshot) => {
         setInspectionAlerts(snapshot.docs.map(doc => ({ id: doc.id, ...(doc.data() as Omit<InspectionAlertDoc, 'id'>) })));
+      },
+      (err) => {
+        console.error('Admin inspectionAlerts error:', err);
+        setDbOffline(true);
       }
     );
 
@@ -267,10 +310,23 @@ export default function AdminDashboard() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
     <div className="h-full overflow-y-auto p-8 space-y-8 max-w-7xl mx-auto">
+      {/* N-S9: el fallo de conexión y el estado de carga son visibles — antes
+          un error de Firestore se leía como bandeja vacía. */}
+      <ConnectionBanner show={dbOffline} />
+      {loading && (
+        <div
+          className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-mono font-bold uppercase tracking-wider"
+          role="status"
+        >
+          <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+          Cargando datos de la red…
+        </div>
+      )}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <div className="flex items-center gap-3 mb-2">
@@ -283,28 +339,30 @@ export default function AdminDashboard() {
           <p className="text-slate-600 text-xs uppercase tracking-widest font-bold">Control Centralizado y Auditoría de Seguridad</p>
         </div>
 
-        <nav className="flex bg-slate-900 p-1 rounded-2xl border border-slate-800">
-          <button 
+        {/* N-D3: a 375px las 4 pestañas desbordaban sin affordance — fila
+            scrollable con snap y botones sin salto de línea. */}
+        <nav className="flex w-full md:w-auto bg-slate-900 p-1 rounded-2xl border border-slate-800 overflow-x-auto">
+          <button
             onClick={() => setActiveTab('STATS')}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             Estadísticas
           </button>
-          <button 
+          <button
             onClick={() => setActiveTab('USERS')}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             Usuarios
           </button>
           <button
             onClick={() => setActiveTab('OPS')}
-            className={`px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'OPS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'OPS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             Registros
           </button>
           <button
             onClick={() => setActiveTab('REQUESTS')}
-            className={`relative px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            className={`relative shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
           >
             <Inbox className="w-3.5 h-3.5" />
             Solicitudes
