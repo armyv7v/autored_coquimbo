@@ -29,7 +29,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
 
   return (
     <nav
-      className="fixed bottom-0 inset-x-0 z-50 md:hidden bg-slate-950 backdrop-blur-2xl border-t border-white/10 px-2 pt-2 flex items-end justify-around shadow-2xl shadow-black/30 select-none"
+      className="sliding-tabs fixed bottom-0 inset-x-0 z-50 md:hidden bg-slate-950 backdrop-blur-2xl border-t border-white/10 px-2 pt-2 flex items-end justify-around shadow-2xl shadow-black/30 select-none"
       style={{ paddingBottom: 'max(0.5rem, env(safe-area-inset-bottom))' }}
     >
       {/* El acceso Admin vive en el botón del header (móvil) y en la nav de
@@ -37,6 +37,11 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
           teléfonos de 360-375px. */}
       {NAV_ITEMS.filter((item) => !item.adminOnly).map((item) => {
         const Icon = item.icon;
+
+        // Coincidencia exacta: los paths de NAV_ITEMS son rutas top-level
+        // sin prefijos anidados, así que equivale al isActive de NavLink y
+        // permite colocar data-active (el ancla de la píldora deslizante).
+        const routeActive = !!item.path && location.pathname === item.path;
 
         if (item.alert) {
           return (
@@ -69,19 +74,21 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
           );
         }
 
-        // Un solo estilo activo: el switch original tenía casos idénticos (código muerto, A-29)
-        const activeClass = 'text-slate-100 font-black scale-105 bg-slate-800 border border-slate-600/80';
+        // El fondo activo lo pinta la píldora deslizante del contenedor
+        // (::before anclado a data-active, ver index.css); el item solo
+        // aporta texto/escala. El fondo estático del fallback también vive
+        // en el CSS (@supports not position-anchor).
+        const activeClass = 'text-slate-100 font-black scale-105';
 
         if (item.path) {
           return (
             <NavLink
               key={item.id}
               to={item.path}
-              className={({ isActive }) =>
-                `flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
-                  isActive ? activeClass : 'text-slate-400 hover:text-slate-200'
-                }`
-              }
+              data-active={routeActive ? 'true' : undefined}
+              className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
+                routeActive ? activeClass : 'text-slate-400 hover:text-slate-200'
+              }`}
             >
               <Icon className="w-5 h-5" />
               <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
@@ -95,6 +102,8 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
           <button
             key={item.id}
             onClick={() => handleTabClick(item.tab!)}
+            data-active={isCurrentActive ? 'true' : undefined}
+            aria-current={isCurrentActive ? 'true' : undefined}
             className={`flex flex-col items-center gap-1 py-1.5 px-3 rounded-2xl transition-all active:scale-95 border border-transparent ${
               isCurrentActive ? activeClass : 'text-slate-400 hover:text-slate-200'
             }`}

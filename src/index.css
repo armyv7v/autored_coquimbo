@@ -341,3 +341,64 @@ body {
   transform: scale(0.98);
 }
 
+
+/* ============================================================
+   Píldora deslizante vía CSS Anchor Positioning.
+   Patrón de modern-web-guidance (anchor-positioning-tab-underline)
+   adaptado a píldora: el contenedor .sliding-tabs pinta un ::before
+   anclado al item activo (data-active="true") por sus cuatro lados
+   con anchor(). Al cambiar el anchor-name de item, la píldora se
+   desliza con una transición de inset — sin JS midiendo rects.
+   Reglas de la guía respetadas: nada de position-area (no es
+   transicionable), transición solo bajo prefers-reduced-motion, y
+   borde en el pseudo para que el indicador sobreviva a forced-colors
+   (el background forzado desaparece; el borde se conserva).
+   ============================================================ */
+.sliding-tabs {
+  position: relative;
+}
+.sliding-tabs > [data-active="true"] {
+  anchor-name: --sliding-tab-active;
+}
+.sliding-tabs::before {
+  content: "";
+  position: absolute;
+  position-anchor: --sliding-tab-active;
+  inset-block-start: anchor(top);
+  inset-block-end: anchor(bottom);
+  inset-inline-start: anchor(left);
+  inset-inline-end: anchor(right);
+  background: var(--sliding-pill-bg, #1e293b);
+  border-radius: var(--sliding-pill-radius, 1rem);
+  box-shadow: var(--sliding-pill-shadow, none);
+  border: 1px solid transparent;
+  pointer-events: none;
+}
+/* El contenido de los items por encima de la píldora. Solo <a>/<button>:
+   el wrapper elevado del botón de alerta (div z-10 propio) no se toca. */
+.sliding-tabs > a,
+.sliding-tabs > button {
+  position: relative;
+  z-index: 1;
+}
+@media (forced-colors: active) {
+  .sliding-tabs::before {
+    border-color: CanvasText;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .sliding-tabs::before {
+    transition: inset 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+/* Fallback sin anchor positioning: fondo estático en el item activo. */
+@supports not (position-anchor: auto) {
+  .sliding-tabs::before {
+    display: none;
+  }
+  .sliding-tabs > [data-active="true"] {
+    background: var(--sliding-pill-bg, #1e293b);
+    border-radius: var(--sliding-pill-radius, 1rem);
+    box-shadow: var(--sliding-pill-shadow, none);
+  }
+}

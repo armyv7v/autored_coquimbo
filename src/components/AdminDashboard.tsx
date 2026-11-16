@@ -340,29 +340,36 @@ export default function AdminDashboard() {
         </div>
 
         {/* N-D3: a 375px las 4 pestañas desbordaban sin affordance — fila
-            scrollable con snap y botones sin salto de línea. */}
-        <nav className="flex w-full md:w-auto bg-slate-900 p-1 rounded-2xl border border-slate-800 overflow-x-auto">
+            scrollable con snap y botones sin salto de línea.
+            La píldora activa ya no es bg del botón: es el ::before del
+            contenedor anclado a data-active (CSS Anchor Positioning, ver
+            .sliding-tabs en index.css) — se desliza entre pestañas. */}
+        <nav className="sliding-tabs flex w-full md:w-auto bg-slate-900 p-1 rounded-2xl border border-slate-800 overflow-x-auto [--sliding-pill-bg:#334155] [--sliding-pill-radius:0.75rem] [--sliding-pill-shadow:0_10px_15px_-3px_rgb(0_0_0/0.2)]">
           <button
             onClick={() => setActiveTab('STATS')}
-            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            data-active={activeTab === 'STATS' ? 'true' : undefined}
+            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'STATS' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
           >
             Estadísticas
           </button>
           <button
             onClick={() => setActiveTab('USERS')}
-            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            data-active={activeTab === 'USERS' ? 'true' : undefined}
+            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'USERS' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
           >
             Usuarios
           </button>
           <button
             onClick={() => setActiveTab('OPS')}
-            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'OPS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            data-active={activeTab === 'OPS' ? 'true' : undefined}
+            className={`shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all ${activeTab === 'OPS' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
           >
             Registros
           </button>
           <button
             onClick={() => setActiveTab('REQUESTS')}
-            className={`relative shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'bg-slate-700 text-white shadow-lg shadow-black/20' : 'text-slate-400 hover:text-white'}`}
+            data-active={activeTab === 'REQUESTS' ? 'true' : undefined}
+            className={`relative shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
           >
             <Inbox className="w-3.5 h-3.5" />
             Solicitudes
