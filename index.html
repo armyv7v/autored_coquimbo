@@ -8,6 +8,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="icon" href="/favicon.ico" />
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- LCP: la primera imagen del carrusel del landing y el logo del header
+         son candidatos a LCP descubiertos tarde (llegan con el render de
+         React). El preload los arranca en el parse del HTML, en paralelo al
+         JS, con prioridad alta para ganar la contienda del arranque. -->
+    <link rel="preload" as="image" fetchpriority="high" href="https://images.unsplash.com/photo-1718447772276-a79e984ee1a7?w=1536&amp;h=368&amp;fit=crop&amp;q=80&amp;auto=format" />
+    <link rel="preload" as="image" fetchpriority="high" href="/branding/logo-alerta-dealers.png" />
     <title>Alerta Dealers — Red Privada entre Automotoras</title>
     <meta name="description" content="La única red de seguridad para automotoras en Chile. Alertas en tiempo real, botón de pánico con GPS y telemetría para la Región de Coquimbo." />
   </head>

@@ -431,6 +431,7 @@ export default function Login() {
                           src={card.img}
                           alt=""
                           loading={activeCapability === 0 ? 'eager' : 'lazy'}
+                          fetchPriority={activeCapability === 0 ? 'high' : 'low'}
                           className="absolute inset-0 w-full h-full object-cover opacity-30 brightness-110"
                           initial={{ scale: 1 }}
                           animate={{ scale: 1.07 }}
