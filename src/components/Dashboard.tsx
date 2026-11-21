@@ -708,7 +708,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
             <button
               type="button"
               onClick={() => { requestPermission(); }}
-              className="shrink-0 px-4 min-h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-mono font-bold uppercase tracking-wider transition active:scale-95"
+              className="shrink-0 px-4 min-h-11 rounded-xl bg-emerald-700 hover:bg-emerald-600 text-white text-xs font-mono font-bold uppercase tracking-wider transition active:scale-95"
             >
               Activar
             </button>

@@ -225,8 +225,14 @@ export default function NotificationManager() {
             exit={{ opacity: 0, scale: 0.9 }}
             /* A-18: sobre la BottomNavbar — bottom-6 tapaba el botón de Alerta */
             className="fixed bottom-24 right-4 z-[9999] w-full max-w-sm md:bottom-6 md:right-6"
+            role="region"
+            aria-label="Alerta de la red"
           >
-            <div className="bg-slate-900 border-2 border-red-500/50 rounded-3xl shadow-2xl shadow-red-500/20 p-5 overflow-hidden relative">
+            {/* role="alert": anuncia la alerta al insertarse — sin esto un
+                lector de pantalla nunca se enteraba (guía
+                persistent-toast-notifications). La información persiste
+                además en el Historial (identificable sin el toast). */}
+            <div role="alert" className="bg-slate-900 border-2 border-red-500/50 rounded-3xl shadow-2xl shadow-red-500/20 p-5 overflow-hidden relative">
               <div className="absolute top-0 left-0 w-full h-1 bg-red-500 animate-pulse" />
 
               <div className="flex items-start gap-4">
