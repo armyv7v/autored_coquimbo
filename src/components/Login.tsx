@@ -453,6 +453,10 @@ export default function Login() {
                       >
                         <motion.img
                           src={card.img}
+                          srcSet={`${card.img.replace('w=1536&h=368', 'w=768&h=184')} 768w, ${card.img} 1536w`}
+                          sizes="(min-width: 1280px) 768px, 90vw"
+                          width={1536}
+                          height={368}
                           alt=""
                           loading={activeCapability === 0 ? 'eager' : 'lazy'}
                           fetchPriority={activeCapability === 0 ? 'high' : 'low'}
