@@ -20,6 +20,8 @@ import {
   ChevronRight,
   Siren,
   X,
+  Pause,
+  Play,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import InteractiveNetworkWeb, { NODES, WebNode } from './InteractiveNetworkWeb';
@@ -158,17 +160,31 @@ export default function Login() {
   );
   const [activeCapability, setActiveCapability] = useState(0);
   const [capPaused, setCapPaused] = useState(false);
+  const [userPaused, setUserPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
   const [detailIdx, setDetailIdx] = useState<number | null>(null);
   const detailRef = React.useRef<HTMLDivElement | null>(null);
 
+  // WCAG 2.2.2 (Pausa, Detener, Ocultar — nivel A): el carrusel auto-rotante
+  // necesita un mecanismo de pausa accesible (botón, no solo hover) y
+  // prefers-reduced-motion desactiva la rotación por completo.
   React.useEffect(() => {
-    if (capPaused) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const sync = () => setReducedMotion(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  const carouselPaused = capPaused || userPaused || reducedMotion;
+
+  React.useEffect(() => {
+    if (carouselPaused) return;
     const t = setInterval(
       () => setActiveCapability((p) => (p + 1) % capabilityCards.length),
       5500
     );
     return () => clearInterval(t);
-  }, [capPaused]);
+  }, [carouselPaused]);
 
   // Al abrir un detalle: pausar el carrusel y desplazar la vista a la sección
   React.useEffect(() => {
@@ -394,8 +410,10 @@ export default function Login() {
       <section className="relative z-10 flex-1 grid xl:grid-cols-[1.18fr_0.82fr] pointer-events-none">
         {/* Left Column: Spatial Narrative & Interactive Node Deck */}
         <aside className="flex flex-col justify-between p-5 sm:p-8 xl:p-10 2xl:p-14 border-b xl:border-b-0 xl:border-r border-slate-300/70 pointer-events-auto">
-          {/* Spatial Headline */}
-          <div className="max-w-4xl my-auto py-4">
+          {/* Spatial Headline — plato de legibilidad: la telaraña interactiva
+              y sus nodos cruzan el texto sin un fondo que los separe
+              (visible en móvil, donde un nodo cae en medio del subtítulo). */}
+          <div className="max-w-4xl my-auto py-4 -mx-2 px-2 sm:-mx-4 sm:px-4 rounded-3xl bg-white/90 backdrop-blur-md ring-1 ring-slate-900/5 shadow-[0_12px_40px_-12px_rgba(15,23,42,0.15)]">
             <h1 className="font-display max-w-4xl text-3xl 2xl:text-5xl font-black tracking-[-.05em] leading-[1.02] text-balance text-slate-900">
               La Única <span className="bg-gradient-to-r from-[#E20B17] via-[#FF4D00] to-[#E20B17] bg-clip-text text-transparent uppercase">Red de Seguridad para Automotoras</span> en Chile
             </h1>
@@ -434,8 +452,8 @@ export default function Login() {
                           fetchPriority={activeCapability === 0 ? 'high' : 'low'}
                           className="absolute inset-0 w-full h-full object-cover opacity-30 brightness-110"
                           initial={{ scale: 1 }}
-                          animate={{ scale: 1.07 }}
-                          transition={{ duration: 6.5, ease: 'linear' }}
+                          animate={{ scale: reducedMotion ? 1 : 1.07 }}
+                          transition={{ duration: reducedMotion ? 0 : 6.5, ease: 'linear' }}
                         />
                         <div className="absolute inset-0 bg-gradient-to-r from-[#0b1220]/95 via-[#0b1220]/70 to-[#0b1220]/20 pointer-events-none" />
                         <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 pointer-events-none`} />
@@ -463,8 +481,20 @@ export default function Login() {
 
               {/* Progress indicators — N-S11: eran botones de 6px de alto
                   (64×6px, interacción muerta en táctil); el área de toque
-                  ahora es ≥44px sin cambiar el visual de la barra. */}
+                  ahora es ≥44px sin cambiar el visual de la barra.
+                  WCAG 2.2.2: botón de pausa accesible (el hover no alcanza
+                  para teclado/táctil); con prefers-reduced-motion la
+                  rotación está desactivada de fábrica. */}
               <div className="flex items-center gap-2 mt-3.5">
+                <button
+                  type="button"
+                  onClick={() => setUserPaused((p) => !p)}
+                  aria-label={carouselPaused ? 'Reproducir carrusel' : 'Pausar carrusel'}
+                  aria-pressed={carouselPaused}
+                  className="relative min-h-11 min-w-11 flex items-center justify-center rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-900/5 transition active:scale-95"
+                >
+                  {carouselPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+                </button>
                 {capabilityCards.map((card, i) => (
                   <button
                     key={card.num}
@@ -476,11 +506,11 @@ export default function Login() {
                     <span className="relative h-1.5 w-full rounded-full bg-slate-300/70 overflow-hidden transition-colors hover:bg-slate-400/80">
                       {i === activeCapability && (
                         <motion.span
-                          key={`fill-${activeCapability}-${capPaused}`}
+                          key={`fill-${activeCapability}-${carouselPaused}`}
                           className="absolute inset-y-0 left-0 bg-slate-900 rounded-full"
-                          initial={{ width: capPaused ? '100%' : '0%' }}
+                          initial={{ width: carouselPaused ? '100%' : '0%' }}
                           animate={{ width: '100%' }}
-                          transition={{ duration: capPaused ? 0.2 : 5.5, ease: 'linear' }}
+                          transition={{ duration: carouselPaused ? 0.2 : 5.5, ease: 'linear' }}
                         />
                       )}
                     </span>
