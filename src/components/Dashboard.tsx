@@ -1171,7 +1171,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                   onChange={(e) => setTimelineDate(prev => ({ ...prev, start: e.target.value }))}
                   className="bg-transparent border-none text-base font-mono text-white focus:ring-0 w-32 p-0 outline-none"
                 />
-                <span className="text-slate-500">→</span>
+                <span className="text-slate-400">→</span>
                 <input 
                   type="date" 
                   value={timelineDate.end}

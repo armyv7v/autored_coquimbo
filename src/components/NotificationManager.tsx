@@ -207,7 +207,7 @@ export default function NotificationManager() {
       {nodeOffline && (
         <div className="fixed top-16 left-1/2 -translate-x-1/2 z-[1500] w-full max-w-md px-4">
           <div
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl"
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-amber-100 border border-amber-400 text-amber-950 text-xs font-mono font-bold uppercase tracking-wider shadow-lg shadow-amber-900/10"
             role="alert"
             aria-live="polite"
           >
