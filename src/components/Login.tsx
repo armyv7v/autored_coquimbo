@@ -158,6 +158,9 @@ export default function Login() {
   const [networkDealers, setNetworkDealers] = useState<{ name: string; node?: WebNode }[]>(
     () => NODES.filter((n) => !n.isCore).map((node) => ({ name: node.name, node }))
   );
+  // Honestidad: mientras no haya lectura real de Firestore, la red mostrada
+  // es la semilla de demostración y así se rotula (nada de falso verde).
+  const [redEnVivo, setRedEnVivo] = useState(false);
   const [activeCapability, setActiveCapability] = useState(0);
   const [capPaused, setCapPaused] = useState(false);
   const [userPaused, setUserPaused] = useState(false);
@@ -205,7 +208,10 @@ export default function Login() {
         const rows = snap.docs
           .map((d) => ({ name: ((d.data() as any).name as string) || d.id }))
           .filter((r) => r.name);
-        if (rows.length) setNetworkDealers(rows);
+        if (rows.length) {
+          setNetworkDealers(rows);
+          setRedEnVivo(true);
+        }
       })
       .catch(() => { /* dealership reads require auth; keep static network nodes */ });
     return () => { active = false; };
@@ -450,13 +456,13 @@ export default function Login() {
                           alt=""
                           loading={activeCapability === 0 ? 'eager' : 'lazy'}
                           fetchPriority={activeCapability === 0 ? 'high' : 'low'}
-                          className="absolute inset-0 w-full h-full object-cover opacity-30 brightness-110"
+                          className="absolute inset-0 w-full h-full object-cover opacity-45 brightness-110"
                           initial={{ scale: 1 }}
                           animate={{ scale: reducedMotion ? 1 : 1.07 }}
                           transition={{ duration: reducedMotion ? 0 : 6.5, ease: 'linear' }}
                         />
-                        <div className="absolute inset-0 bg-gradient-to-r from-[#0b1220]/95 via-[#0b1220]/70 to-[#0b1220]/20 pointer-events-none" />
-                        <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-60 pointer-events-none`} />
+                        <div className="absolute inset-0 bg-gradient-to-r from-[#0b1220]/95 via-[#0b1220]/55 to-[#0b1220]/5 pointer-events-none" />
+                        <div className={`absolute inset-0 bg-gradient-to-br ${card.color} opacity-45 pointer-events-none`} />
                         <div className="relative flex items-start justify-between">
                           <span className="text-4xl sm:text-5xl font-mono font-black text-white/15 tracking-tighter leading-none select-none">
                             {card.num}
@@ -485,7 +491,29 @@ export default function Login() {
                   WCAG 2.2.2: botón de pausa accesible (el hover no alcanza
                   para teclado/táctil); con prefers-reduced-motion la
                   rotación está desactivada de fábrica. */}
-              <div className="flex items-center gap-2 mt-3.5">
+              <div
+                className="flex items-center gap-2 mt-3.5"
+                onKeyDown={(e) => {
+                  // Navegación por flechas entre indicadores (roving tabindex):
+                  // selección sigue al foco, mismo contrato del carrusel.
+                  if (e.altKey || e.ctrlKey || e.metaKey) return;
+                  const target = e.target instanceof HTMLElement ? e.target.closest('button[data-ind]') : null;
+                  if (!target) return;
+                  const botones = Array.from(e.currentTarget.querySelectorAll('button[data-ind]'));
+                  const idx = botones.indexOf(target);
+                  if (idx < 0) return;
+                  let next = idx;
+                  if (e.key === 'ArrowRight') next = (idx + 1) % botones.length;
+                  else if (e.key === 'ArrowLeft') next = (idx - 1 + botones.length) % botones.length;
+                  else if (e.key === 'Home') next = 0;
+                  else if (e.key === 'End') next = botones.length - 1;
+                  else return;
+                  e.preventDefault();
+                  const b = botones[next] as HTMLElement;
+                  b.focus();
+                  setActiveCapability(botones.indexOf(b));
+                }}
+              >
                 <button
                   type="button"
                   onClick={() => setUserPaused((p) => !p)}
@@ -499,8 +527,11 @@ export default function Login() {
                   <button
                     key={card.num}
                     type="button"
+                    data-ind
                     onClick={() => setActiveCapability(i)}
                     aria-label={`Ver ${card.title}`}
+                    aria-current={i === activeCapability ? 'true' : undefined}
+                    tabIndex={i === activeCapability ? 0 : -1}
                     className="relative min-h-11 flex-1 max-w-16 flex items-center"
                   >
                     <span className="relative h-1.5 w-full rounded-full bg-slate-300/70 overflow-hidden transition-colors hover:bg-slate-400/80">
@@ -589,8 +620,14 @@ export default function Login() {
                   <Activity className="w-3.5 h-3.5 text-[#00E676]" />
                   Automotoras en la Red{networkDealers.some((d) => d.node) ? ' (Seleccione para inspeccionar)' : ''}
                 </span>
-                <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-[#00E676]/15 text-[#00E676] border border-[#00E676]/30 font-bold">
-                  {networkDealers.length} EN LÍNEA
+                <span
+                  className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold border ${
+                    redEnVivo
+                      ? 'bg-[#00E676]/15 text-[#00E676] border-[#00E676]/30'
+                      : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
+                  }`}
+                >
+                  {redEnVivo ? `${networkDealers.length} EN LÍNEA` : 'RED DE DEMOSTRACIÓN'}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs content-start max-h-44 overflow-y-auto pr-1 custom-scrollbar">
@@ -633,20 +670,20 @@ export default function Login() {
                   <Radio className="w-3.5 h-3.5" />
                   Transmisión Táctica
                 </span>
-                <span className="text-[10px] font-mono text-slate-400">Enlace Óptico</span>
+                <span className="text-[10px] font-mono text-slate-400">Simulación local</span>
               </div>
               <p className="text-xs text-slate-300 leading-relaxed mb-3">
                 {selectedNode
-                  ? `Nodo ${selectedNode.name} seleccionado. Transmite ráfagas de telemetría directamente al núcleo de seguridad.`
-                  : 'Explora la red: toca un nodo para inspeccionarlo o transmite una ráfaga general de telemetría.'}
+                  ? `Nodo ${selectedNode.name} seleccionado. Lanza un pulso de demostración hacia el núcleo de seguridad.`
+                  : 'Demostración interactiva: toca un nodo para inspeccionarlo o lanza un pulso de telemetría simulado. Sin envío real.'}
               </p>
               <button
                 type="button"
                 onClick={handleTriggerNetworkAlert}
-                className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] hover:from-[#f1121c] hover:to-[#d50a16] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
+                className="w-full min-h-11 px-4 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] hover:from-[#f1121c] hover:to-[#d50a16] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
               >
                 <Zap className="w-4 h-4 text-white" />
-                {selectedNode ? `Transmitir a ${selectedNode.name}` : 'Transmitir Ráfaga a la Red'}
+                {selectedNode ? `Pulso de demo a ${selectedNode.name}` : 'Lanzar Pulso de Demostración'}
               </button>
             </div>
           </div>
