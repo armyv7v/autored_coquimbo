@@ -5,7 +5,25 @@ import { useAuth } from '../hooks/useAuth';
 import { Users, Tray, ChartBar, Scan, DownloadSimple, CaretLeft, Eye, ShieldCheck, ShieldWarning, Shield, Clock, Pulse, SealCheck, XCircle, Warning, MagnifyingGlass, Funnel, CaretRight, Path, Spinner } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import ConnectionBanner from './ConnectionBanner';
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, AreaChart, Area } from 'recharts';
+
+// Sparkline de KPI: mini AreaChart sin ejes para las tarjetas de estadísticas.
+function MiniSpark({ data, color }: { data: { v: number }[]; color: string }) {
+  const id = `spark-${color.replace('#', '')}`;
+  return (
+    <ResponsiveContainer width="100%" height={36}>
+      <AreaChart data={data} margin={{ top: 2, right: 0, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id={id} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor={color} stopOpacity={0.5} />
+            <stop offset="100%" stopColor={color} stopOpacity={0.02} />
+          </linearGradient>
+        </defs>
+        <Area type="monotone" dataKey="v" stroke={color} strokeWidth={1.5} fill={`url(#${id})`} isAnimationActive={false} />
+      </AreaChart>
+    </ResponsiveContainer>
+  );
+}
 import AdminAccessRequests from './AdminAccessRequests';
 
 interface UserProfile {
@@ -209,14 +227,6 @@ export default function AdminDashboard() {
     return acc;
   }, {});
 
-  const pieData = Object.entries(statsByType).map(([name, value]) => ({ name, value }));
-
-  const statusData = [
-    { name: 'Abiertos', value: incidents.filter(i => i.status === 'OPEN').length },
-    { name: 'Resueltos', value: incidents.filter(i => i.status === 'RESOLVED').length },
-    { name: 'Falsa Alarma', value: incidents.filter(i => i.status === 'FALSE_ALARM').length },
-  ];
-
   // Calidad del reconocimiento de patentes: los campos plateSource /
   // ocrConfidence / ocrSuggestedPlate los escribe el formulario de incidentes
   // (plateSource pasa a MANUAL si el operador corrige algo del autollenado).
@@ -244,6 +254,73 @@ export default function AdminDashboard() {
     const date = tsToDate(value);
     if (!date) return '—';
     return date.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+  };
+
+  // ── Dimensiones temporales (los incidentes y usuarios llevan createdAt) ──
+  const hoyFin = new Date(); hoyFin.setHours(23, 59, 59, 999);
+  const hace30 = new Date(hoyFin); hace30.setDate(hace30.getDate() - 29); hace30.setHours(0, 0, 0, 0);
+  const hace7 = new Date(hoyFin); hace7.setDate(hace7.getDate() - 6); hace7.setHours(0, 0, 0, 0);
+  const hace14 = new Date(hoyFin); hace14.setDate(hace14.getDate() - 13); hace14.setHours(0, 0, 0, 0);
+
+  const incidentesConFecha = incidents
+    .map(i => ({ ...i, fecha: tsToDate(i.createdAt) }))
+    .filter(i => i.fecha !== null);
+
+  // Serie de 30 días para el AreaChart
+  const serieIncidentes = Array.from({ length: 30 }, (_, idx) => {
+    const dia = new Date(hace30); dia.setDate(hace30.getDate() + idx);
+    const siguiente = new Date(dia); siguiente.setDate(dia.getDate() + 1);
+    return {
+      label: `${String(dia.getDate()).padStart(2, '0')}/${String(dia.getMonth() + 1).padStart(2, '0')}`,
+      incidentes: incidentesConFecha.filter(i => i.fecha! >= dia && i.fecha! < siguiente).length,
+    };
+  });
+
+  const delta = (actual: number, previa: number): number =>
+    previa === 0 ? (actual > 0 ? 100 : 0) : Math.round(((actual - previa) / previa) * 100);
+
+  const enSemanaIncidentes = incidentesConFecha.filter(i => i.fecha! >= hace7).length;
+  const prevSemanaIncidentes = incidentesConFecha.filter(i => i.fecha! >= hace14 && i.fecha! < hace7).length;
+  const deltaIncidentes = delta(enSemanaIncidentes, prevSemanaIncidentes);
+
+  const usuariosConFecha = users
+    .map(u => ({ fecha: tsToDate(u.createdAt) }))
+    .filter(u => u.fecha !== null);
+  const enSemanaUsuarios = usuariosConFecha.filter(u => u.fecha! >= hace7).length;
+  const prevSemanaUsuarios = usuariosConFecha.filter(u => u.fecha! >= hace14 && u.fecha! < hace7).length;
+  const deltaUsuarios = delta(enSemanaUsuarios, prevSemanaUsuarios);
+
+  const sparkIncidentes = serieIncidentes.slice(-7).map(d => ({ v: d.incidentes }));
+  const sparkUsuarios = Array.from({ length: 7 }, (_, idx) => {
+    const dia = new Date(hace7); dia.setDate(hace7.getDate() + idx);
+    const siguiente = new Date(dia); siguiente.setDate(dia.getDate() + 1);
+    return { v: usuariosConFecha.filter(u => u.fecha! >= dia && u.fecha! < siguiente).length };
+  });
+
+  const cerrados = incidents.filter(i => i.status !== 'OPEN').length;
+  const tasaCierre = Math.round((incidents.filter(i => i.status === 'RESOLVED').length / (incidents.length || 1)) * 100);
+
+  // ── Paleta de marca para los charts (mismos tokens del landing) ──
+  const TIP_COLORS: Record<string, string> = {
+    ROBO: '#FF4D00',
+    SOSPECHOSO: '#00E676',
+    MARCAJE: '#38bdf8',
+    OTRO: '#94a3b8',
+  };
+  const pieData = Object.entries(statsByType).map(([name, value]) => ({ name, value, color: TIP_COLORS[name] || '#94a3b8' }));
+
+  const statusData = [
+    { name: 'Abiertos', value: incidents.filter(i => i.status === 'OPEN').length, color: '#E20B17' },
+    { name: 'Resueltos', value: incidents.filter(i => i.status === 'RESOLVED').length, color: '#00E676' },
+    { name: 'Falsa Alarma', value: incidents.filter(i => i.status === 'FALSE_ALARM').length, color: '#94a3b8' },
+  ];
+
+  const tooltipTactico = {
+    backgroundColor: '#0b1220',
+    border: '1px solid #1e293b',
+    borderRadius: '12px',
+    fontFamily: 'ui-monospace, monospace',
+    fontSize: 11,
   };
 
   // Filtering Logic
@@ -368,66 +445,168 @@ export default function AdminDashboard() {
           >
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
-                { label: 'Total Usuarios', value: users.length, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                { label: 'Total Incidentes', value: incidents.length, icon: Warning, color: 'text-red-500', bg: 'bg-red-500/10' },
-                { label: 'Resolución', value: `${((incidents.filter(i => i.status === 'RESOLVED').length / (incidents.length || 1)) * 100).toFixed(0)}%`, icon: SealCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-                { label: 'Sedes Activas', value: dealerships.length, icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
+                { label: 'Total Usuarios', value: users.length, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10', delta: deltaUsuarios, invertDelta: false, spark: sparkUsuarios, sparkColor: '#38bdf8', sub: 'operadores verificados' },
+                { label: 'Total Incidentes', value: incidents.length, icon: Warning, color: 'text-red-500', bg: 'bg-red-500/10', delta: deltaIncidentes, invertDelta: true, spark: sparkIncidentes, sparkColor: '#E20B17', sub: `${enSemanaIncidentes} en los últimos 7 días` },
+                { label: 'Tasa de Cierre', value: `${tasaCierre}%`, icon: SealCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10', sub: `${cerrados} de ${incidents.length} casos` },
+                { label: 'Sedes Activas', value: dealerships.length, icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-500/10', sub: 'nodos verificados con RUT' },
               ].map((stat, i) => (
-                <div key={i} className="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden group">
+                <div key={i} className="bg-slate-900 border border-slate-800 p-5 rounded-3xl relative overflow-hidden group">
                   <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} blur-3xl -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50`} />
-                  <stat.icon className={`w-5 h-5 ${stat.color} mb-4 relative z-10`} />
-                  <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1 relative z-10">{stat.label}</p>
+                  <div className="flex items-center justify-between relative z-10 mb-3">
+                    <stat.icon className={`w-5 h-5 ${stat.color}`} weight="duotone" />
+                    {typeof stat.delta === 'number' && (
+                      <span
+                        className={`text-[10px] font-mono font-black px-1.5 py-0.5 rounded ${
+                          stat.delta > 0
+                            ? (stat.invertDelta ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400')
+                            : stat.delta < 0
+                              ? (stat.invertDelta ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-700 text-slate-300')
+                              : 'bg-slate-700 text-slate-300'
+                        }`}
+                        title="Variación vs los 7 días anteriores"
+                      >
+                        {stat.delta > 0 ? '↑' : stat.delta < 0 ? '↓' : '='} {Math.abs(stat.delta)}%
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-0.5 relative z-10">{stat.label}</p>
                   <p className="text-3xl font-black text-white relative z-10">{stat.value}</p>
+                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mt-1 relative z-10">{stat.sub}</p>
+                  {stat.spark && (
+                    <div className="mt-2 -mx-1 relative z-10">
+                      <MiniSpark data={stat.spark} color={stat.sparkColor} />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
 
+            <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                  <Pulse className="w-4 h-4 text-[#E20B17]" weight="duotone" />
+                  Incidentes — últimos 30 días
+                </h2>
+                <span
+                  className={`text-[10px] font-mono font-black px-2 py-0.5 rounded ${
+                    deltaIncidentes > 0 ? 'bg-red-500/15 text-red-400' : 'bg-emerald-500/15 text-emerald-400'
+                  }`}
+                  title="Últimos 7 días vs los 7 anteriores"
+                >
+                  {deltaIncidentes > 0 ? '↑' : deltaIncidentes < 0 ? '↓' : '='} {Math.abs(deltaIncidentes)}% semana
+                </span>
+              </div>
+              <ResponsiveContainer width="100%" height={190}>
+                <AreaChart data={serieIncidentes} margin={{ top: 4, right: 8, left: -16, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="gradIncidentes30" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#E20B17" stopOpacity={0.45} />
+                      <stop offset="100%" stopColor="#E20B17" stopOpacity={0.02} />
+                    </linearGradient>
+                  </defs>
+                  <XAxis
+                    dataKey="label"
+                    tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'ui-monospace, monospace' }}
+                    interval={4}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    tick={{ fill: '#64748b', fontSize: 10, fontFamily: 'ui-monospace, monospace' }}
+                    width={30}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip
+                    cursor={{ stroke: '#334155', strokeWidth: 1 }}
+                    contentStyle={tooltipTactico}
+                    labelStyle={{ color: '#e2e8f0', fontWeight: 700 }}
+                    itemStyle={{ color: '#FF4D00' }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="incidentes"
+                    name="Incidentes"
+                    stroke="#E20B17"
+                    strokeWidth={2}
+                    fill="url(#gradIncidentes30)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center">
-                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
+                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 self-start flex items-center gap-2">
                   <ChartBar className="w-4 h-4 text-slate-300" />
                   Distribución por Tipo
                 </h2>
-                <div className="w-full h-64">
+                <div className="relative w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
                       <Pie
                         data={pieData}
                         cx="50%"
                         cy="50%"
-                        innerRadius={60}
-                        outerRadius={80}
+                        innerRadius={62}
+                        outerRadius={84}
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {pieData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        {pieData.map((entry) => (
+                          <Cell key={`cell-${entry.name}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <Tooltip 
-                        contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px' }}
-                        itemStyle={{ color: '#fff', fontSize: '10px', textTransform: 'uppercase' }}
+                      <Tooltip
+                        contentStyle={tooltipTactico}
+                        labelStyle={{ color: '#e2e8f0' }}
+                        itemStyle={{ color: '#FF4D00', textTransform: 'uppercase' }}
                       />
-                      <Legend verticalAlign="bottom" wrapperStyle={{ fontSize: '10px', textTransform: 'uppercase', color: '#64748b' }} />
                     </PieChart>
                   </ResponsiveContainer>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <p className="text-3xl font-black text-white">{incidents.length}</p>
+                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">casos</p>
+                  </div>
+                </div>
+                {/* Leyenda con valores — la del recharts no mostraba números */}
+                <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-2 mt-4">
+                  {pieData.map((d) => (
+                    <span key={d.name} className="flex items-center gap-1.5 text-[11px] font-mono text-slate-300">
+                      <span className="w-2.5 h-2.5 rounded-sm" style={{ background: d.color }} />
+                      {d.name} <strong className="text-white">{d.value}</strong>
+                    </span>
+                  ))}
                 </div>
               </div>
 
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col">
-                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
+                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 self-start flex items-center gap-2">
                   <Pulse className="w-4 h-4 text-slate-300" />
                   Estado de Resolución
                 </h2>
                 <div className="w-full h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={statusData}>
-                      <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} axisLine={false} />
+                    <BarChart data={statusData} margin={{ bottom: 4 }}>
+                      <XAxis
+                        dataKey="name"
+                        stroke="#64748b"
+                        tick={{ fill: '#94a3b8', fontSize: 11, fontFamily: 'ui-monospace, monospace' }}
+                        tickLine={false}
+                        axisLine={false}
+                      />
                       <Tooltip
                         cursor={{ fill: '#1e293b' }}
-                        contentStyle={{ backgroundColor: '#0f172a', border: '1px solid #1e293b', borderRadius: '12px' }}
+                        contentStyle={tooltipTactico}
+                        labelStyle={{ color: '#e2e8f0', fontWeight: 700 }}
+                        itemStyle={{ color: '#FF4D00' }}
                       />
-                      <Bar dataKey="value" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="value" radius={[4, 4, 0, 0]}>
+                        {statusData.map((d) => (
+                          <Cell key={d.name} fill={d.color} />
+                        ))}
+                      </Bar>
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
