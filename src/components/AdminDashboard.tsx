@@ -536,6 +536,50 @@ export default function AdminDashboard() {
               </ResponsiveContainer>
             </div>
 
+            {/* Calidad del OCR de patentes: decide si conviene migrar de
+                Tesseract a un motor externo. accuracy = lecturas OCR que el
+                operador no tuvo que corregir a mano. Ubicada en el bloque
+                principal: con el OCR operando al 100% es una métrica de
+                producto diferenciadora, no un dato de segunda línea. */}
+            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
+              <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
+                <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                  <Scan className="w-4 h-4 text-slate-300" />
+                  Calidad del Reconocimiento de Patentes (OCR)
+                </h2>
+                {platedIncidents.length > 0 && (
+                  <span
+                    className={`text-[10px] font-mono font-black px-2 py-0.5 rounded ${
+                      ocrAccuracy >= 90 ? 'bg-emerald-500/15 text-emerald-400' : 'bg-amber-500/15 text-amber-400'
+                    }`}
+                  >
+                    Acierto implícito: {ocrAccuracy}%
+                  </span>
+                )}
+              </div>
+              {platedIncidents.length === 0 ? (
+                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
+                  Sin incidentes con patente todavía — las métricas aparecen al usar el escáner.
+                </p>
+              ) : (
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+                  {[
+                    { label: 'Con Patente', value: platedIncidents.length, hint: 'incidentes totales', color: 'text-white' },
+                    { label: 'Leídas por OCR', value: ocrIncidents.length, hint: `${manualIncidents.length} escritas a mano`, color: 'text-sky-400' },
+                    { label: 'Confianza Promedio', value: ocrIncidents.length > 0 ? `${avgConfidence}%` : '—', hint: 'del motor Tesseract', color: avgConfidence >= 75 ? 'text-emerald-400' : 'text-amber-400' },
+                    { label: 'Corregidas a Mano', value: ocrCorrections.length, hint: 'OCR equivocado', color: ocrCorrections.length === 0 ? 'text-emerald-400' : 'text-red-400' },
+                    { label: 'Acierto Implícito', value: ocrIncidents.length > 0 ? `${ocrAccuracy}%` : '—', hint: 'sin corrección del operador', color: ocrAccuracy >= 90 ? 'text-emerald-400' : 'text-amber-400' },
+                  ].map((stat, i) => (
+                    <div key={i} className="bg-slate-800/40 border border-slate-800 p-4 rounded-2xl">
+                      <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
+                      <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
+                      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.hint}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center">
                 <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 self-start flex items-center gap-2">
@@ -613,36 +657,6 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Calidad del OCR de patentes: decide si conviene migrar de
-                Tesseract a un motor externo. accuracy = lecturas OCR que el
-                operador no tuvo que corregir a mano. */}
-            <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
-              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                <Scan className="w-4 h-4 text-slate-300" />
-                Calidad del Reconocimiento de Patentes (OCR)
-              </h2>
-              {platedIncidents.length === 0 ? (
-                <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">
-                  Sin incidentes con patente todavía — las métricas aparecen al usar el escáner.
-                </p>
-              ) : (
-                <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-                  {[
-                    { label: 'Con Patente', value: platedIncidents.length, hint: 'incidentes totales', color: 'text-white' },
-                    { label: 'Leídas por OCR', value: ocrIncidents.length, hint: `${manualIncidents.length} escritas a mano`, color: 'text-sky-400' },
-                    { label: 'Confianza Promedio', value: ocrIncidents.length > 0 ? `${avgConfidence}%` : '—', hint: 'del motor Tesseract', color: avgConfidence >= 75 ? 'text-emerald-400' : 'text-amber-400' },
-                    { label: 'Corregidas a Mano', value: ocrCorrections.length, hint: 'OCR equivocado', color: ocrCorrections.length === 0 ? 'text-emerald-400' : 'text-red-400' },
-                    { label: 'Acierto Implícito', value: ocrIncidents.length > 0 ? `${ocrAccuracy}%` : '—', hint: 'sin corrección del operador', color: ocrAccuracy >= 90 ? 'text-emerald-400' : 'text-amber-400' },
-                  ].map((stat, i) => (
-                    <div key={i} className="bg-slate-800/40 border border-slate-800 p-4 rounded-2xl">
-                      <p className="text-[11px] font-black text-slate-500 uppercase tracking-widest mb-1">{stat.label}</p>
-                      <p className={`text-2xl font-black ${stat.color}`}>{stat.value}</p>
-                      <p className="text-[11px] text-slate-500 font-bold uppercase tracking-wider mt-1">{stat.hint}</p>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
           </motion.div>
         ) : activeTab === 'USERS' ? (
           <motion.div 
