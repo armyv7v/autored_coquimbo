@@ -173,7 +173,7 @@ export default function PlateVerificationBadge({
                   <span
                     className={`text-[11px] font-mono font-black uppercase px-2.5 py-0.5 rounded-full whitespace-nowrap ${
                       result.hasStolenReport
-                        ? 'bg-red-600 text-white animate-bounce shadow-md shadow-red-900'
+                        ? 'bg-red-600 text-white shadow-md shadow-red-900'
                         : result.status === 'UNKNOWN'
                           ? 'bg-amber-100 text-amber-800 border border-amber-300'
                           : 'bg-emerald-100 text-emerald-800 border border-emerald-300'

@@ -405,7 +405,7 @@ export default function Login() {
               (visible en móvil, donde un nodo cae en medio del subtítulo). */}
           <div className="max-w-4xl my-auto py-4 -mx-2 px-2 sm:-mx-4 sm:px-4 rounded-3xl bg-white/90 backdrop-blur-md ring-1 ring-slate-900/5 shadow-[0_12px_40px_-12px_rgba(15,23,42,0.15)]">
             <h1 className="font-display max-w-4xl text-3xl 2xl:text-5xl font-black tracking-[-.05em] leading-[1.02] text-balance text-slate-900">
-              La Única <span className="bg-gradient-to-r from-[#E20B17] via-[#FF4D00] to-[#E20B17] bg-clip-text text-transparent uppercase">Red de Seguridad para Automotoras</span> en Chile
+              La Única <span className="text-[#E20B17] uppercase">Red de Seguridad para Automotoras</span> en Chile
             </h1>
 
             <p className="mt-4 max-w-2xl text-sm 2xl:text-base leading-7 text-slate-600 font-normal">
@@ -587,7 +587,7 @@ export default function Login() {
                         <button
                           type="button"
                           onClick={() => { setMode('request'); setAccessOpen(true); }}
-                          className="relative mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
+                          className="relative mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E20B17] hover:bg-[#d10a15] text-white text-xs font-black uppercase tracking-wider active:scale-95 transition"
                         >
                           <Buildings className="w-4 h-4" />
                           Solicitar incorporación a la red
@@ -668,7 +668,7 @@ export default function Login() {
               <button
                 type="button"
                 onClick={handleTriggerNetworkAlert}
-                className="w-full min-h-11 px-4 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] hover:from-[#f1121c] hover:to-[#d50a16] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
+                className="w-full min-h-11 px-4 rounded-xl bg-[#E20B17] hover:bg-[#d10a15] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
               >
                 <Lightning className="w-4 h-4 text-white" />
                 {selectedNode ? `Pulso de demo a ${selectedNode.name}` : 'Lanzar Pulso de Demostración'}
@@ -743,7 +743,7 @@ export default function Login() {
                         setMode('login');
                         sound.playNodePulse(false);
                       }}
-                      className="group rounded-2xl bg-gradient-to-br from-[#E20B17] to-[#a50811] p-4 text-left font-black text-white shadow-lg shadow-[#E20B17]/25 hover:from-[#f1121c] hover:to-[#c00914] active:scale-[.98] transition border border-[#E20B17]"
+                      className="group rounded-2xl bg-[#E20B17] p-4 text-left font-black text-white shadow-lg shadow-black/25 hover:bg-[#c00914] active:scale-[.98] transition border border-[#E20B17]"
                     >
                       <div className="flex items-center justify-between mb-2">
                         <LockSimple className="w-5 h-5 text-white/90" />
@@ -901,7 +901,7 @@ export default function Login() {
                   <button
                     type="submit"
                     disabled={loading || (mode === 'request' && !requestReady)}
-                    className="w-full rounded-2xl bg-gradient-to-r from-[#E20B17] to-[#c00914] py-3.5 font-black text-white shadow-lg shadow-[#E20B17]/25 hover:from-[#f1121c] hover:to-[#d50a16] active:scale-[.98] disabled:opacity-60 transition"
+                    className="w-full rounded-2xl bg-[#E20B17] py-3.5 font-black text-white shadow-lg shadow-black/25 hover:bg-[#d10a15] active:scale-[.98] disabled:opacity-60 transition"
                   >
                     {loading ? 'Procesando...' : mode === 'request' ? 'Enviar Solicitud de Ingreso' : 'Iniciar Sesión'}
                   </button>

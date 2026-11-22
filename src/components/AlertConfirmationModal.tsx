@@ -198,7 +198,7 @@ export default function AlertConfirmationModal({
           }`}
         >
           {/* Pulsing red ambient aura */}
-          <div className={`absolute inset-0 pointer-events-none ${isArmed ? 'bg-gradient-to-b from-red-600/20 via-transparent to-red-950/40 animate-pulse' : 'bg-gradient-to-b from-slate-800/20 via-transparent to-slate-950/40'}`} />
+          <div className={`absolute inset-0 pointer-events-none ${isArmed ? 'bg-gradient-to-b from-red-600/20 via-transparent to-red-950/40 ' : 'bg-gradient-to-b from-slate-800/20 via-transparent to-slate-950/40'}`} />
 
           {sentSuccess ? (
             <div className="py-6 space-y-4 relative z-10">
@@ -250,7 +250,7 @@ export default function AlertConfirmationModal({
                   <span className="relative flex items-center gap-2">
                     {armHandlers.pressing ? (
                       <>
-                        <Broadcast className="w-4 h-4 animate-pulse" />
+                        <Broadcast className="w-4 h-4 " />
                         Sigue presionando…
                       </>
                     ) : (
@@ -319,7 +319,7 @@ export default function AlertConfirmationModal({
               </div>
 
               <div>
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 text-[11px] font-mono font-bold uppercase tracking-wider mb-2 animate-pulse">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 text-[11px] font-mono font-bold uppercase tracking-wider mb-2 ">
                   <Broadcast className="w-3.5 h-3.5" />
                   Botón de Pánico Activo
                 </div>

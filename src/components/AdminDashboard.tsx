@@ -451,7 +451,6 @@ export default function AdminDashboard() {
                 { label: 'Sedes Activas', value: dealerships.length, icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-500/10', sub: 'nodos verificados con RUT' },
               ].map((stat, i) => (
                 <div key={i} className="bg-slate-900 border border-slate-800 p-5 rounded-3xl relative overflow-hidden group">
-                  <div className={`absolute top-0 right-0 w-24 h-24 ${stat.bg} blur-3xl -mr-12 -mt-12 transition-all group-hover:scale-150 opacity-50`} />
                   <div className="flex items-center justify-between relative z-10 mb-3">
                     <stat.icon className={`w-5 h-5 ${stat.color}`} weight="duotone" />
                     {typeof stat.delta === 'number' && (

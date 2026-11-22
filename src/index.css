@@ -8,13 +8,14 @@
   --color-brand-navy: #0B1324;
   --color-brand-navy-2: #112A4D;
   --color-brand-green: #00E676;
-  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 
 :root {
   background-color: #f1f5f9;
   color: #0f172a;
-  font-family: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
   font-feature-settings: "cv02", "cv03", "cv04", "cv11";
 }
 
@@ -57,7 +58,7 @@ body {
 }
 
 .font-display {
-  font-family: "Orbitron", "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  font-family: 'Satoshi', ui-sans-serif, system-ui, sans-serif;
 }
 
 .tabular-nums {

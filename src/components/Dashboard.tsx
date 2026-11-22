@@ -667,7 +667,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               className="bg-red-600 border border-red-500 p-4 rounded-2xl shadow-2xl shadow-red-900/40 cursor-pointer flex items-center gap-4 group"
             >
               <div className="bg-white/20 p-2 rounded-xl">
-                <Bell className="w-6 h-6 text-white animate-bounce" />
+                <Bell className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
                 <p className="text-xs font-black text-white/85 uppercase tracking-widest">Nueva Alerta Crítica</p>

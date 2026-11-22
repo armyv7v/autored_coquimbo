@@ -59,7 +59,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
                 title="Mantén presionado para armar la Alerta Máxima"
               >
                 <div
-                  className="w-14 h-14 rounded-full bg-gradient-to-tr from-red-700 to-red-500 p-0.5 shadow-lg shadow-red-900/40 border-2 border-slate-950 flex items-center justify-center group-hover:scale-105 transition-transform"
+                  className="w-14 h-14 rounded-full bg-[#E20B17] p-0.5 shadow-lg shadow-black/30 border-2 border-slate-950 flex items-center justify-center group-hover:scale-105 transition-transform"
                   aria-label="Alerta máxima"
                 >
                   <div className="w-full h-full rounded-full bg-red-600 flex items-center justify-center text-white">

@@ -233,11 +233,11 @@ export default function NotificationManager() {
                 persistent-toast-notifications). La información persiste
                 además en el Historial (identificable sin el toast). */}
             <div role="alert" className="bg-slate-900 border-2 border-red-500/50 rounded-3xl shadow-2xl shadow-red-500/20 p-5 overflow-hidden relative">
-              <div className="absolute top-0 left-0 w-full h-1 bg-red-500 animate-pulse" />
+              <div className="absolute top-0 left-0 w-full h-1 bg-red-500/60" />
 
               <div className="flex items-start gap-4">
                 <div className="bg-red-500 p-3 rounded-2xl text-white shadow-lg shadow-red-500/40">
-                  <ShieldWarning className="w-6 h-6 animate-bounce" />
+                  <ShieldWarning className="w-6 h-6" />
                 </div>
 
                 <div className="flex-1">
