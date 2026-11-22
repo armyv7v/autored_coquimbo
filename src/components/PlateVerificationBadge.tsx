@@ -27,6 +27,10 @@ export default function PlateVerificationBadge({
   const [overrideError, setOverrideError] = useState<string | null>(null);
   const [result, setResult] = useState<StolenVehicleCheckResult | null>(null);
   const [lastCheckedPlate, setLastCheckedPlate] = useState('');
+  // A-08: el operador puede adjuntar la referencia oficial si presenta
+  // denuncia — los campos son opcionales y el registro conserva el marcador
+  // "declaración de operador" en cualquier caso.
+  const [denunciaDatos, setDenunciaDatos] = useState({ unidad: '', comuna: '', parte: '' });
 
   const validation = validateChileanPlate(plate);
 
@@ -63,11 +67,21 @@ export default function PlateVerificationBadge({
     setOverrideError(null);
     try {
       // A-08: sin datos fabricados — el servicio escribe la declaración con
-      // origen honesto (sin comisaría ni número de caso oficial).
+      // origen honesto. Si el operador aporta la referencia de su denuncia,
+      // esos valores se registran verbatim (el marcador de procedencia no
+      // cambia: sigue siendo una declaración sin verificar por la plataforma).
+      const hayReferencia = denunciaDatos.unidad.trim() || denunciaDatos.comuna.trim() || denunciaDatos.parte.trim();
       await setPlateStolenStatus(
         result.plate,
         markAsStolen,
-        result.vehicleDetails
+        result.vehicleDetails,
+        markAsStolen && hayReferencia
+          ? {
+              policeStation: denunciaDatos.unidad.trim(),
+              commune: denunciaDatos.comuna.trim(),
+              reportNumber: denunciaDatos.parte.trim(),
+            }
+          : undefined
       );
       setPendingOverride(null);
       // Re-check to update UI from live Firestore state
@@ -282,6 +296,44 @@ export default function PlateVerificationBadge({
                       {overrideError}
                     </p>
                   )}
+                  {pendingOverride && (
+                    /* A-08: referencia oficial opcional — si el operador presenta
+                       denuncia, sus datos van al registro; si no, quedan 'No indicada'. */
+                    <div className="grid grid-cols-1 gap-2">
+                      <label className="block">
+                        <span className="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-1">Comisaría / unidad (opcional)</span>
+                        <input
+                          type="text"
+                          value={denunciaDatos.unidad}
+                          onChange={(e) => setDenunciaDatos((p) => ({ ...p, unidad: e.target.value }))}
+                          placeholder="Ej: 2ª Comisaría de Coquimbo"
+                          className="w-full text-base px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                        />
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <label className="block">
+                          <span className="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-1">Comuna</span>
+                          <input
+                            type="text"
+                            value={denunciaDatos.comuna}
+                            onChange={(e) => setDenunciaDatos((p) => ({ ...p, comuna: e.target.value }))}
+                            placeholder="Opcional"
+                            className="w-full text-base px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                          />
+                        </label>
+                        <label className="block">
+                          <span className="block text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-1">N° de parte</span>
+                          <input
+                            type="text"
+                            value={denunciaDatos.parte}
+                            onChange={(e) => setDenunciaDatos((p) => ({ ...p, parte: e.target.value }))}
+                            placeholder="Opcional"
+                            className="w-full text-base px-3 py-2 rounded-lg border border-slate-300 bg-white text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-1 focus:ring-sky-400"
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-2">
                     <button
                       type="button"
@@ -296,7 +348,7 @@ export default function PlateVerificationBadge({
                     <button
                       type="button"
                       disabled={isOverriding}
-                      onClick={() => { setPendingOverride(null); setOverrideError(null); }}
+                      onClick={() => { setPendingOverride(null); setOverrideError(null); setDenunciaDatos({ unidad: '', comuna: '', parte: '' }); }}
                       className="flex-1 min-h-[40px] px-3 rounded-lg bg-slate-100 border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-200 text-[11px] font-mono font-bold uppercase tracking-wider transition active:scale-95"
                     >
                       Cancelar

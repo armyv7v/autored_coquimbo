@@ -54,7 +54,8 @@ const capabilityCards = [
     desc: 'Un reporte alerta a toda la red al instante.',
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Siren,
-    img: 'https://images.unsplash.com/photo-1718447772276-a79e984ee1a7?w=1536&h=368&fit=crop&q=80&auto=format',
+    img: '/branding/carrusel/disuasion-768.avif',
+    imgWide: '/branding/carrusel/disuasion-1536.avif',
     details: {
       intro: 'Cuando una automotora reporta un hecho sospechoso, toda la red se entera en segundos. La alerta se propaga a cada patio, vigilante y encargado de la Región de Coquimbo con imagen, ubicación y descripción del implicado. El delincuente sabe que la próxima puerta ya está avisada.',
       features: [
@@ -71,7 +72,8 @@ const capabilityCards = [
     desc: 'Pánico 10s con ubicación en vivo.',
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
     icon: Lightning,
-    img: 'https://images.unsplash.com/photo-1761897526071-5e29319b4751?w=1536&h=368&fit=crop&q=80&auto=format',
+    img: '/branding/carrusel/panico-768.avif',
+    imgWide: '/branding/carrusel/panico-1536.avif',
     details: {
       intro: 'Un botón dedicado que en 10 segundos transmite tu ubicación exacta al centro de custodia y a las automotoras cercanas. Sin desbloquear el teléfono, sin llamadas: un solo toque y la red completa se mueve hacia tu posición.',
       features: [
@@ -88,7 +90,8 @@ const capabilityCards = [
     desc: 'Registro fotográfico de cada test drive.',
     color: 'from-[#FF4D00]/15 to-transparent border-[#FF4D00]/45',
     icon: Pulse,
-    img: 'https://images.unsplash.com/photo-1648075082196-a3b311df1874?w=1536&h=368&fit=crop&q=80&auto=format',
+    img: '/branding/carrusel/ruta-768.avif',
+    imgWide: '/branding/carrusel/ruta-1536.avif',
     details: {
       intro: 'Cada test drive queda blindado con un registro fotográfico guiado antes de salir del patio: condición del vehículo, documentos y combustible, con fecha, hora y ubicación selladas. Así se elimina el fraude de sustitución y los reclamos sin respaldo.',
       features: [
@@ -105,7 +108,8 @@ const capabilityCards = [
     desc: 'Acceso corporativo verificado.',
     color: 'from-[#112A4D]/40 to-transparent border-[#112A4D]',
     icon: ShieldCheck,
-    img: 'https://images.unsplash.com/photo-1510851896000-498520af2236?w=1536&h=368&fit=crop&q=80&auto=format',
+    img: '/branding/carrusel/validacion-768.avif',
+    imgWide: '/branding/carrusel/validacion-1536.avif',
     details: {
       intro: 'El ingreso a la red no es abierto: cada automotora es validada por su representante legal con RUT comercial vigente y aprobada manualmente por el centro de administración. Una red de pares verificados, donde cada nodo es responsable y confiable.',
       features: [
@@ -433,7 +437,7 @@ export default function Login() {
                       >
                         <motion.img
                           src={card.img}
-                          srcSet={`${card.img.replace('w=1536&h=368', 'w=768&h=184')} 768w, ${card.img} 1536w`}
+                          srcSet={`${card.img} 768w, ${card.imgWide} 1536w`}
                           sizes="(min-width: 1280px) 768px, 90vw"
                           width={1536}
                           height={368}
