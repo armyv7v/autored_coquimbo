@@ -694,13 +694,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-3 text-slate-400"
+            className="p-3.5 bg-white border border-slate-200 rounded-xl shadow-[0_8px_24px_-12px_rgba(15,23,42,0.12)] flex items-center justify-between gap-3 text-slate-400"
           >
             <div className="flex items-center gap-3">
               <BellSlash className="w-4 h-4 shrink-0" />
               <div>
-                <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
-                <p className="text-xs text-slate-400">Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
+                <p className="text-xs font-bold uppercase tracking-wider font-mono text-slate-900">Notificaciones en Espera</p>
+                <p className="text-xs text-slate-500">Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
               </div>
             </div>
             {/* N-S6: iOS PWA rechaza requestPermission sin gesto — el permiso
@@ -718,7 +718,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
         <motion.div
           initial={{ opacity: 0, y: -6 }}
           animate={{ opacity: 1, y: 0 }}
-          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${!loading && openIncidentsCount > 0 ? 'bg-red-950 border-red-500/25' : 'bg-slate-900 border-slate-800'}`}
+          className={`p-4 rounded-xl border flex items-center justify-between transition-colors ${!loading && openIncidentsCount > 0 ? 'bg-red-50 border-red-200' : 'bg-white border-slate-200 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.12)]'}`}
         >
           <div className="flex items-center gap-3.5">
             <div className="relative flex items-center justify-center">
@@ -733,22 +733,22 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
             </div>
             <div>
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-200">
+                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-slate-900">
                   Estado Operativo de la Red
                 </h2>
                 {/* N-D6: nowrap + contenedor wrap — la píldora ya no se parte
                     en dos líneas a 360/375px. */}
-                <span className={`whitespace-nowrap text-[11px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-500/10 text-slate-300/90 border border-slate-500/20' : openIncidentsCount > 0 ? 'bg-red-500/10 text-red-300/90 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-300/90 border border-emerald-500/15'}`}>
+                <span className={`whitespace-nowrap text-[11px] font-mono px-2 py-0.5 rounded font-bold uppercase ${loading ? 'bg-slate-100 text-slate-600 border border-slate-200' : openIncidentsCount > 0 ? 'bg-red-100 text-red-700 border border-red-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
                   {loading ? 'Conectando…' : openIncidentsCount > 0 ? 'Alerta Activa' : 'Normal / Protegido'}
                 </span>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">Telemetría y cobertura activa en automotoras de Coquimbo y La Serena</p>
+              <p className="text-xs text-slate-500 mt-0.5">Telemetría y cobertura activa en automotoras de Coquimbo y La Serena</p>
             </div>
           </div>
           <div className="flex items-center gap-3 sm:gap-6 shrink-0">
             <div className="text-right">
-              <p className="text-[12px] font-mono text-slate-400 uppercase tracking-wider">Incidentes Activos</p>
-              <p className={`text-xl font-bold tabular-nums ${loading ? 'text-slate-500' : openIncidentsCount > 0 ? 'text-red-300/90' : 'text-emerald-300/90'}`}>
+              <p className="text-[12px] font-mono text-slate-500 uppercase tracking-wider">Incidentes Activos</p>
+              <p className={`text-xl font-bold tabular-nums ${loading ? 'text-slate-500' : openIncidentsCount > 0 ? 'text-red-600' : 'text-emerald-600'}`}>
                 {loading ? '—' : openIncidentsCount}
               </p>
             </div>
@@ -762,18 +762,18 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-display text-xl font-bold tracking-tight text-slate-100 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
                   <Pulse className="w-4 h-4 text-slate-500" />
                   ACCIONES OPERATIVAS
                 </h2>
-                <p className="text-xs text-slate-400">Módulos tácticos de gestión y seguridad en patio</p>
+                <p className="text-xs text-slate-600">Módulos tácticos de gestión y seguridad en patio</p>
               </div>
               <button
                 type="button"
                 onClick={() => setIsDigestOpen(true)}
-                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-slate-900 border border-slate-600 hover:border-slate-600 text-slate-200 hover:text-white font-mono text-xs font-bold uppercase transition active:scale-95 shadow-[0_0_15px_rgba(148,163,184,0.15)] hover:shadow-[0_0_20px_rgba(148,163,184,0.2)]"
+                className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border-slate-200 hover:border-slate-300 shadow-[0_8px_24px_-12px_rgba(15,23,42,0.14)]"
               >
-                <FileText className="w-4 h-4 text-slate-300" />
+                <FileText className="w-4 h-4 text-slate-500" />
                 <span className="hidden sm:inline">Minuta Ejecutiva</span>
                 <span className="sm:hidden">Minuta</span>
               </button>
@@ -781,10 +781,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
             {/* 4 Opciones Tácticas — lenguaje visual único (ui/TacticalActionCard) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <TacticalActionCard icon={ShieldWarning} eyebrow="Reporte Sospechoso" title="Alerta de Seguridad" tone="red" onClick={() => setIsReporting(true)} />
-              <TacticalActionCard icon={Path} eyebrow="Prueba en Ruta" title="Respaldo Test Drive" tone="amber" onClick={() => setIsRoadTestOpen(true)} />
-              <TacticalActionCard icon={ShieldCheck} eyebrow="Fiscalización" title="Control de Visita" tone="sky" onClick={() => setIsInspectionOpen(true)} />
-              <TacticalActionCard icon={Car} eyebrow="Inventario" title="Stock en Red" tone="emerald" onClick={() => setIsStockOpen(true)} />
+              <TacticalActionCard icon={ShieldWarning} eyebrow="Reporte Sospechoso" title="Alerta de Seguridad" variant="light" tone="red" onClick={() => setIsReporting(true)} />
+              <TacticalActionCard icon={Path} eyebrow="Prueba en Ruta" title="Respaldo Test Drive" variant="light" tone="amber" onClick={() => setIsRoadTestOpen(true)} />
+              <TacticalActionCard icon={ShieldCheck} eyebrow="Fiscalización" title="Control de Visita" variant="light" tone="sky" onClick={() => setIsInspectionOpen(true)} />
+              <TacticalActionCard icon={Car} eyebrow="Inventario" title="Stock en Red" variant="light" tone="emerald" onClick={() => setIsStockOpen(true)} />
             </div>
           </section>
 
@@ -792,25 +792,25 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             {[
               // N-D5: durante la carga no hay base de cálculo — "0" era un cero falso
-              { label: 'Alertas Activas', value: loading ? '—' : openIncidentsCount, icon: WarningCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
-              { label: 'Incidentes Registrados', value: loading ? '—' : incidents.length, icon: ShieldWarning, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
-              { label: 'Nodos en Red', value: loading ? '—' : dealerships.length, icon: Users, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Alertas Activas', value: loading ? '—' : openIncidentsCount, icon: WarningCircle, color: 'text-slate-600', bg: 'bg-slate-100 border-slate-200/60 border-slate-700/80' },
+              { label: 'Incidentes Registrados', value: loading ? '—' : incidents.length, icon: ShieldWarning, color: 'text-slate-600', bg: 'bg-slate-100 border-slate-200/60 border-slate-700/80' },
+              { label: 'Nodos en Red', value: loading ? '—' : dealerships.length, icon: Users, color: 'text-slate-600', bg: 'bg-slate-100 border-slate-200/60 border-slate-700/80' },
               // N-D5: sin nodos no hay base de cálculo — "100%" era dividir por cero
-              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '—', icon: TrendUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
+              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '—', icon: TrendUp, color: 'text-slate-600', bg: 'bg-slate-100 border-slate-200/60 border-slate-700/80' }
             ].map((stat, idx) => (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: idx * 0.05 }}
                 key={stat.label}
-                className="tactical-card p-4 rounded-xl flex items-center gap-3.5 group cursor-default"
+                className="tactical-card-light p-4 rounded-xl flex items-center gap-3.5 group cursor-default"
               >
                 <div className={`p-2.5 rounded-lg border ${stat.bg} ${stat.color}`}>
                   <stat.icon className="w-5 h-5" />
                 </div>
                 <div>
-                  <p className="text-[11px] uppercase font-mono text-slate-300 tracking-wider leading-none mb-1.5">{stat.label}</p>
-                  <h3 className="text-xl font-bold tabular-nums text-white tracking-tight">{stat.value}</h3>
+                  <p className="text-[11px] uppercase font-mono text-slate-500 tracking-wider leading-none mb-1.5">{stat.label}</p>
+                  <h3 className="text-xl font-bold tabular-nums text-slate-900 tracking-tight">{stat.value}</h3>
                 </div>
               </motion.div>
             ))}
@@ -862,7 +862,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </button>
               <button
                 onClick={() => setActiveTab('HISTORIAL')}
-                className="text-xs text-slate-400 hover:text-slate-200 transition-all uppercase font-bold tracking-widest"
+                className="text-xs text-slate-600 hover:text-slate-800 transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
               </button>

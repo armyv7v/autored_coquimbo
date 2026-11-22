@@ -403,3 +403,13 @@ body {
     box-shadow: var(--sliding-pill-shadow, none);
   }
 }
+
+/* Variante clara de las cards tácticas (Bento): panel de operaciones en
+   superficies claras. La versión oscura (.tactical-card) queda para los
+   sheets y modales — no combinar ambas clases en el mismo elemento porque
+   el CSS sin capa pisa las utilities de Tailwind v4. */
+.tactical-card-light {
+  background: #ffffff;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  box-shadow: 0 8px 24px -12px rgba(15, 23, 42, 0.14);
+}
