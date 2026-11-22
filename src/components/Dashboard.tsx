@@ -762,11 +762,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <section className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                <h2 className="font-display text-xl font-bold tracking-tight text-slate-100 flex items-center gap-2">
                   <Pulse className="w-4 h-4 text-slate-500" />
                   ACCIONES OPERATIVAS
                 </h2>
-                <p className="text-xs text-slate-600">Módulos tácticos de gestión y seguridad en patio</p>
+                <p className="text-xs text-slate-400">Módulos tácticos de gestión y seguridad en patio</p>
               </div>
               <button
                 type="button"
@@ -862,7 +862,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               </button>
               <button
                 onClick={() => setActiveTab('HISTORIAL')}
-                className="text-xs text-slate-600 hover:text-slate-800 transition-all uppercase font-bold tracking-widest"
+                className="text-xs text-slate-400 hover:text-slate-200 transition-all uppercase font-bold tracking-widest"
               >
                 Ver Historial
               </button>
