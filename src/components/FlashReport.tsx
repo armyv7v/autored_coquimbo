@@ -470,7 +470,7 @@ export default function FlashReport() {
               {/* Confirmation Prompt */}
               <AnimatePresence>
                 {showConfirmation && (
-                  <div className="absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6 text-center">
+                  <div className="absolute inset-0 z-40 bg-slate-950/95 flex items-center justify-center p-6 text-center">
                     <div className="space-y-4 max-w-xs">
                       <div className="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto text-white shadow-xl shadow-red-950 ">
                         <Warning className="w-7 h-7" />
@@ -504,7 +504,7 @@ export default function FlashReport() {
               {/* Success Feedback */}
               <AnimatePresence>
                 {sentSuccess && (
-                  <div className="absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6 text-center">
+                  <div className="absolute inset-0 z-40 bg-slate-950/95 flex items-center justify-center p-6 text-center">
                     <div className="space-y-4 max-w-xs">
                       <div className="w-14 h-14 rounded-2xl bg-emerald-500 flex items-center justify-center mx-auto text-slate-950 shadow-xl shadow-emerald-950">
                         <Check className="w-7 h-7" />

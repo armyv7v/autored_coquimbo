@@ -482,7 +482,7 @@ export default function AdminDashboard() {
 
             <div className="bg-slate-900 border border-slate-800 p-5 rounded-3xl">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                   <Pulse className="w-4 h-4 text-[#E20B17]" weight="duotone" />
                   Incidentes — últimos 30 días
                 </h2>
@@ -542,7 +542,7 @@ export default function AdminDashboard() {
                 producto diferenciadora, no un dato de segunda línea. */}
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
               <div className="flex items-center justify-between mb-6 flex-wrap gap-2">
-                <h2 className="text-sm font-black text-white uppercase tracking-widest flex items-center gap-2">
+                <h2 className="text-base font-bold text-white tracking-tight flex items-center gap-2">
                   <Scan className="w-4 h-4 text-slate-300" />
                   Calidad del Reconocimiento de Patentes (OCR)
                 </h2>
@@ -581,7 +581,7 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center">
-                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 self-start flex items-center gap-2">
+                <h2 className="text-base font-bold text-white tracking-tight mb-6 self-start flex items-center gap-2">
                   <ChartBar className="w-4 h-4 text-slate-300" />
                   Distribución por Tipo
                 </h2>
@@ -625,7 +625,7 @@ export default function AdminDashboard() {
               </div>
 
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col">
-                <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 self-start flex items-center gap-2">
+                <h2 className="text-base font-bold text-white tracking-tight mb-6 self-start flex items-center gap-2">
                   <Pulse className="w-4 h-4 text-slate-300" />
                   Estado de Resolución
                 </h2>
@@ -841,7 +841,7 @@ export default function AdminDashboard() {
           >
             {/* Test Drives: antes colección huérfana (se escribía, nadie leía) */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+              <h2 className="text-base font-bold text-white tracking-tight mb-6 flex items-center gap-2">
                 <Path className="w-4 h-4 text-slate-300" />
                 Pruebas en Ruta (últimas 30)
               </h2>
@@ -882,7 +882,7 @@ export default function AdminDashboard() {
 
             {/* Fiscalizaciones: ídem, ahora visible para admin */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
-              <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
+              <h2 className="text-base font-bold text-white tracking-tight mb-6 flex items-center gap-2">
                 <Eye className="w-4 h-4 text-slate-300" />
                 Alertas de Fiscalización (últimas 30)
               </h2>
