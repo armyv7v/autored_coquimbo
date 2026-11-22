@@ -7,7 +7,7 @@ import { useSearchParams } from 'react-router-dom';
 import { collection, onSnapshot, doc, updateDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { db, auth } from '../lib/firebase';
 import { uploadFileToStorage } from '../lib/storageClient';
-import { ShieldAlert, MapPin, Layers, CheckCircle2, AlertTriangle, XCircle, Clock, Radio, Users, Share2, Building2, Zap, Plus, Send, Camera, X, Loader2, ZoomIn, ZoomOut, Target, Search, ArrowRight, Settings2, Sparkles, Car } from 'lucide-react';
+import { ShieldWarning, MapPin, Stack, SealCheck, Warning, XCircle, Clock, Broadcast, Users, ShareNetwork, Buildings, Lightning, Plus, PaperPlaneRight, Camera, X, Spinner, MagnifyingGlassPlus, MagnifyingGlassMinus, Crosshair, MagnifyingGlass, ArrowRight, SlidersHorizontal, Sparkle, Car } from '@phosphor-icons/react';
 import { COQUIMBO_CENTER, getGeohash } from '../lib/geoutils';
 import { useAuth } from '../hooks/useAuth';
 import { handleFirestoreError, OperationType } from '../lib/firestoreErrors';
@@ -115,27 +115,27 @@ function ZoomControls() {
         className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-white transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Acercar"
       >
-        <ZoomIn className="w-4 h-4" />
+        <MagnifyingGlassPlus className="w-4 h-4" />
       </button>
       <button
         onClick={() => map.zoomOut()}
         className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-white transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Alejar"
       >
-        <ZoomOut className="w-4 h-4" />
+        <MagnifyingGlassMinus className="w-4 h-4" />
       </button>
       <button
         onClick={() => map.setView(COQUIMBO_CENTER, 14, { animate: true })}
         className="p-2.5 min-w-11 min-h-11 flex items-center justify-center bg-slate-950/90 border border-slate-800 rounded-xl text-slate-300 hover:text-slate-300 transition shadow-xl backdrop-blur-xl active:scale-95"
         title="Centrar Coquimbo"
       >
-        <Target className="w-4 h-4" />
+        <Crosshair className="w-4 h-4" />
       </button>
     </div>
   );
 }
 
-// Search Interface
+// MagnifyingGlass Interface
 interface SearchResult {
   display_name: string;
   lat: number;
@@ -202,7 +202,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
         setResults([...localResults, ...apiResults]);
       } catch (error: any) {
         if (error?.name !== 'AbortError') {
-          console.error('Search error:', error);
+          console.error('MagnifyingGlass error:', error);
         }
       } finally {
         if (!controller.signal.aborted) setIsSearching(false);
@@ -219,7 +219,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
   return (
     <div className="relative w-full">
       <div className="flex items-center gap-2.5 bg-slate-950/90 border border-slate-800 rounded-xl px-3.5 py-2.5 shadow-xl backdrop-blur-xl">
-        <Search className="w-4 h-4 text-slate-400 shrink-0" />
+        <MagnifyingGlass className="w-4 h-4 text-slate-400 shrink-0" />
         <input
           type="text"
           placeholder="Buscar automotora, calle o zona..."
@@ -227,7 +227,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
           value={query}
           onChange={(e) => handleSearch(e.target.value)}
         />
-        {isSearching && <Loader2 className="w-3.5 h-3.5 text-slate-400 animate-spin" />}
+        {isSearching && <Spinner className="w-3.5 h-3.5 text-slate-400 animate-spin" />}
         {query && !isSearching && (
           <button onClick={() => { setQuery(''); setResults([]); }} aria-label="Limpiar búsqueda">
             <X className="w-3.5 h-3.5 text-slate-400 hover:text-white" />
@@ -243,7 +243,7 @@ function SearchBar({ dealerships }: { dealerships: Dealership[] }) {
               className="w-full text-left p-3 hover:bg-slate-800/80 transition-colors border-b border-slate-800 last:border-none flex items-center gap-3 group"
             >
               {r.type === 'dealership' ? (
-                <Building2 className="w-4 h-4 text-slate-300" />
+                <Buildings className="w-4 h-4 text-slate-300" />
               ) : (
                 <MapPin className="w-4 h-4 text-slate-400" />
               )}
@@ -537,7 +537,7 @@ export default function MapView() {
                   : 'text-slate-400 hover:text-white hover:bg-slate-900'
               }`}
             >
-              <Layers className="w-3.5 h-3.5" />
+              <Stack className="w-3.5 h-3.5" />
               {tileProvider === 'SATELLITE' ? 'Satélite HD' : 'Mapa Táctico'}
             </button>
 
@@ -550,7 +550,7 @@ export default function MapView() {
                   : 'text-slate-500 hover:text-slate-400 hover:bg-slate-900'
               }`}
             >
-              <Radio className="w-3.5 h-3.5" />
+              <Broadcast className="w-3.5 h-3.5" />
               Calor
             </button>
 
@@ -563,7 +563,7 @@ export default function MapView() {
                   : 'text-slate-500 hover:text-white hover:bg-slate-900'
               }`}
             >
-              <Building2 className="w-3.5 h-3.5" />
+              <Buildings className="w-3.5 h-3.5" />
               Nodos
             </button>
 
@@ -612,7 +612,7 @@ export default function MapView() {
               className="px-4 py-2.5 rounded-xl bg-amber-500/10 border border-amber-500/40 text-amber-300 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl flex items-center gap-2 pointer-events-none"
               role="alert"
             >
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+              <Warning className="w-3.5 h-3.5 shrink-0" />
               Incidente no encontrado (puede haber sido eliminado) — revisa el Historial en el Panel
             </div>
           )}
@@ -624,7 +624,7 @@ export default function MapView() {
                 exit={{ opacity: 0, y: -8 }}
                 className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs font-mono font-bold uppercase tracking-wider backdrop-blur-xl"
               >
-                <CheckCircle2 className="w-4 h-4 shrink-0" />
+                <SealCheck className="w-4 h-4 shrink-0" />
                 {flashMessage}
               </motion.div>
             )}
@@ -679,7 +679,7 @@ export default function MapView() {
                     <div className="p-4 w-72 bg-slate-950/95 border border-slate-800 rounded-2xl text-slate-100 shadow-2xl backdrop-blur-xl">
                       <div className="flex items-center gap-3 mb-3 pb-3 border-b border-slate-800/80">
                         <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-white shadow-md ${isOnline ? 'bg-sky-600' : 'bg-slate-800'}`}>
-                          <Building2 className="w-5 h-5" />
+                          <Buildings className="w-5 h-5" />
                         </div>
                         <div className="min-w-0">
                           <p className="font-bold text-white text-xs truncate leading-tight flex items-center gap-2">
@@ -717,7 +717,7 @@ export default function MapView() {
                                 : 'bg-emerald-500 text-slate-950 hover:bg-emerald-400'
                             }`}
                           >
-                            <Zap className="w-3.5 h-3.5" />
+                            <Lightning className="w-3.5 h-3.5" />
                             {isOnline ? 'Desconectar Nodo' : 'Conectar a la Red'}
                           </button>
                         )}
@@ -808,7 +808,7 @@ export default function MapView() {
                                 incident.type === 'ROBO' ? 'bg-red-500/20 text-red-400' : 'bg-amber-500/20 text-amber-400'
                               }`}
                             >
-                              <ShieldAlert className="w-4 h-4" />
+                              <ShieldWarning className="w-4 h-4" />
                             </div>
                             <p className="font-mono font-bold uppercase text-xs tracking-wider text-white">
                               {incident.type}
@@ -873,7 +873,7 @@ export default function MapView() {
                               className="p-2 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white transition"
                               title="Copiar Enlace"
                             >
-                              <Share2 className="w-4 h-4" />
+                              <ShareNetwork className="w-4 h-4" />
                             </button>
                           </div>
                         </div>
@@ -958,7 +958,7 @@ export default function MapView() {
               </p>
 
               <TacticalSubmitBar
-                icon={Send}
+                icon={PaperPlaneRight}
                 label="Transmitir a la Red"
                 loading={isSubmitting}
                 loadingLabel="Transmitiendo…"

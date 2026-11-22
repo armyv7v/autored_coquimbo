@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldAlert, ShieldCheck, Search, Loader2, AlertTriangle, Car, ExternalLink, RefreshCw, CheckCircle2, Shield, PlusCircle } from 'lucide-react';
+import { ShieldWarning, ShieldCheck, MagnifyingGlass, Spinner, Warning, Car, ArrowSquareOut, ArrowsClockwise, SealCheck, Shield, PlusCircle } from '@phosphor-icons/react';
 import { checkStolenVehiclePlate, setPlateStolenStatus, isNetworkDeclaredReport, StolenVehicleCheckResult } from '../services/stolenVehicleService';
 import { validateChileanPlate } from '../lib/chileanPlates';
 import { sound } from '../lib/soundEngine';
@@ -110,14 +110,14 @@ export default function PlateVerificationBadge({
           onClick={() => performCheck(plate)}
           className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-xs font-mono font-bold text-sky-700 hover:bg-slate-50 transition active:scale-95"
         >
-          <Search className="w-3.5 h-3.5" />
+          <MagnifyingGlass className="w-3.5 h-3.5" />
           Verificar en AutoSeguro / SEBV Carabineros
         </button>
       )}
 
       {loading && (
         <div className="flex items-center gap-2 p-3 rounded-2xl bg-slate-50 border border-slate-200 text-xs font-mono text-slate-600 animate-pulse">
-          <Loader2 className="w-4 h-4 text-sky-600 animate-spin" />
+          <Spinner className="w-4 h-4 text-sky-600 animate-spin" />
           <span>Consultando base nacional de encargo por robo (AutoSeguro / PDI)...</span>
         </div>
       )}
@@ -144,9 +144,9 @@ export default function PlateVerificationBadge({
                   }`}
                 >
                   {result.hasStolenReport ? (
-                    <ShieldAlert className="w-5 h-5" />
+                    <ShieldWarning className="w-5 h-5" />
                   ) : result.status === 'UNKNOWN' ? (
-                    <AlertTriangle className="w-5 h-5" />
+                    <Warning className="w-5 h-5" />
                   ) : (
                     <ShieldCheck className="w-5 h-5" />
                   )}
@@ -183,7 +183,7 @@ export default function PlateVerificationBadge({
               title="Volver a consultar"
               aria-label="Volver a consultar"
             >
-              <RefreshCw className="w-4 h-4" />
+              <ArrowsClockwise className="w-4 h-4" />
             </button>
           </div>
 
@@ -252,7 +252,7 @@ export default function PlateVerificationBadge({
                     onClick={() => setPendingOverride(true)}
                     className="px-3 min-h-11 rounded-lg bg-red-50 hover:bg-red-600 border border-red-300 text-red-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
-                    <ShieldAlert className="w-3 h-3" />
+                    <ShieldWarning className="w-3 h-3" />
                     Reportar Robo a la Red
                   </button>
                 )}
@@ -264,7 +264,7 @@ export default function PlateVerificationBadge({
                     onClick={() => setPendingOverride(false)}
                     className="px-3 min-h-11 rounded-lg bg-emerald-50 hover:bg-emerald-600 border border-emerald-300 text-emerald-700 hover:text-white text-[11px] font-mono font-bold uppercase transition flex items-center gap-1 active:scale-95"
                   >
-                    <CheckCircle2 className="w-3 h-3" />
+                    <SealCheck className="w-3 h-3" />
                     Marcar Recuperado
                   </button>
                 )}

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { uploadFileToStorage } from '../lib/storageClient';
-import { Camera, Check, FileText, Loader2, Route, ShieldCheck, X, Car, Image as ImageIcon } from 'lucide-react';
+import { Camera, Check, FileText, Spinner, Path, ShieldCheck, X, Car } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { auth, db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -170,7 +170,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
             <header className="flex items-center justify-between border-b border-amber-500/30 bg-gradient-to-r from-amber-950/50 via-slate-950 to-slate-950 px-5 py-4">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/50 flex items-center justify-center text-amber-400 shadow-md shadow-amber-950">
-                  <Route className="h-5 w-5" />
+                  <Path className="h-5 w-5" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold tracking-tight text-white flex items-center gap-2">
@@ -322,7 +322,7 @@ export default function RoadTestForm({ isOpen, onClose }: RoadTestFormProps) {
                 disabled={!ready || saving}
                 className="flex h-12 w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-amber-500/70 bg-gradient-to-br from-amber-950/45 via-slate-900/90 to-slate-950 font-bold uppercase tracking-wider text-amber-100 shadow-lg shadow-amber-500/20 transition hover:border-amber-400 active:scale-[0.99] disabled:opacity-50"
               >
-                {saving ? <Loader2 className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
+                {saving ? <Spinner className="h-5 w-5 animate-spin" /> : <ShieldCheck className="h-5 w-5" />}
                 Registrar Salida de Prueba
               </button>
             </footer>

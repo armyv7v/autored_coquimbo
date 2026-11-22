@@ -43,6 +43,18 @@ Module._load = function (request, parent, isMain) {
   if (Module._resolveFilename(request, parent, isMain) === firebaseModule) {
     return { db: {}, auth: { currentUser: null }, storage: {}, messaging: null };
   }
+  // @phosphor-icons/react@2.1.10 declara "type": "module" pero su dist CJS
+  // (index.cjs.js) revienta bajo el require de Node ≥22 (mismo patrón que el
+  // mock de leaflet: los tests validan texto y clases, no los glifos).
+  if (request === '@phosphor-icons/react') {
+    const iconMock = new Proxy({}, {
+      get: (_, nombre) =>
+        typeof nombre === 'string' && nombre[0] === nombre[0].toUpperCase()
+          ? (props) => React.createElement('svg', { 'data-phosphor-icon': nombre, ...props })
+          : undefined,
+    });
+    return iconMock;
+  }
   return originalLoad.apply(this, arguments);
 };
 

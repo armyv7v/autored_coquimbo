@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { NavLink, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, ShieldCheck, User, Bell, BellOff, LogOut, Search, Command } from 'lucide-react';
+import { Shield, ShieldCheck, User, Bell, BellSlash, SignOut, MagnifyingGlass, Keyboard } from '@phosphor-icons/react';
 import { auth } from '../lib/firebase';
 import { sound } from '../lib/soundEngine';
 import { useAuth } from '../hooks/useAuth';
@@ -79,7 +79,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
           <span className="text-slate-300 font-mono text-xs px-1.5 py-0.5 rounded bg-slate-500/10 border border-slate-600 hidden sm:inline">COQUIMBO</span>
         </NavLink>
 
-        {/* Right: Search Cmd+K, Notifications & Logout */}
+        {/* Right: MagnifyingGlass Cmd+K, Notifications & Logout */}
         <div className="flex items-center gap-2">
           <button
             type="button"
@@ -87,7 +87,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
             className="flex items-center gap-2 px-3 min-h-11 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-white hover:border-slate-700 transition active:scale-95"
             title="Búsqueda rápida y comandos (Cmd + K)"
           >
-            <Search className="w-3.5 h-3.5 text-slate-300" />
+            <MagnifyingGlass className="w-3.5 h-3.5 text-slate-300" />
             <span className="text-xs font-mono hidden md:inline">Comandos</span>
             <kbd className="hidden sm:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[10px] font-mono text-slate-400 bg-slate-800 border border-slate-700 rounded">
               ⌘K
@@ -113,7 +113,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
             }`}
             title={notificationsEnabled ? 'Notificaciones en Tiempo Real Activadas' : 'Notificaciones Silenciadas'}
           >
-            {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellOff className="w-5 h-5" />}
+            {notificationsEnabled ? <Bell className="w-5 h-5" /> : <BellSlash className="w-5 h-5" />}
             {notificationsEnabled && (
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-emerald-400" />
             )}
@@ -127,12 +127,12 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
             className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-slate-400 hover:text-red-400 hover:border-red-500/30 active:scale-95 transition-all"
             title="Cerrar Sesión"
           >
-            <LogOut className="w-5 h-5" />
+            <SignOut className="w-5 h-5" />
           </button>
         </div>
       </div>
 
-      {/* Desktop Primary Navigation */}
+      {/* Desktop Primary NavigationArrow */}
       <nav className="hidden md:flex items-center gap-1 px-4 md:px-8 border-t border-white/5">
         {visibleItems.map((item) => {
           const Icon = item.icon;
@@ -150,7 +150,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
                 className="flex items-center gap-1.5 px-3 py-3 rounded-xl text-xs font-black uppercase tracking-widest text-red-400 hover:bg-red-500/10 transition-all active:scale-95 touch-none"
                 title="Mantén presionado para armar la Alerta Máxima"
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4" weight="duotone" />
                 {item.label}
               </button>
             );
@@ -169,7 +169,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
                   }`
                 }
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-4 h-4" weight="duotone" />
                 {item.label}
               </NavLink>
             );
@@ -185,7 +185,7 @@ export default function Navbar({ activeTab, setActiveTab, onTriggerAlert }: Navb
                   : 'text-slate-400 hover:text-slate-200 hover:bg-white/5'
               }`}
             >
-              <Icon className="w-4 h-4" />
+              <Icon className="w-4 h-4" weight="duotone" />
               {item.label}
             </button>
           );

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowLeft, ShieldAlert, FileText } from 'lucide-react';
+import { ArrowLeft, ShieldWarning, FileText } from '@phosphor-icons/react';
+import Footer from './Footer';
 
 // Páginas legales públicas (accesibles sin sesión). El contenido está
 // redactado conforme a la Ley N° 21.719 sobre Protección y Tratamiento de
@@ -48,6 +49,7 @@ function LegalLayout({ titulo, icono, actualizado, children }: {
           la razón social que deben llenarse.
         </p>
       </article>
+      <Footer />
     </main>
   );
 }
@@ -65,7 +67,7 @@ export function PrivacyPolicyPage() {
   return (
     <LegalLayout
       titulo="Política de Privacidad y Protección de Datos Personales"
-      icono={<ShieldAlert className="w-4 h-4" />}
+      icono={<ShieldWarning className="w-4 h-4" />}
       actualizado="21 de noviembre de 2026"
     >
       <p>

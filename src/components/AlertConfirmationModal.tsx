@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ShieldAlert, X, Send, AlertTriangle, FileText, Loader2, Check, Radio } from 'lucide-react';
+import { ShieldWarning, X, PaperPlaneRight, Warning, FileText, Spinner, Check, Broadcast } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { db, auth } from '../lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
@@ -217,7 +217,7 @@ export default function AlertConfirmationModal({
                long-press deliberado de 1,5 s. */
             <div className="space-y-5 relative z-10">
               <div className="w-20 h-20 mx-auto rounded-full bg-red-500/10 border-2 border-red-500/40 flex items-center justify-center text-red-400">
-                <ShieldAlert className="w-10 h-10" />
+                <ShieldWarning className="w-10 h-10" />
               </div>
 
               <div>
@@ -250,12 +250,12 @@ export default function AlertConfirmationModal({
                   <span className="relative flex items-center gap-2">
                     {armHandlers.pressing ? (
                       <>
-                        <Radio className="w-4 h-4 animate-pulse" />
+                        <Broadcast className="w-4 h-4 animate-pulse" />
                         Sigue presionando…
                       </>
                     ) : (
                       <>
-                        <AlertTriangle className="w-4 h-4" />
+                        <Warning className="w-4 h-4" />
                         Mantener para activar
                       </>
                     )}
@@ -320,7 +320,7 @@ export default function AlertConfirmationModal({
 
               <div>
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/20 border border-red-500/40 text-red-400 text-[11px] font-mono font-bold uppercase tracking-wider mb-2 animate-pulse">
-                  <Radio className="w-3.5 h-3.5" />
+                  <Broadcast className="w-3.5 h-3.5" />
                   Botón de Pánico Activo
                 </div>
                 <h2 className="text-lg font-black text-white uppercase tracking-tight">
@@ -340,7 +340,7 @@ export default function AlertConfirmationModal({
               <div className="space-y-2.5 pt-1">
                 {sendError && (
                   <div className="p-3 rounded-2xl bg-red-500/10 border border-red-500/40 text-red-300 text-xs font-mono flex items-start gap-2 text-left">
-                    <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <Warning className="w-4 h-4 shrink-0 mt-0.5" />
                     <span>{sendError}</span>
                   </div>
                 )}
@@ -352,10 +352,10 @@ export default function AlertConfirmationModal({
                   className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-mono text-xs font-black uppercase tracking-wider shadow-xl shadow-red-950 flex items-center justify-center gap-2 transition active:scale-[0.98] disabled:opacity-50"
                 >
                   {isSending ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Spinner className="w-4 h-4 animate-spin" />
                   ) : (
                     <>
-                      <Send className="w-4 h-4" />
+                      <PaperPlaneRight className="w-4 h-4" />
                       {sendError ? 'Reintentar Envío' : 'Enviar de Inmediato'}
                     </>
                   )}

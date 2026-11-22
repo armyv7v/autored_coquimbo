@@ -2,32 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { collection, query, onSnapshot, doc, updateDoc, getDocs, orderBy, limit } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
-import {
-  Users,
-  ShieldCheck,
-  ShieldAlert,
-  BarChart3,
-  Settings,
-  UserPlus,
-  MoreVertical,
-  UserMinus,
-  Shield,
-  Clock,
-  Activity,
-  CheckCircle2,
-  XCircle,
-  AlertTriangle,
-  Search,
-  Filter,
-  ChevronLeft,
-  ChevronRight,
-  Download,
-  Inbox,
-  ScanLine,
-  Route,
-  Eye,
-  Loader2
-} from 'lucide-react';
+import { Users, Tray, ChartBar, Scan, DownloadSimple, CaretLeft, Eye, ShieldCheck, ShieldWarning, Shield, Clock, Pulse, SealCheck, XCircle, Warning, MagnifyingGlass, Funnel, CaretRight, Path, Spinner } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import ConnectionBanner from './ConnectionBanner';
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -94,7 +69,7 @@ export default function AdminDashboard() {
   // N-S9: un fallo de Firestore no puede leerse como "sin registros aún".
   const [dbOffline, setDbOffline] = useState(false);
 
-  // Search & Filters
+  // MagnifyingGlass & Filters
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<'ALL' | 'ADMIN' | 'OWNER' | 'SECURITY'>('ALL');
   const [statusFilter, setStatusFilter] = useState<'ALL' | 'ACTIVE' | 'SUSPENDED'>('ALL');
@@ -221,7 +196,7 @@ export default function AdminDashboard() {
   if (!profile || profile.role !== 'ADMIN') {
     return (
       <div className="flex flex-col items-center justify-center h-full text-slate-400">
-        <ShieldAlert className="w-16 h-16 mb-4 opacity-20" />
+        <ShieldWarning className="w-16 h-16 mb-4 opacity-20" />
         <h1 className="text-xl font-black uppercase tracking-widest">Acceso Denegado</h1>
         <p className="text-xs">Solo administradores autorizados pueden ver esta sección.</p>
       </div>
@@ -323,7 +298,7 @@ export default function AdminDashboard() {
           className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-sky-500/10 border border-sky-500/30 text-sky-300 text-xs font-mono font-bold uppercase tracking-wider"
           role="status"
         >
-          <Loader2 className="w-4 h-4 shrink-0 animate-spin" />
+          <Spinner className="w-4 h-4 shrink-0 animate-spin" />
           Cargando datos de la red…
         </div>
       )}
@@ -371,7 +346,7 @@ export default function AdminDashboard() {
             data-active={activeTab === 'REQUESTS' ? 'true' : undefined}
             className={`relative shrink-0 whitespace-nowrap px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-2 ${activeTab === 'REQUESTS' ? 'text-white' : 'text-slate-400 hover:text-white'}`}
           >
-            <Inbox className="w-3.5 h-3.5" />
+            <Tray className="w-3.5 h-3.5" />
             Solicitudes
             {pendingCount > 0 && (
               <span className={`absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full text-[11px] font-black flex items-center justify-center ${activeTab === 'REQUESTS' ? 'bg-white text-slate-900' : 'bg-slate-700 text-white'}`}>
@@ -394,8 +369,8 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
               {[
                 { label: 'Total Usuarios', value: users.length, icon: Users, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-                { label: 'Total Incidentes', value: incidents.length, icon: AlertTriangle, color: 'text-red-500', bg: 'bg-red-500/10' },
-                { label: 'Resolución', value: `${((incidents.filter(i => i.status === 'RESOLVED').length / (incidents.length || 1)) * 100).toFixed(0)}%`, icon: CheckCircle2, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
+                { label: 'Total Incidentes', value: incidents.length, icon: Warning, color: 'text-red-500', bg: 'bg-red-500/10' },
+                { label: 'Resolución', value: `${((incidents.filter(i => i.status === 'RESOLVED').length / (incidents.length || 1)) * 100).toFixed(0)}%`, icon: SealCheck, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
                 { label: 'Sedes Activas', value: dealerships.length, icon: ShieldCheck, color: 'text-indigo-500', bg: 'bg-indigo-500/10' },
               ].map((stat, i) => (
                 <div key={i} className="bg-slate-900 border border-slate-800 p-6 rounded-3xl relative overflow-hidden group">
@@ -410,7 +385,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col items-center">
                 <h2 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
-                  <BarChart3 className="w-4 h-4 text-slate-300" />
+                  <ChartBar className="w-4 h-4 text-slate-300" />
                   Distribución por Tipo
                 </h2>
                 <div className="w-full h-64">
@@ -441,7 +416,7 @@ export default function AdminDashboard() {
 
               <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl flex flex-col">
                 <h2 className="text-sm font-black text-white uppercase tracking-widest mb-8 self-start flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-slate-300" />
+                  <Pulse className="w-4 h-4 text-slate-300" />
                   Estado de Resolución
                 </h2>
                 <div className="w-full h-64">
@@ -464,7 +439,7 @@ export default function AdminDashboard() {
                 operador no tuvo que corregir a mano. */}
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-3xl">
               <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                <ScanLine className="w-4 h-4 text-slate-300" />
+                <Scan className="w-4 h-4 text-slate-300" />
                 Calidad del Reconocimiento de Patentes (OCR)
               </h2>
               {platedIncidents.length === 0 ? (
@@ -498,11 +473,11 @@ export default function AdminDashboard() {
             exit={{ opacity: 0, y: -20 }}
             className="space-y-6"
           >
-            {/* Filter Bar */}
+            {/* Funnel Bar */}
             <div className="flex flex-col lg:flex-row gap-4 items-center bg-slate-900 border border-slate-800 p-4 rounded-3xl">
               <div className="flex-1 w-full grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div className="md:col-span-2 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                  <MagnifyingGlass className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                   <input
                     type="text"
                     placeholder="Buscar por nombre o email..."
@@ -512,7 +487,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div className="relative">
-                  <Filter className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <Funnel className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                   <select
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value as any)}
@@ -525,7 +500,7 @@ export default function AdminDashboard() {
                   </select>
                 </div>
                 <div className="relative">
-                  <Activity className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
+                  <Pulse className="absolute left-4 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500" />
                   <select
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -541,7 +516,7 @@ export default function AdminDashboard() {
                 onClick={handleExportCSV}
                 className="w-full lg:w-auto px-6 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-black uppercase tracking-[0.2em] flex items-center justify-center gap-2 transition-all border border-slate-700 shadow-lg shadow-black/20"
               >
-                <Download className="w-3.5 h-3.5" />
+                <DownloadSimple className="w-3.5 h-3.5" />
                 Exportar CSV
               </button>
             </div>
@@ -610,7 +585,7 @@ export default function AdminDashboard() {
                               className={`p-2 rounded-xl transition-all ${user.status === 'SUSPENDED' ? 'text-emerald-500 bg-emerald-500/10 hover:bg-emerald-500/20' : 'text-red-500 bg-red-500/10 hover:bg-red-500/20'}`}
                               title={user.status === 'SUSPENDED' ? 'Activar Usuario' : 'Suspender Usuario'}
                             >
-                              {user.status === 'SUSPENDED' ? <CheckCircle2 className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
+                              {user.status === 'SUSPENDED' ? <SealCheck className="w-4 h-4" /> : <XCircle className="w-4 h-4" />}
                             </button>
                           </td>
                         </tr>
@@ -639,7 +614,7 @@ export default function AdminDashboard() {
                       onClick={() => setCurrentPage(prev => prev - 1)}
                       className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <CaretLeft className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-1">
                       {Array.from({ length: totalPages }).map((_, i) => (
@@ -657,7 +632,7 @@ export default function AdminDashboard() {
                       onClick={() => setCurrentPage(prev => prev + 1)}
                       className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white disabled:opacity-30 disabled:cursor-not-allowed transition-all"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <CaretRight className="w-4 h-4" />
                     </button>
                   </div>
                 </div>
@@ -675,7 +650,7 @@ export default function AdminDashboard() {
             {/* Test Drives: antes colección huérfana (se escribía, nadie leía) */}
             <div className="bg-slate-900 border border-slate-800 p-6 rounded-3xl">
               <h2 className="text-sm font-black text-white uppercase tracking-widest mb-6 flex items-center gap-2">
-                <Route className="w-4 h-4 text-slate-300" />
+                <Path className="w-4 h-4 text-slate-300" />
                 Pruebas en Ruta (últimas 30)
               </h2>
               {roadTests.length === 0 ? (

@@ -10,7 +10,7 @@
  */
 
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { X, Zap, ZapOff, Camera, Loader2, GalleryHorizontalEnd } from 'lucide-react';
+import { X, Lightning, LightningSlash, Camera, Spinner, Cards } from '@phosphor-icons/react';
 import { motion } from 'motion/react';
 import { scanLicensePlatesFromFrames, type OcrPlateResult } from '../lib/ocrPlateScanner';
 
@@ -232,7 +232,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
         {starting && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80">
             <span className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-slate-300">
-              <Loader2 className="w-4 h-4 animate-spin text-sky-400" /> Abriendo cámara…
+              <Spinner className="w-4 h-4 animate-spin text-sky-400" /> Abriendo cámara…
             </span>
           </div>
         )}
@@ -247,7 +247,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
               onClick={onFallbackGallery}
               className="px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-xs font-mono font-bold uppercase tracking-wider flex items-center gap-2 active:scale-95 transition"
             >
-              <GalleryHorizontalEnd className="w-4 h-4" /> Elegir de la galería
+              <Cards className="w-4 h-4" /> Elegir de la galería
             </button>
           </div>
         )}
@@ -255,7 +255,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
         {scanning && (
           <div className="absolute inset-0 flex items-center justify-center bg-slate-950/80">
             <span className="flex items-center gap-2 text-xs font-mono font-bold uppercase tracking-wider text-sky-300">
-              <Loader2 className="w-4 h-4 animate-spin" /> Leyendo patente (4 tomas)…
+              <Spinner className="w-4 h-4 animate-spin" /> Leyendo patente (4 tomas)…
             </span>
           </div>
         )}
@@ -288,7 +288,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
             aria-label="Elegir foto de la galería"
             className="flex items-center justify-center w-11 h-11 rounded-xl bg-slate-900 border border-slate-700 text-slate-300 hover:text-white active:scale-95 transition disabled:opacity-40"
           >
-            <GalleryHorizontalEnd className="w-5 h-5" />
+            <Cards className="w-5 h-5" />
           </button>
 
           <button
@@ -300,7 +300,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
           >
             {scanning ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin" /> Analizando…
+                <Spinner className="w-4 h-4 animate-spin" /> Analizando…
               </>
             ) : (
               <>
@@ -322,7 +322,7 @@ export default function PlateCameraCapture({ isOpen, onClose, onCapture, onFallb
                   : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white'
               }`}
             >
-              {torchOn ? <Zap className="w-5 h-5" /> : <ZapOff className="w-5 h-5" />}
+              {torchOn ? <Lightning className="w-5 h-5" /> : <LightningSlash className="w-5 h-5" />}
             </button>
           ) : (
             <div className="w-11 h-11" />

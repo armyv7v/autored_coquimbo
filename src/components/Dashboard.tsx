@@ -3,7 +3,7 @@ import { collection, query, orderBy, limit, onSnapshot, doc, getDoc, where, upda
 import { db, auth } from '../lib/firebase';
 import { uploadFileToStorage } from '../lib/storageClient';
 import { safeUUID } from '../lib/uuid';
-import { ShieldAlert, Users, TrendingUp, AlertCircle, Clock, Info, Sparkles, Filter, Calendar, ChevronDown, Search, X, Activity, ListFilter, History, Bell, BellOff, CheckCircle, Ban, AlertTriangle, MapPin, Plus, Camera, Loader2, Save, ArrowRight, Pencil } from 'lucide-react';
+import { Path, ShareNetwork, ShieldWarning, Users, TrendUp, WarningCircle, Clock, Info, Sparkle, Funnel, CalendarBlank, CaretDown, MagnifyingGlass, X, Pulse, FunnelSimple, ClockCounterClockwise, Bell, BellSlash, CheckCircle, Prohibit, Warning, MapPin, Plus, Camera, Spinner, FloppyDisk, ArrowRight, PencilSimple } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { generateSecurityTip } from '../services/geminiService';
 import { usePushNotifications } from '../hooks/usePushNotifications';
@@ -16,7 +16,7 @@ import StockAutomotoras from './StockAutomotoras';
 import ExecutiveDigestModal from './ExecutiveDigestModal';
 import { formatWhatsAppFlashReport } from '../lib/executiveReport';
 import { TabType } from '../lib/navigation';
-import { Route, Car, ShieldCheck, FileText, Share2, Copy, Map as MapIcon } from 'lucide-react';
+import { Car, ShieldCheck, FileText, Copy, MapTrifold } from '@phosphor-icons/react';
 import TacticalActionCard, { TacticalSubmitBar } from './ui/TacticalActionCard';
 import ConnectionBanner from './ConnectionBanner';
 import { useNavigate } from 'react-router-dom';
@@ -83,7 +83,7 @@ function TacticalChip({ icon: Icon, label, tone = 'slate', disabled, loading, on
       disabled={disabled || loading}
       className={`inline-flex items-center gap-1.5 min-h-10 px-3.5 rounded-xl border text-[11px] font-mono font-bold uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-slate-400 ${CHIP_TONES[tone]} ${className}`}
     >
-      {loading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5 shrink-0" />}
+      {loading ? <Spinner className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5 shrink-0" />}
       <span className="truncate">{label}</span>
     </button>
   );
@@ -283,7 +283,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     fetchReporter();
   }, [selectedIncident]);
   
-  // Active Filter States (applied)
+  // Active Funnel States (applied)
   const [typeFilter, setTypeFilter] = useState<string[]>(['ROBO', 'SOSPECHOSO', 'MARCAJE', 'OTRO']);
   const [statusFilter, setStatusFilter] = useState<string[]>(['OPEN', 'RESOLVED', 'FALSE_ALARM']);
   const [dealershipFilter, setDealershipFilter] = useState<string[]>([]);
@@ -292,7 +292,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
     end: ''
   });
 
-  // Temporary Filter States (pending apply)
+  // Temporary Funnel States (pending apply)
   const [tempTypeFilter, setTempTypeFilter] = useState<string[]>(['ROBO', 'SOSPECHOSO', 'MARCAJE', 'OTRO']);
   const [tempStatusFilter, setTempStatusFilter] = useState<string[]>(['OPEN', 'RESOLVED', 'FALSE_ALARM']);
   const [tempDealershipFilter, setTempDealershipFilter] = useState<string[]>([]);
@@ -673,7 +673,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 <p className="text-xs font-black text-white/85 uppercase tracking-widest">Nueva Alerta Crítica</p>
                 <p className="text-white font-bold leading-tight">{newIncidentNotify.type}: {newIncidentNotify.description.slice(0, 40)}...</p>
               </div>
-              <ChevronDown className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
+              <CaretDown className="w-5 h-5 text-white/50 group-hover:text-white transition-colors" />
             </div>
           </motion.div>
         )}
@@ -697,7 +697,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
             className="p-3.5 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between gap-3 text-slate-400"
           >
             <div className="flex items-center gap-3">
-              <BellOff className="w-4 h-4 shrink-0" />
+              <BellSlash className="w-4 h-4 shrink-0" />
               <div>
                 <p className="text-xs font-bold uppercase tracking-wider font-mono">Notificaciones en Espera</p>
                 <p className="text-xs text-slate-400">Las alertas de proximidad llegan con la app abierta o en primer plano.</p>
@@ -763,7 +763,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="font-display text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-                  <Activity className="w-4 h-4 text-slate-500" />
+                  <Pulse className="w-4 h-4 text-slate-500" />
                   ACCIONES OPERATIVAS
                 </h2>
                 <p className="text-xs text-slate-600">Módulos tácticos de gestión y seguridad en patio</p>
@@ -781,8 +781,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
             {/* 4 Opciones Tácticas — lenguaje visual único (ui/TacticalActionCard) */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-              <TacticalActionCard icon={ShieldAlert} eyebrow="Reporte Sospechoso" title="Alerta de Seguridad" tone="red" onClick={() => setIsReporting(true)} />
-              <TacticalActionCard icon={Route} eyebrow="Prueba en Ruta" title="Respaldo Test Drive" tone="amber" onClick={() => setIsRoadTestOpen(true)} />
+              <TacticalActionCard icon={ShieldWarning} eyebrow="Reporte Sospechoso" title="Alerta de Seguridad" tone="red" onClick={() => setIsReporting(true)} />
+              <TacticalActionCard icon={Path} eyebrow="Prueba en Ruta" title="Respaldo Test Drive" tone="amber" onClick={() => setIsRoadTestOpen(true)} />
               <TacticalActionCard icon={ShieldCheck} eyebrow="Fiscalización" title="Control de Visita" tone="sky" onClick={() => setIsInspectionOpen(true)} />
               <TacticalActionCard icon={Car} eyebrow="Inventario" title="Stock en Red" tone="emerald" onClick={() => setIsStockOpen(true)} />
             </div>
@@ -792,11 +792,11 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-3.5">
             {[
               // N-D5: durante la carga no hay base de cálculo — "0" era un cero falso
-              { label: 'Alertas Activas', value: loading ? '—' : openIncidentsCount, icon: AlertCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
-              { label: 'Incidentes Registrados', value: loading ? '—' : incidents.length, icon: ShieldAlert, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Alertas Activas', value: loading ? '—' : openIncidentsCount, icon: WarningCircle, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
+              { label: 'Incidentes Registrados', value: loading ? '—' : incidents.length, icon: ShieldWarning, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
               { label: 'Nodos en Red', value: loading ? '—' : dealerships.length, icon: Users, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' },
               // N-D5: sin nodos no hay base de cálculo — "100%" era dividir por cero
-              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '—', icon: TrendingUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
+              { label: 'Eficacia Operativa', value: dealerships.length > 0 ? `${Math.round((dealerships.filter(d => d.status === 'online').length / dealerships.length) * 100)}%` : '—', icon: TrendUp, color: 'text-slate-300', bg: 'bg-slate-800/60 border-slate-700/80' }
             ].map((stat, idx) => (
               <motion.div
                 initial={{ opacity: 0, y: 12 }}
@@ -840,7 +840,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 onClick={() => setShowFilters(!showFilters)}
                 className={`flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg border transition-all uppercase font-bold tracking-widest ${showFilters ? 'bg-slate-700 border-slate-600 text-white shadow-lg shadow-black/25' : 'bg-slate-800 border-slate-700 text-slate-300 hover:bg-slate-700'}`}
               >
-                <Filter className="w-3.5 h-3.5" />
+                <Funnel className="w-3.5 h-3.5" />
                 Filtros
                 {(typeFilter.length < incidentTypes.length || statusFilter.length < statusTypes.length || dealershipFilter.length > 0 || dateRange.start || dateRange.end) && (
                   <span className="w-2 h-2 rounded-full bg-slate-500" />
@@ -880,10 +880,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
               >
                 <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Type Filter */}
+                    {/* Type Funnel */}
                     <div>
                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <ShieldAlert className="w-3 h-3" /> Tipo de Incidente
+                        <ShieldWarning className="w-3 h-3" /> Tipo de Incidente
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {incidentTypes.map(type => (
@@ -898,10 +898,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </div>
                     </div>
 
-                    {/* Status Filter */}
+                    {/* Status Funnel */}
                     <div>
                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <AlertCircle className="w-3 h-3" /> Estado
+                        <WarningCircle className="w-3 h-3" /> Estado
                       </p>
                       <div className="flex flex-wrap gap-2">
                         {statusTypes.map(status => (
@@ -917,7 +917,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </div>
                     </div>
 
-                    {/* Dealership Filter */}
+                    {/* Dealership Funnel */}
                     <div>
                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                         <Users className="w-3 h-3" /> Dealership / Sede
@@ -935,10 +935,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </div>
                     </div>
 
-                    {/* Date Filter */}
+                    {/* Date Funnel */}
                     <div>
                       <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <Calendar className="w-3 h-3" /> Rango de Fechas
+                        <CalendarBlank className="w-3 h-3" /> Rango de Fechas
                       </p>
                       <div className="flex items-center gap-2">
                         <input 
@@ -971,7 +971,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       disabled={!hasPendingChanges}
                       className={`text-xs font-black py-2.5 px-6 rounded-xl transition-all uppercase tracking-[0.15em] shadow-lg flex items-center gap-2 ${hasPendingChanges ? 'bg-slate-700 hover:bg-slate-600 text-white shadow-black/25 cursor-pointer' : 'bg-slate-800 text-slate-400 cursor-not-allowed opacity-50'}`}
                     >
-                      <Sparkles className="w-3.5 h-3.5" />
+                      <Sparkle className="w-3.5 h-3.5" />
                       {hasPendingChanges ? 'Aplicar Cambios' : 'Filtros Aplicados'}
                     </button>
                   </div>
@@ -993,7 +993,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 </div>
               ) : filteredIncidents.length === 0 ? (
                 <div className="p-12 text-center bg-slate-900 border border-slate-800 border-dashed rounded-3xl text-slate-400">
-                    <ShieldAlert className="w-12 h-12 mx-auto mb-4 opacity-10" />
+                    <ShieldWarning className="w-12 h-12 mx-auto mb-4 opacity-10" />
                     <p>Sin incidentes que coincidan con los filtros</p>
                 </div>
               ) : filteredIncidents.map((incident, idx) => (
@@ -1011,8 +1011,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                 >
                   <div className={`w-1 absolute left-0 top-0 bottom-0 ${incident.type === 'ROBO' ? 'bg-red-500' : incident.type === 'SOSPECHOSO' ? 'bg-orange-500' : incident.type === 'MARCAJE' ? 'bg-blue-500' : 'bg-slate-500'}`}></div>
                   <div className={`p-3 h-fit rounded-xl ${incident.type === 'ROBO' ? 'bg-red-500/10 text-red-500' : incident.type === 'SOSPECHOSO' ? 'bg-orange-500/10 text-orange-500' : incident.type === 'MARCAJE' ? 'bg-blue-500/10 text-blue-500' : 'bg-slate-500/10 text-slate-500'}`}>
-                    {incident.type === 'ROBO' && <ShieldAlert className="w-5 h-5" />}
-                    {incident.type === 'SOSPECHOSO' && <AlertTriangle className="w-5 h-5" />}
+                    {incident.type === 'ROBO' && <ShieldWarning className="w-5 h-5" />}
+                    {incident.type === 'SOSPECHOSO' && <Warning className="w-5 h-5" />}
                     {incident.type === 'MARCAJE' && <MapPin className="w-5 h-5" />}
                     {incident.type === 'OTRO' && <Info className="w-5 h-5" />}
                   </div>
@@ -1024,13 +1024,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           <span className={`inline-flex items-center gap-1 text-[11px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider font-mono border shrink-0 ${
                             incident.status === 'RESOLVED' ? 'text-emerald-300 bg-emerald-500/10 border-emerald-500/40' : 'text-slate-300 bg-slate-500/10 border-slate-600'
                           }`}>
-                            {incident.status === 'RESOLVED' ? <CheckCircle className="w-3 h-3" /> : <Ban className="w-3 h-3" />}
+                            {incident.status === 'RESOLVED' ? <CheckCircle className="w-3 h-3" /> : <Prohibit className="w-3 h-3" />}
                             {incident.status === 'RESOLVED' ? 'Resuelto' : 'Falsa Alarma'}
                           </span>
                         )}
                         {incident.isEdited && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-slate-300 bg-slate-500/10 border border-slate-600 px-1.5 py-0.5 rounded uppercase tracking-wider font-mono">
-                            <Pencil className="w-3 h-3" /> Editado
+                            <PencilSimple className="w-3 h-3" /> Editado
                           </span>
                         )}
                       </div>
@@ -1040,8 +1040,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </span>
                     </div>
                     <h3 className="font-bold text-white mb-2 leading-none flex items-center gap-2">
-                        {incident.type === 'ROBO' && <ShieldAlert className="w-4 h-4 text-red-500 shrink-0" />}
-                        {incident.type === 'SOSPECHOSO' && <AlertTriangle className="w-4 h-4 text-orange-500 shrink-0" />}
+                        {incident.type === 'ROBO' && <ShieldWarning className="w-4 h-4 text-red-500 shrink-0" />}
+                        {incident.type === 'SOSPECHOSO' && <Warning className="w-4 h-4 text-orange-500 shrink-0" />}
                         {incident.type === 'MARCAJE' && <MapPin className="w-4 h-4 text-blue-500 shrink-0" />}
                         {incident.type === 'OTRO' && <Info className="w-4 h-4 text-slate-500 shrink-0" />}
                         ALERTA: {incident.type}
@@ -1096,7 +1096,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                     })}
                 </div>
                 <TacticalActionCard
-                  icon={MapIcon}
+                  icon={MapTrifold}
                   eyebrow="Red Táctica"
                   title="Ver Red Completa en el Mapa"
                   tone="sky"
@@ -1107,10 +1107,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
             <div className="bg-slate-900 border border-slate-700 rounded-3xl p-6 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:rotate-12 transition-transform">
-                   <Sparkles className="w-12 h-12 text-slate-300" />
+                   <Sparkle className="w-12 h-12 text-slate-300" />
                 </div>
                 <h3 className="font-bold text-slate-300 mb-2 flex items-center gap-2 text-sm uppercase tracking-wider">
-                    <TrendingUp className="w-4 h-4" />
+                    <TrendUp className="w-4 h-4" />
                     Tip de Seguridad IA
                 </h3>
                 <AnimatePresence mode="wait">
@@ -1135,7 +1135,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-slate-800">
             <div className="space-y-1">
               <h2 className="text-xl sm:text-2xl font-black text-white flex items-center gap-2.5 tracking-tight">
-                <History className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300 shrink-0" />
+                <ClockCounterClockwise className="w-5 h-5 sm:w-6 sm:h-6 text-slate-300 shrink-0" />
                 Cronología de Eventos
               </h2>
               <p className="text-slate-400 text-[11px] sm:text-xs font-mono uppercase tracking-wider">
@@ -1144,7 +1144,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 max-w-full">
-              {/* Type Filter */}
+              {/* Type Funnel */}
               <div className="flex items-center gap-1 bg-slate-950/80 p-1 rounded-xl border border-slate-800 overflow-x-auto max-w-full no-scrollbar">
                 {['ALL', ...incidentTypes].map((type) => (
                   <button
@@ -1164,7 +1164,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
               {/* Date Filters */}
               <div className="flex items-center gap-1.5 bg-slate-950/80 p-1.5 rounded-xl border border-slate-800 text-[11px] font-mono text-slate-300">
-                <Calendar className="w-3.5 h-3.5 text-slate-500 shrink-0 ml-1" />
+                <CalendarBlank className="w-3.5 h-3.5 text-slate-500 shrink-0 ml-1" />
                 <input 
                   type="date" 
                   value={timelineDate.start}
@@ -1195,7 +1195,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
           <div className="relative pl-5 sm:pl-8 border-l border-slate-800/80 space-y-6 sm:space-y-8 ml-1.5 sm:ml-3 pt-2">
             {filteredTimelineIncidents.length === 0 ? (
               <div className="py-12 text-center text-slate-400 italic flex flex-col items-center gap-3">
-                <Search className="w-8 h-8 opacity-20" />
+                <MagnifyingGlass className="w-8 h-8 opacity-20" />
                 <p className="text-xs font-mono">No se encontraron eventos en este periodo o categoría.</p>
               </div>
             ) : (
@@ -1231,7 +1231,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       </span>
                       {incident.isEdited && (
                         <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] font-mono font-bold uppercase bg-slate-500/10 text-slate-300 border border-slate-600">
-                          <Pencil className="w-2.5 h-2.5" /> Editado
+                          <PencilSimple className="w-2.5 h-2.5" /> Editado
                         </span>
                       )}
                     </div>
@@ -1246,9 +1246,9 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         <div className="min-w-0">
                           <h3 className="text-sm sm:text-base font-bold text-white tracking-tight leading-snug group-hover:text-slate-300 transition-colors flex items-center gap-2">
                             {incident.type === 'ROBO' ? (
-                              <><ShieldAlert className="w-4 h-4 text-red-400 shrink-0" /> Robo Detectado</>
+                              <><ShieldWarning className="w-4 h-4 text-red-400 shrink-0" /> Robo Detectado</>
                             ) : incident.type === 'SOSPECHOSO' ? (
-                              <><AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" /> Actividad Sospechosa</>
+                              <><Warning className="w-4 h-4 text-amber-400 shrink-0" /> Actividad Sospechosa</>
                             ) : incident.type === 'MARCAJE' ? (
                               <><MapPin className="w-4 h-4 text-sky-400 shrink-0" /> Marcaje Detectado</>
                             ) : (
@@ -1280,7 +1280,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         </div>
                         {incident.imageUrl && (
                           <div className="flex items-center gap-1 text-slate-300 font-bold shrink-0">
-                            <Sparkles className="w-3.5 h-3.5" />
+                            <Sparkle className="w-3.5 h-3.5" />
                             <span>Evidencia Adjunta</span>
                           </div>
                         )}
@@ -1375,7 +1375,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
 
                     {editError && (
                       <div className="bg-red-950/40 border border-red-500/30 rounded-2xl p-4 flex items-start gap-3 text-red-400 text-xs">
-                        <AlertTriangle className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
+                        <Warning className="w-5 h-5 flex-shrink-0 text-red-500 mt-0.5" />
                         <div>
                           <p className="font-bold uppercase tracking-wider mb-1">Error al guardar cambios</p>
                           <p className="text-slate-400 font-medium leading-relaxed">{editError}</p>
@@ -1400,10 +1400,10 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       className="flex-1 h-14 bg-slate-700 hover:bg-opacity-90 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl shadow-black/25 flex items-center justify-center gap-2 transition-all active:scale-95"
                     >
                       {isSavingEdit ? (
-                        <Loader2 className="w-4 h-4 animate-spin text-white/50" />
+                        <Spinner className="w-4 h-4 animate-spin text-white/50" />
                       ) : (
                         <>
-                          <Save className="w-4 h-4" />
+                          <FloppyDisk className="w-4 h-4" />
                           <span>Guardar Cambios</span>
                         </>
                       )}
@@ -1442,8 +1442,8 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         </span>
                       </div>
                       <h2 className="text-3xl font-black text-white tracking-tighter leading-none mb-1 flex items-center gap-3">
-                        {selectedIncident.type === 'ROBO' && <ShieldAlert className="w-8 h-8 text-red-500" />}
-                        {selectedIncident.type === 'SOSPECHOSO' && <AlertTriangle className="w-8 h-8 text-orange-500" />}
+                        {selectedIncident.type === 'ROBO' && <ShieldWarning className="w-8 h-8 text-red-500" />}
+                        {selectedIncident.type === 'SOSPECHOSO' && <Warning className="w-8 h-8 text-orange-500" />}
                         {selectedIncident.type === 'MARCAJE' && <MapPin className="w-8 h-8 text-blue-500" />}
                         {selectedIncident.type === 'OTRO' && <Info className="w-8 h-8 text-slate-500" />}
                         {selectedIncident.type}
@@ -1452,7 +1452,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         <p className="text-slate-300 text-xs font-bold uppercase tracking-[0.2em]">{selectedIncident.isEdited ? 'Incidente Actualizado' : 'Incidente Reportado'}</p>
                         {selectedIncident.isEdited && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-black uppercase bg-slate-500/10 text-slate-300 border border-slate-600 px-2 py-0.5 rounded-md">
-                            <Pencil className="w-3 h-3" /> Editado / Actualizado
+                            <PencilSimple className="w-3 h-3" /> Editado / Actualizado
                           </span>
                         )}
                         <span className={`inline-flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md border ${
@@ -1581,7 +1581,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         )}
                         {statusUpdateError && (
                           <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-300 text-xs font-bold" role="alert">
-                            <AlertCircle className="w-4 h-4 shrink-0" />
+                            <WarningCircle className="w-4 h-4 shrink-0" />
                             {statusUpdateError}
                           </div>
                         )}
@@ -1601,7 +1601,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                         ) : (
                           <TacticalSubmitBar
                             type="button"
-                            icon={AlertCircle}
+                            icon={WarningCircle}
                             label="Reabrir Incidente"
                             loading={isUpdatingStatus === 'OPEN'}
                             loadingLabel="Reabriendo Incidente..."
@@ -1617,7 +1617,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                             confirmFalseAlarm ? (
                               <div className="flex flex-wrap items-center gap-2 w-full min-h-10 px-3 py-1.5 rounded-xl bg-red-500/10 border border-red-500/40" role="group" aria-label="Confirmar Falsa Alarma">
                                 <span className="flex items-center gap-1.5 text-[11px] font-black uppercase tracking-wider text-red-300 mr-auto">
-                                  <AlertTriangle className="w-3.5 h-3.5 shrink-0" />
+                                  <Warning className="w-3.5 h-3.5 shrink-0" />
                                   ¿Confirmar Falsa Alarma?
                                 </span>
                                 <button
@@ -1626,7 +1626,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                                   onClick={() => { setConfirmFalseAlarm(false); handleUpdateStatus('FALSE_ALARM'); }}
                                   className="min-h-11 px-3.5 rounded-lg bg-red-600 hover:bg-red-500 text-white text-[11px] font-black uppercase tracking-wider transition-all active:scale-95 disabled:opacity-50 disabled:active:scale-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-400 flex items-center gap-1.5"
                                 >
-                                  {isUpdatingStatus === 'FALSE_ALARM' ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
+                                  {isUpdatingStatus === 'FALSE_ALARM' ? <Spinner className="w-3.5 h-3.5 animate-spin" /> : <Prohibit className="w-3.5 h-3.5" />}
                                   {isUpdatingStatus === 'FALSE_ALARM' ? 'Marcando...' : 'Sí, Marcar'}
                                 </button>
                                 <button
@@ -1640,7 +1640,7 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                               </div>
                             ) : (
                               <TacticalChip
-                                icon={Ban}
+                                icon={Prohibit}
                                 label="Falsa Alarma"
                                 tone="red"
                                 disabled={isUpdatingStatus !== null}
@@ -1650,14 +1650,14 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                           )}
                           {isReporter && (
                             <TacticalChip
-                              icon={Pencil}
+                              icon={PencilSimple}
                               label="Editar Reporte"
                               disabled={isUpdatingStatus !== null}
                               onClick={startEditing}
                             />
                           )}
                           <TacticalChip
-                            icon={copiedIncidentWhatsApp ? CheckCircle : incidentCopyFailed ? AlertTriangle : Share2}
+                            icon={copiedIncidentWhatsApp ? CheckCircle : incidentCopyFailed ? Warning : ShareNetwork}
                             label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : incidentCopyFailed ? 'Error — Reintentar' : 'Copiar WhatsApp'}
                             disabled={isUpdatingStatus !== null}
                             onClick={copyIncidentWhatsApp}
@@ -1672,13 +1672,13 @@ export default function Dashboard({ activeTab, setActiveTab }: DashboardProps) {
                       <div className="flex flex-wrap items-center gap-2 pt-2">
                         {isReporter && (
                           <TacticalChip
-                            icon={Pencil}
+                            icon={PencilSimple}
                             label="Editar Reporte"
                             onClick={startEditing}
                           />
                         )}
                         <TacticalChip
-                          icon={copiedIncidentWhatsApp ? CheckCircle : incidentCopyFailed ? AlertTriangle : Share2}
+                          icon={copiedIncidentWhatsApp ? CheckCircle : incidentCopyFailed ? Warning : ShareNetwork}
                           label={copiedIncidentWhatsApp ? 'Copiado al Portapapeles' : incidentCopyFailed ? 'Error — Reintentar' : 'Copiar WhatsApp'}
                           onClick={copyIncidentWhatsApp}
                           className={copiedIncidentWhatsApp ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-300' : incidentCopyFailed ? 'border-red-500/40 bg-red-500/10 text-red-300' : ''}

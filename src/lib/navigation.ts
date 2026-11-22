@@ -1,12 +1,12 @@
-import { LayoutDashboard, Map as MapIcon, Activity, History, ShieldAlert, ShieldCheck } from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { SquaresFour, MapTrifold, Pulse, ClockCounterClockwise, ShieldWarning, ShieldCheck } from '@phosphor-icons/react';
+import type { Icon } from '@phosphor-icons/react';
 
 export type TabType = 'PANEL' | 'FEED' | 'HISTORIAL';
 
 export interface NavItem {
   id: string;
   label: string;
-  icon: LucideIcon;
+  icon: Icon;
   tab?: TabType;
   path?: string;
   alert?: boolean;
@@ -14,10 +14,10 @@ export interface NavItem {
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { id: 'panel', label: 'Panel', icon: LayoutDashboard, tab: 'PANEL' },
-  { id: 'mapa', label: 'Mapa', icon: MapIcon, path: '/map' },
-  { id: 'alerta', label: 'Alerta', icon: ShieldAlert, alert: true },
-  { id: 'feed', label: 'Feed', icon: Activity, tab: 'FEED' },
-  { id: 'historial', label: 'Historial', icon: History, tab: 'HISTORIAL' },
+  { id: 'panel', label: 'Panel', icon: SquaresFour, tab: 'PANEL' },
+  { id: 'mapa', label: 'Mapa', icon: MapTrifold, path: '/map' },
+  { id: 'alerta', label: 'Alerta', icon: ShieldWarning, alert: true },
+  { id: 'feed', label: 'Feed', icon: Pulse, tab: 'FEED' },
+  { id: 'historial', label: 'Historial', icon: ClockCounterClockwise, tab: 'HISTORIAL' },
   { id: 'admin', label: 'Admin', icon: ShieldCheck, path: '/admin', adminOnly: true },
 ];

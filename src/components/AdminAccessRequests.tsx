@@ -3,22 +3,7 @@ import { collection, onSnapshot, query } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { approveAccessRequest, rejectAccessRequest, AccessRequestData, ApprovalResult } from '../lib/adminAccess';
 import { motion, AnimatePresence } from 'motion/react';
-import {
-  Building2,
-  Inbox,
-  CheckCircle2,
-  XCircle,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  KeyRound,
-  Copy,
-  ShieldCheck,
-  Loader2,
-  AlertTriangle,
-  Eye,
-} from 'lucide-react';
+import { Buildings, Tray, Eye, Key, SealCheck, XCircle, Clock, User, Phone, EnvelopeSimple, Copy, ShieldCheck, Spinner, Warning } from '@phosphor-icons/react';
 
 type StatusFilter = 'PENDING' | 'APPROVED' | 'REJECTED';
 
@@ -135,7 +120,7 @@ export default function AdminAccessRequests() {
 
   const tabs = [
     { key: 'PENDING', label: 'Pendientes', icon: Clock, tone: 'text-amber-400 bg-amber-400/10' },
-    { key: 'APPROVED', label: 'Aprobadas', icon: CheckCircle2, tone: 'text-emerald-400 bg-emerald-400/10' },
+    { key: 'APPROVED', label: 'Aprobadas', icon: SealCheck, tone: 'text-emerald-400 bg-emerald-400/10' },
     { key: 'REJECTED', label: 'Rechazadas', icon: XCircle, tone: 'text-red-400 bg-red-400/10' },
   ] as const;
 
@@ -167,12 +152,12 @@ export default function AdminAccessRequests() {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-24 text-slate-400">
-          <Loader2 className="w-8 h-8 animate-spin mb-4 text-slate-300" />
+          <Spinner className="w-8 h-8 animate-spin mb-4 text-slate-300" />
           <p className="text-xs font-black uppercase tracking-widest">Cargando solicitudes...</p>
         </div>
       ) : loadError ? (
         <div className="bg-amber-500/10 border border-amber-500/40 rounded-3xl p-16 flex flex-col items-center text-center">
-          <Inbox className="w-14 h-14 text-amber-500/60 mb-4" />
+          <Tray className="w-14 h-14 text-amber-500/60 mb-4" />
           <p className="text-amber-300 text-xs font-black uppercase tracking-widest">
             Sin conexión con las solicitudes
           </p>
@@ -180,7 +165,7 @@ export default function AdminAccessRequests() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-16 flex flex-col items-center text-center">
-          <Inbox className="w-14 h-14 text-slate-800 mb-4" />
+          <Tray className="w-14 h-14 text-slate-800 mb-4" />
           <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">
             {filter === 'PENDING'
               ? 'No hay solicitudes pendientes'
@@ -209,7 +194,7 @@ export default function AdminAccessRequests() {
                       : 'bg-red-400/10 text-red-400'
                   }`}
                 >
-                  <Building2 className="w-5 h-5" />
+                  <Buildings className="w-5 h-5" />
                 </div>
 
                 <div className="min-w-0">
@@ -226,7 +211,7 @@ export default function AdminAccessRequests() {
                       {req.contactName}
                     </span>
                     <span className="flex items-center gap-1.5">
-                      <Mail className="w-3 h-3 text-slate-500" />
+                      <EnvelopeSimple className="w-3 h-3 text-slate-500" />
                       {req.email}
                     </span>
                     <span className="flex items-center gap-1.5">
@@ -246,7 +231,7 @@ export default function AdminAccessRequests() {
                   )}
                   {req.status === 'APPROVED' && (
                     <p className="mt-2 text-xs text-emerald-400/80 flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" /> Aprobada el {formatDate(req.approvedAt)}
+                      <SealCheck className="w-3 h-3" /> Aprobada el {formatDate(req.approvedAt)}
                     </p>
                   )}
                 </div>
@@ -313,7 +298,7 @@ export default function AdminAccessRequests() {
 
                   <div className="rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4 mb-5">
                     <p className="text-[11px] font-black uppercase tracking-[0.25em] text-emerald-300 mb-2 flex items-center gap-1.5 justify-center">
-                      <KeyRound className="w-3.5 h-3.5" />
+                      <Key className="w-3.5 h-3.5" />
                       Contraseña temporal
                     </p>
                     <div className="flex items-center justify-center gap-2">
@@ -325,13 +310,13 @@ export default function AdminAccessRequests() {
                         className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white transition-all"
                         title="Copiar contraseña"
                       >
-                        {copied ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                        {copied ? <SealCheck className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
                       </button>
                     </div>
                   </div>
 
                   <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-3 text-xs text-amber-300/80 leading-relaxed mb-6 flex gap-2 text-left">
-                    <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                    <Warning className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                     <span>Entrega esta contraseña por un canal seguro. No volverá a mostrarse.</span>
                   </div>
 
@@ -401,7 +386,7 @@ export default function AdminAccessRequests() {
                   {modal.status === 'PENDING' ? (
                     <>
                       <div className="rounded-2xl border border-amber-400/20 bg-amber-400/5 p-4 text-xs text-amber-300/80 mb-5 flex gap-2">
-                        <AlertTriangle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                        <Warning className="w-3.5 h-3.5 shrink-0 mt-0.5" />
                         <span>
                           Al aprobar se generará una cuenta de acceso con contraseña temporal y la sede quedará activa
                           en la red.
@@ -414,7 +399,7 @@ export default function AdminAccessRequests() {
                           onClick={handleApprove}
                           className="flex items-center justify-center gap-2 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 py-3 text-xs font-black uppercase tracking-widest hover:bg-emerald-500/25 transition-all disabled:opacity-50 active:scale-95"
                         >
-                          {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle2 className="w-3.5 h-3.5" />}
+                          {busy ? <Spinner className="w-3.5 h-3.5 animate-spin" /> : <SealCheck className="w-3.5 h-3.5" />}
                           Aprobar
                         </button>
                         <button

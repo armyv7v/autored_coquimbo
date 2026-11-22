@@ -63,7 +63,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
                   aria-label="Alerta máxima"
                 >
                   <div className="w-full h-full rounded-full bg-red-600 flex items-center justify-center text-white">
-                    <Icon className="w-7 h-7 text-white" />
+                    <Icon className="w-7 h-7 text-white" weight="fill" />
                   </div>
                 </div>
                 <span className="text-[11px] font-black text-red-400 uppercase tracking-widest mt-1 drop-shadow">
@@ -90,7 +90,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
                 routeActive ? activeClass : 'text-slate-400 hover:text-slate-200'
               }`}
             >
-              <Icon className="w-5 h-5" />
+              <Icon className="w-5 h-5" weight={routeActive ? 'fill' : 'duotone'} />
               <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
             </NavLink>
           );
@@ -108,7 +108,7 @@ export default function BottomNavbar({ activeTab = 'PANEL', setActiveTab, onTrig
               isCurrentActive ? activeClass : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Icon className="w-5 h-5" />
+            <Icon className="w-5 h-5" weight={isCurrentActive ? 'fill' : 'duotone'} />
             <span className="text-[11px] uppercase tracking-wider font-bold">{item.label}</span>
           </button>
         );

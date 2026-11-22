@@ -7,7 +7,7 @@
  */
 
 import React from 'react';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@phosphor-icons/react';
 
 export type TacticalTone = 'red' | 'amber' | 'sky' | 'emerald' | 'slate';
 
@@ -147,7 +147,7 @@ export function TacticalSubmitBar({
       </div>
       <div className={`w-8 h-8 rounded-full border flex items-center justify-center shrink-0 ${t.arrow}`}>
         {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
+          <Spinner className="w-4 h-4 animate-spin" />
         ) : (
           ARROW_SVG
         )}

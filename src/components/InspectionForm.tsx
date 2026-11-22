@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { collection, doc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { Check, Loader2, Mic, Send, ShieldCheck, X } from 'lucide-react';
+import { Check, Spinner, Microphone, PaperPlaneRight, ShieldCheck, X } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { auth, db } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -173,7 +173,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
 
               <div>
                 <label className="block text-xs font-mono font-bold uppercase tracking-wider text-slate-300 mb-1.5 flex items-center gap-1.5">
-                  <Mic className="w-3.5 h-3.5 text-slate-400" />
+                  <Microphone className="w-3.5 h-3.5 text-slate-400" />
                   Detalles o Requerimientos
                 </label>
                 <textarea
@@ -209,7 +209,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
                       disabled={saving}
                       className="rounded-xl bg-sky-500 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 hover:bg-sky-400 transition disabled:opacity-60 flex items-center justify-center gap-1.5"
                     >
-                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                      {saving ? <Spinner className="w-4 h-4 animate-spin" /> : <PaperPlaneRight className="w-4 h-4" />}
                       {saving ? 'Emitiendo...' : 'Confirmar Envío'}
                     </button>
                   </div>
@@ -231,7 +231,7 @@ export default function InspectionForm({ isOpen, onClose }: InspectionFormProps)
                   disabled={!ready}
                   className="flex h-12 w-full items-center justify-center gap-2 rounded-2xl border-2 border-sky-500/70 bg-gradient-to-br from-sky-950/45 via-slate-900/90 to-slate-950 font-bold uppercase tracking-wider text-sky-100 shadow-lg shadow-sky-500/20 transition hover:border-sky-400 active:scale-[0.99] disabled:opacity-50"
                 >
-                  <Send className="h-4 w-4" /> Emitir Alerta a la Red
+                  <PaperPlaneRight className="h-4 w-4" /> Emitir Alerta a la Red
                 </button>
               </footer>
             )}

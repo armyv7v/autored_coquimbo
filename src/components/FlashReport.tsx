@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShieldAlert, X, AlertTriangle, Camera, MapPin, Send, Check, Loader2, Info, Share2, Copy, ExternalLink } from 'lucide-react';
+import { ShieldWarning, X, Warning, Camera, MapPin, PaperPlaneRight, Check, Spinner, Info, ShareNetwork, Copy, ArrowSquareOut } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import L from 'leaflet';
 import { db, auth } from '../lib/firebase';
@@ -236,7 +236,7 @@ export default function FlashReport() {
               <div className="p-5 border-b border-red-500/30 flex items-center justify-between bg-gradient-to-r from-red-950/50 via-slate-950 to-slate-950">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-red-600 flex items-center justify-center text-white shadow-lg shadow-red-900/50 border border-red-400/40">
-                    <AlertTriangle className="w-5 h-5" />
+                    <Warning className="w-5 h-5" />
                   </div>
                   <div>
                     <h2 className="font-bold text-white text-sm uppercase tracking-wider">
@@ -264,8 +264,8 @@ export default function FlashReport() {
                   </label>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     {[
-                      { id: 'ROBO', label: 'Robo', icon: ShieldAlert, activeColor: 'bg-red-600 border-red-500 text-white' },
-                      { id: 'SOSPECHOSO', label: 'Sospechoso', icon: AlertTriangle, activeColor: 'bg-amber-600 border-amber-500 text-white' },
+                      { id: 'ROBO', label: 'Robo', icon: ShieldWarning, activeColor: 'bg-red-600 border-red-500 text-white' },
+                      { id: 'SOSPECHOSO', label: 'Sospechoso', icon: Warning, activeColor: 'bg-amber-600 border-amber-500 text-white' },
                       { id: 'MARCAJE', label: 'Marcaje', icon: MapPin, activeColor: 'bg-sky-600 border-sky-500 text-white' },
                       { id: 'OTRO', label: 'Otro', icon: Info, activeColor: 'bg-slate-700 border-slate-600 text-white' }
                     ].map((item) => {
@@ -406,7 +406,7 @@ export default function FlashReport() {
 
                 <div className="pt-2 flex flex-col sm:flex-row gap-2">
                   <TacticalSubmitBar
-                    icon={Send}
+                    icon={PaperPlaneRight}
                     label="Disparar Alerta Red"
                     loading={loading}
                     loadingLabel="Transmitiendo a la Red..."
@@ -473,7 +473,7 @@ export default function FlashReport() {
                   <div className="absolute inset-0 z-40 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-6 text-center">
                     <div className="space-y-4 max-w-xs">
                       <div className="w-14 h-14 rounded-2xl bg-red-600 flex items-center justify-center mx-auto text-white shadow-xl shadow-red-950 animate-pulse">
-                        <AlertTriangle className="w-7 h-7" />
+                        <Warning className="w-7 h-7" />
                       </div>
                       <div>
                         <h3 className="font-bold text-white text-base uppercase">¿Confirmar Alerta Máxima?</h3>

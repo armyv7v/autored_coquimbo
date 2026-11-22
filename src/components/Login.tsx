@@ -2,27 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, serverTimestamp, setDoc, collection, getDocs } from 'firebase/firestore';
 import { auth, db } from '../lib/firebase';
-import {
-  ArrowLeft,
-  Building2,
-  CheckCircle2,
-  Info,
-  Lock,
-  Mail,
-  Phone,
-  ShieldAlert,
-  User,
-  Zap,
-  Activity,
-  Sparkles,
-  Radio,
-  ShieldCheck,
-  ChevronRight,
-  Siren,
-  X,
-  Pause,
-  Play,
-} from 'lucide-react';
+import { ArrowLeft, Buildings, SealCheck, Info, LockSimple, EnvelopeSimple, Phone, ShieldWarning, User, Lightning, Pulse, Sparkle, Broadcast, ShieldCheck, CaretRight, Siren, X, Pause, Play } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import InteractiveNetworkWeb, { NODES, WebNode } from './InteractiveNetworkWeb';
 import Footer from './Footer';
@@ -90,7 +70,7 @@ const capabilityCards = [
     title: 'Botón de Pánico GPS',
     desc: 'Pánico 10s con ubicación en vivo.',
     color: 'from-[#E20B17]/15 to-transparent border-[#E20B17]/45',
-    icon: Zap,
+    icon: Lightning,
     img: 'https://images.unsplash.com/photo-1761897526071-5e29319b4751?w=1536&h=368&fit=crop&q=80&auto=format',
     details: {
       intro: 'Un botón dedicado que en 10 segundos transmite tu ubicación exacta al centro de custodia y a las automotoras cercanas. Sin desbloquear el teléfono, sin llamadas: un solo toque y la red completa se mueve hacia tu posición.',
@@ -107,7 +87,7 @@ const capabilityCards = [
     title: 'Prueba en Ruta Segura',
     desc: 'Registro fotográfico de cada test drive.',
     color: 'from-[#FF4D00]/15 to-transparent border-[#FF4D00]/45',
-    icon: Activity,
+    icon: Pulse,
     img: 'https://images.unsplash.com/photo-1648075082196-a3b311df1874?w=1536&h=368&fit=crop&q=80&auto=format',
     details: {
       intro: 'Cada test drive queda blindado con un registro fotográfico guiado antes de salir del patio: condición del vehículo, documentos y combustible, con fecha, hora y ubicación selladas. Así se elimina el fraude de sustitución y los reclamos sin respaldo.',
@@ -406,7 +386,7 @@ export default function Login() {
             }}
             className="xl:hidden px-4 min-h-11 rounded-full text-xs font-black uppercase tracking-wider bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white shadow-lg shadow-[#E20B17]/25 active:scale-95 transition flex items-center gap-1.5"
           >
-            <Lock className="w-3.5 h-3.5" />
+            <LockSimple className="w-3.5 h-3.5" />
             Acceso a la Red
           </button>
         </div>
@@ -472,7 +452,7 @@ export default function Login() {
                             {card.num}
                           </span>
                           <div className="p-2.5 rounded-2xl bg-white/5 border border-white/10 text-slate-100">
-                            <Icon className="w-6 h-6" />
+                            <Icon className="w-6 h-6" weight="duotone" />
                           </div>
                         </div>
                         <div className="relative">
@@ -583,7 +563,7 @@ export default function Login() {
                         </span>
                         <div className="relative flex items-center gap-3 mb-4">
                           <div className="p-2.5 rounded-2xl bg-slate-950 text-white">
-                            <Icon className="w-6 h-6" />
+                            <Icon className="w-6 h-6" weight="duotone" />
                           </div>
                           <h2 className="font-display text-xl sm:text-2xl font-black tracking-tight text-slate-900 uppercase">
                             {card.title}
@@ -595,7 +575,7 @@ export default function Login() {
                         <ul className="relative mt-5 grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
                           {card.details.features.map((f) => (
                             <li key={f} className="flex items-start gap-2.5 text-xs sm:text-[13px] font-semibold text-slate-700">
-                              <CheckCircle2 className="w-4 h-4 mt-0.5 shrink-0 text-[#00A85A]" />
+                              <SealCheck className="w-4 h-4 mt-0.5 shrink-0 text-[#00A85A]" />
                               {f}
                             </li>
                           ))}
@@ -605,7 +585,7 @@ export default function Login() {
                           onClick={() => { setMode('request'); setAccessOpen(true); }}
                           className="relative mt-6 inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] text-white text-xs font-black uppercase tracking-wider shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
                         >
-                          <Building2 className="w-4 h-4" />
+                          <Buildings className="w-4 h-4" />
                           Solicitar incorporación a la red
                         </button>
                       </>
@@ -621,7 +601,7 @@ export default function Login() {
             <div className="rounded-2xl border border-white/10 p-4 backdrop-blur-2xl bg-slate-950 shadow-2xl shadow-black/25">
               <div className="flex items-center justify-between mb-2.5">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                  <Activity className="w-3.5 h-3.5 text-[#00E676]" />
+                  <Pulse className="w-3.5 h-3.5 text-[#00E676]" />
                   Automotoras en la Red{networkDealers.some((d) => d.node) ? ' (Seleccione para inspeccionar)' : ''}
                 </span>
                 <span
@@ -671,7 +651,7 @@ export default function Login() {
             <div className="rounded-2xl border-2 border-slate-600 p-4 backdrop-blur-2xl bg-slate-950 shadow-2xl shadow-black/25">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 flex items-center gap-1.5">
-                  <Radio className="w-3.5 h-3.5" />
+                  <Broadcast className="w-3.5 h-3.5" />
                   Transmisión Táctica
                 </span>
                 <span className="text-[10px] font-mono text-slate-400">Simulación local</span>
@@ -686,7 +666,7 @@ export default function Login() {
                 onClick={handleTriggerNetworkAlert}
                 className="w-full min-h-11 px-4 rounded-xl bg-gradient-to-r from-[#E20B17] to-[#c00914] hover:from-[#f1121c] hover:to-[#d50a16] text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#E20B17]/25 active:scale-95 transition"
               >
-                <Zap className="w-4 h-4 text-white" />
+                <Lightning className="w-4 h-4 text-white" />
                 {selectedNode ? `Pulso de demo a ${selectedNode.name}` : 'Lanzar Pulso de Demostración'}
               </button>
             </div>
@@ -762,8 +742,8 @@ export default function Login() {
                       className="group rounded-2xl bg-gradient-to-br from-[#E20B17] to-[#a50811] p-4 text-left font-black text-white shadow-lg shadow-[#E20B17]/25 hover:from-[#f1121c] hover:to-[#c00914] active:scale-[.98] transition border border-[#E20B17]"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <Lock className="w-5 h-5 text-white/90" />
-                        <ChevronRight className="w-4 h-4 text-white/70 group-hover:translate-x-1 transition-transform" />
+                        <LockSimple className="w-5 h-5 text-white/90" />
+                        <CaretRight className="w-4 h-4 text-white/70 group-hover:translate-x-1 transition-transform" />
                       </div>
                       <p className="text-sm font-black">Iniciar Sesión</p>
                       <p className="text-[11px] text-white font-normal mt-0.5">Credenciales activas</p>
@@ -778,8 +758,8 @@ export default function Login() {
                       className="group rounded-2xl border-2 border-white/12 bg-white/[.045] p-4 text-left font-black text-white hover:border-slate-600 hover:bg-white/[.08] active:scale-[.98] transition"
                     >
                       <div className="flex items-center justify-between mb-2">
-                        <Building2 className="w-5 h-5 text-slate-300" />
-                        <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+                        <Buildings className="w-5 h-5 text-slate-300" />
+                        <CaretRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
                       </div>
                       <p className="text-sm font-black">Solicitar Ingreso</p>
                       <p className="text-[11px] text-slate-400 font-normal mt-0.5">Nueva automotora</p>
@@ -792,7 +772,7 @@ export default function Login() {
                   <div className="p-4 rounded-2xl bg-slate-900 border border-[#E20B17]/40 space-y-3">
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#FF4D00] flex items-center gap-1.5">
-                        <Sparkles className="w-3.5 h-3.5" />
+                        <Sparkle className="w-3.5 h-3.5" />
                         Acceso de Demostración
                       </span>
                       <span className="text-[10px] font-mono text-slate-400">1-Tap Login</span>
@@ -832,7 +812,7 @@ export default function Login() {
                   className="space-y-5"
                 >
                   <div className="rounded-3xl border border-emerald-400/30 bg-emerald-500/10 p-6 text-center space-y-3">
-                    <CheckCircle2 className="h-12 w-12 text-[#00E676] mx-auto animate-bounce" />
+                    <SealCheck className="h-12 w-12 text-[#00E676] mx-auto animate-bounce" />
                     <h3 className="text-lg font-black text-white uppercase tracking-tight">Solicitud Enviada con Éxito</h3>
                     <p className="text-xs leading-relaxed text-emerald-100 font-medium">
                       Su <strong className="text-white">"Solicitud de ingreso"</strong> a la Red de Automotoras fue enviada. El equipo administrador validará el RUT comercial y habilitará sus credenciales de acceso.
@@ -864,10 +844,10 @@ export default function Login() {
                         Ingresar datos reales de la Automotora y Representante Legal para blindar la red contra intrusiones.
                       </div>
 
-                      <Field icon={<Building2 />} label="Nombre Automotora">
+                      <Field icon={<Buildings />} label="Nombre Automotora">
                         <input value={dealershipName} onChange={(e) => setDealershipName(e.target.value)} required className="auth-input" placeholder="Nombre Fantasía / Razón Social" />
                       </Field>
-                      <Field icon={<Building2 />} label="RUT Automotora">
+                      <Field icon={<Buildings />} label="RUT Automotora">
                         <input value={rut} onChange={(e) => setRut(formatRut(e.target.value))} required className="auth-input" inputMode="numeric" placeholder="76.123.456-7" />
                       </Field>
                       <Field icon={<User />} label="Representante Legal / Dueño">
@@ -876,19 +856,19 @@ export default function Login() {
                       <Field icon={<Phone />} label="Teléfono de Contacto">
                         <input type="tel" inputMode="tel" autoComplete="tel" value={phone} onChange={(e) => setPhone(e.target.value)} required className="auth-input" placeholder="+56 9 1234 5678" />
                       </Field>
-                      <Field icon={<Building2 />} label="Dirección Sede Principal">
+                      <Field icon={<Buildings />} label="Dirección Sede Principal">
                         <input value={address} onChange={(e) => setAddress(e.target.value)} required className="auth-input" placeholder="Av. Balmaceda 1234, Coquimbo" />
                       </Field>
                     </>
                   )}
 
-                  <Field icon={<Mail />} label={mode === 'request' ? 'Correo de Contacto' : 'Correo Corporativo'}>
+                  <Field icon={<EnvelopeSimple />} label={mode === 'request' ? 'Correo de Contacto' : 'Correo Corporativo'}>
                     <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required className="auth-input" placeholder="contacto@automotora.cl" />
                   </Field>
 
                   {mode === 'login' && (
                     <>
-                      <Field icon={<Lock />} label="Contraseña">
+                      <Field icon={<LockSimple />} label="Contraseña">
                         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required className="auth-input" placeholder="••••••••" />
                       </Field>
 
@@ -1012,7 +992,7 @@ export default function Login() {
               }}
               className="w-full py-2.5 rounded-xl bg-slate-700 hover:bg-slate-600 text-white font-mono text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-black/25 active:scale-95 transition"
             >
-              <Zap className="w-4 h-4" />
+              <Lightning className="w-4 h-4" />
               Transmitir Pulso Óptico al Centro
             </button>
           </motion.div>

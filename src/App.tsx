@@ -7,7 +7,7 @@ import React, { Suspense, lazy, useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './hooks/useAuth';
 import { auth } from './lib/firebase';
-import { XCircle, Loader2 } from 'lucide-react';
+import { XCircle, Spinner } from '@phosphor-icons/react';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
 import { PrivacyPolicyPage, TermsPage } from './components/LegalPages';
@@ -24,7 +24,7 @@ const FlashReport = lazy(() => import('./components/FlashReport'));
 function PageLoader() {
   return (
     <div className="h-full w-full flex items-center justify-center bg-slate-950" role="status" aria-label="Cargando">
-      <Loader2 className="w-8 h-8 text-slate-500 animate-spin" />
+      <Spinner className="w-8 h-8 text-slate-500 animate-spin" />
     </div>
   );
 }

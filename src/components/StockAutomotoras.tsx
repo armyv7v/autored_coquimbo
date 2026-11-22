@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, serverTimestamp } from 'firebase/firestore';
-import { Car, CheckCircle2, Plus, Search, Trash2, X, AlertCircle } from 'lucide-react';
+import { Car, SealCheck, Plus, MagnifyingGlass, Trash, X, WarningCircle } from '@phosphor-icons/react';
 import { AnimatePresence, motion } from 'motion/react';
 import { db, auth } from '../lib/firebase';
 import { useAuth } from '../hooks/useAuth';
@@ -319,7 +319,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
 
               {stockError && (
                 <div className="relative mx-4 mt-4 flex items-center gap-2 rounded-xl bg-red-500/15 border border-red-500/40 px-4 py-2.5 text-red-300 text-xs font-bold" role="alert">
-                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <WarningCircle className="w-4 h-4 shrink-0" />
                   {stockError}
                 </div>
               )}
@@ -327,7 +327,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
               <div className="relative border-b border-white/10 p-4 sm:p-5">
                 <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_150px_170px]">
                   <label className="relative block">
-                    <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
+                    <MagnifyingGlass className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-500" />
                     <input
                       value={search}
                       onChange={(event) => setSearch(event.target.value)}
@@ -371,7 +371,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                               aria-label={`Eliminar ${vehicle.brand} ${vehicle.model}`}
                               className="absolute right-3 top-3 rounded-full bg-slate-950/80 p-2 text-slate-400 ring-1 ring-white/10 transition hover:bg-red-500/20 hover:text-red-300"
                             >
-                              <Trash2 className="h-3.5 w-3.5" />
+                              <Trash className="h-3.5 w-3.5" />
                             </button>
                           )}
                         </div>
@@ -388,7 +388,7 @@ export default function StockAutomotoras({ isOpen, onClose }: StockAutomotorasPr
                             <span className="text-xs font-mono font-bold text-slate-400">{vehicle.year}</span>
                             {vehicle.status === 'DISPONIBLE' && (
                               <span className="text-xs font-bold text-emerald-400 flex items-center gap-1">
-                                <CheckCircle2 className="h-3.5 w-3.5" /> En red
+                                <SealCheck className="h-3.5 w-3.5" /> En red
                               </span>
                             )}
                           </div>

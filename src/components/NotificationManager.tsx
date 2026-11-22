@@ -5,7 +5,7 @@ import { showForegroundNotification } from '../lib/notifications';
 import { useAuth } from '../hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { ShieldAlert, Bell, X, MapPin, WifiOff } from 'lucide-react';
+import { ShieldWarning, Bell, X, MapPin, WifiSlash } from '@phosphor-icons/react';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
 interface Incident {
@@ -173,7 +173,7 @@ export default function NotificationManager() {
       return dist <= 10;
     });
 
-    // Send FCM push to each nearby online dealership
+    // PaperPlaneRight FCM push to each nearby online dealership
     for (const dealer of nearbyOnlineDealers) {
       try {
         console.log(`[FCM PUSH] Notificando a ${dealer.name} sobre ${incident.type}`);
@@ -211,7 +211,7 @@ export default function NotificationManager() {
             role="alert"
             aria-live="polite"
           >
-            <WifiOff className="w-4 h-4 shrink-0" />
+            <WifiSlash className="w-4 h-4 shrink-0" />
             <span>Tu nodo está OFFLINE: no recibirás alertas de proximidad hasta reconectarte.</span>
           </div>
         </div>
@@ -237,7 +237,7 @@ export default function NotificationManager() {
 
               <div className="flex items-start gap-4">
                 <div className="bg-red-500 p-3 rounded-2xl text-white shadow-lg shadow-red-500/40">
-                  <ShieldAlert className="w-6 h-6 animate-bounce" />
+                  <ShieldWarning className="w-6 h-6 animate-bounce" />
                 </div>
 
                 <div className="flex-1">

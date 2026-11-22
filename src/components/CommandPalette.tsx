@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, ShieldAlert, Route, ShieldCheck, Car, Flame, Map, Radio, Command, ArrowRight, X, Building2, AlertCircle, FileText } from 'lucide-react';
+import { MagnifyingGlass, ShieldWarning, Path, ShieldCheck, Car, Fire, Broadcast, Keyboard, ArrowRight, X, Buildings, WarningCircle, FileText } from '@phosphor-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
 import { collection, query, limit, onSnapshot, orderBy } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -79,7 +79,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
       category: 'ACTIONS',
       title: 'Reportar Sospechoso / Asalto',
       subtitle: 'Emitir alerta de seguridad inmediata a la red',
-      icon: ShieldAlert,
+      icon: ShieldWarning,
       badge: 'Alerta',
       color: 'text-red-400 bg-red-500/10 border-red-500/30',
       perform: () => {
@@ -92,7 +92,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
       category: 'ACTIONS',
       title: 'Iniciar Prueba en Ruta (Test Drive)',
       subtitle: 'Captura guiada de RUT y vehículo antes de salir',
-      icon: Route,
+      icon: Path,
       badge: 'Salida',
       color: 'text-amber-400 bg-amber-500/10 border-amber-500/30',
       perform: () => {
@@ -144,7 +144,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
       category: 'ACTIONS',
       title: 'Disparar Alerta Máxima Flash',
       subtitle: 'Notificación prioritaria a todas las automotoras',
-      icon: Flame,
+      icon: Fire,
       badge: 'Crítico',
       color: 'text-red-500 bg-red-600/20 border-red-500/40',
       perform: () => {
@@ -170,7 +170,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
       category: 'NAVIGATION',
       title: 'Ver Feed de Inteligencia',
       subtitle: 'Historial y análisis de incidentes de seguridad',
-      icon: Radio,
+      icon: Broadcast,
       badge: 'Vista',
       color: 'text-purple-400 bg-purple-500/10 border-purple-500/30',
       perform: () => {
@@ -187,7 +187,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
     category: 'DEALERSHIP',
     title: d.name || 'Automotora',
     subtitle: `Nodo de red • ${d.status === 'online' ? 'Online' : 'Conectado'} en Coquimbo/La Serena`,
-    icon: Building2,
+    icon: Buildings,
     badge: d.status === 'online' ? 'Online' : 'Nodo',
     color: d.status === 'online' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/30' : 'text-slate-400 bg-slate-800 border-slate-700',
     perform: () => {
@@ -202,7 +202,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
     category: 'INCIDENT',
     title: `[${inc.type || 'ALERTA'}] ${inc.description?.slice(0, 45) || 'Sin descripción'}...`,
     subtitle: `Incidente registrado • Estado: ${inc.status || 'OPEN'}`,
-    icon: AlertCircle,
+    icon: WarningCircle,
     badge: inc.type || 'Evento',
     color: inc.type === 'ROBO' ? 'text-red-400 bg-red-500/10 border-red-500/30' : 'text-amber-400 bg-amber-500/10 border-amber-500/30',
     perform: () => {
@@ -261,9 +261,9 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
             transition={{ duration: 0.15 }}
             className="relative z-10 w-full max-w-2xl rounded-2xl border border-slate-800 bg-slate-950/95 shadow-2xl shadow-black/80 overflow-hidden flex flex-col max-h-[75vh]"
           >
-            {/* Search Input Bar */}
+            {/* MagnifyingGlass Input Bar */}
             <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-800/80 bg-slate-900/60">
-              <Search className="w-5 h-5 text-slate-400 shrink-0" />
+              <MagnifyingGlass className="w-5 h-5 text-slate-400 shrink-0" />
               <input
                 ref={inputRef}
                 type="text"
@@ -291,7 +291,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
             <div className="flex-1 overflow-y-auto p-2 space-y-1 text-left">
               {filteredActions.length === 0 ? (
                 <div className="py-12 text-center text-slate-500">
-                  <Command className="w-8 h-8 mx-auto mb-2 opacity-40" />
+                  <Keyboard className="w-8 h-8 mx-auto mb-2 opacity-40" />
                   <p className="text-sm font-medium">No se encontraron resultados para &ldquo;{search}&rdquo;</p>
                   <p className="text-xs text-slate-600 mt-1">Prueba buscando por tipo de incidente o nombre de automotora</p>
                 </div>
@@ -347,7 +347,7 @@ export default function CommandPalette({ isOpen, onClose, setActiveTab }: Comman
                   Ejecutar
                 </span>
               </div>
-              <span className="hidden sm:inline text-slate-400">Alerta Dealers Command v2.0</span>
+              <span className="hidden sm:inline text-slate-400">Alerta Dealers Keyboard v2.0</span>
             </div>
           </motion.div>
         </motion.div>

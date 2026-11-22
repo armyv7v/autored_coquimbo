@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, FileText, Share2, Check, ShieldCheck, AlertTriangle, Building2, Calendar, Copy, ExternalLink } from 'lucide-react';
+import { X, FileText, ShareNetwork, Check, ShieldCheck, Warning, Buildings, CalendarBlank, Copy, ArrowSquareOut } from '@phosphor-icons/react';
 import { formatExecutiveDailyDigest, IncidentSummary } from '../lib/executiveReport';
 
 interface ExecutiveDigestModalProps {
@@ -148,7 +148,7 @@ export default function ExecutiveDigestModal({
               onClick={handleSendWhatsApp}
               className="flex-1 py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-emerald-950 transition"
             >
-              <ExternalLink className="w-4 h-4" />
+              <ArrowSquareOut className="w-4 h-4" />
               Enviar a WhatsApp
             </button>
           </div>

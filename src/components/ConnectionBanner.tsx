@@ -1,4 +1,4 @@
-import { WifiOff, RefreshCw } from 'lucide-react';
+import { WifiSlash, ArrowsClockwise } from '@phosphor-icons/react';
 
 interface ConnectionBannerProps {
   show: boolean;
@@ -22,9 +22,9 @@ export default function ConnectionBanner({
       role="alert"
       aria-live="polite"
     >
-      <WifiOff className="w-4 h-4 shrink-0" />
+      <WifiSlash className="w-4 h-4 shrink-0" />
       <span>{label}</span>
-      <RefreshCw className="w-3.5 h-3.5 shrink-0 animate-spin" />
+      <ArrowsClockwise className="w-3.5 h-3.5 shrink-0 animate-spin" />
     </div>
   );
 }
