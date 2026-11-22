@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PantherLogo from './PantherLogo';
 
 export default function Footer() {
@@ -10,8 +11,11 @@ export default function Footer() {
           Powered by <strong className="text-white font-bold tracking-wide">Sistemas Pantera</strong>
         </span>
       </span>
-      <span className="text-slate-500 text-xs tracking-wide">
-        © {new Date().getFullYear()} Alerta Dealers — Red privada de seguridad para automotoras
+      <span className="text-slate-400 text-xs tracking-wide">
+        © {new Date().getFullYear()} Alerta Dealers —{' '}
+        <Link to="/terminos" className="hover:text-white underline decoration-slate-600 underline-offset-4 transition-colors">Términos</Link>
+        {' '}·{' '}
+        <Link to="/privacidad" className="hover:text-white underline decoration-slate-600 underline-offset-4 transition-colors">Privacidad</Link>
       </span>
     </footer>
   );

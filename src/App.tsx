@@ -10,6 +10,7 @@ import { auth } from './lib/firebase';
 import { XCircle, Loader2 } from 'lucide-react';
 import Dashboard from './components/Dashboard';
 import Login from './components/Login';
+import { PrivacyPolicyPage, TermsPage } from './components/LegalPages';
 import Navbar from './components/Navbar';
 import NotificationManager from './components/NotificationManager';
 import BottomNavbar from './components/BottomNavbar';
@@ -187,6 +188,9 @@ export default function App() {
               </AdminRoute>
             </ProtectedRoute>
           } />
+          {/* Páginas legales públicas: accesibles con o sin sesión */}
+          <Route path="/privacidad" element={<PrivacyPolicyPage />} />
+          <Route path="/terminos" element={<TermsPage />} />
           {/* URL desconocida: volver al panel en vez de pantalla vacía */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
